@@ -29,7 +29,7 @@ class labels_reassigned_dataset(data.Dataset):
 
     def __init__(self, original_dataset, image_indexes, pseudolabels, transform=None):
         
-        self.imgs = self.make_dataset(image_indexes, pseudolabels, dataset)
+        self.imgs = self.make_dataset(image_indexes, pseudolabels, original_dataset)
         self.transform = transform
       
     def make_dataset(self, image_indexes, pseudolabels, dataset):
@@ -37,7 +37,7 @@ class labels_reassigned_dataset(data.Dataset):
         images = []
         for idx in image_indexes:
             path = dataset[idx][0]
-            images.append( (path, pseudolabels[j]) )
+            images.append( (path, pseudolabels[idx]) )
         return images
     
     def __getitem__(self, index):
@@ -74,16 +74,18 @@ def clustered_data_indices_to_list(clustered_data_indices):
 
 
    
-class neural_features_kmeans_with_preprocessing:
+class neural_features_kmeans_with_preprocessing():
     
     
-    def __init__(data, n_clusters, pca=0, verbose=0, **kwargs):
+    def __init__(self, data, n_clusters, pca=0, verbose=0, **kwargs):
         
         self.data = data
         self.n_clusters = n_clusters
         self.sklearn_kmeans_args = kwargs
+        self.verbose= verbose
+        self.pca=pca
         
-        self.clustered_data_indices = [ [] for i in range(self.n_clusters) ]
+        self.clustered_data_indices = [ [] for i in range(n_clusters) ]
         
         self.preprocessed_data = None
         self.inertia = None
@@ -94,24 +96,24 @@ class neural_features_kmeans_with_preprocessing:
         end = time.time()
     
         # Preprocess features
-        self.preprocessed_data = __preprocess_neural_features(self.data, pca=pca)
+        self.preprocessed_data = self.__preprocess_neural_features(self.data, pca=self.pca)
         
-        if verbose:
+        if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
     
         kmeans_object = KMeans(self.n_clusters, max_iter= self.sklearn_kmeans_args.get("max_iter",20),
-                           self.sklearn_kmeans_args.get("n_init",1) )
+                           n_init= self.sklearn_kmeans_args.get("n_init",1) )
     
         kmeans_object.fit_predict(self.preprocessed_data)
         
-        if verbose:
+        if self.verbose:
             print('k-means time: {0:.0f} s'.format(time.time() - end))
         
         self.inertia = kmeans_object.inertia_
         self.assignments = kmeans_object.labels_
         
-        if verbose:
-            print('k-means loss evolution (inertia): {0}'.format(clus.inertia_) )
+        if self.verbose:
+            print('k-means loss evolution (inertia): {0}'.format(self.inertia) )
         
         for i in range( len(self.data) ):
             self.clustered_data_indices[ self.assignments[i] ].append(i)
@@ -138,5 +140,5 @@ class neural_features_kmeans_with_preprocessing:
         row_sums = np.linalg.norm(data, axis=1)
         data = data / row_sums[:, np.newaxis]
         
-    return data
+        return data
           
