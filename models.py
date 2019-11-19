@@ -300,8 +300,28 @@ def deep_cluster_train(dataloader, model, loss_criterion, net_optimizer, annxed_
     else:
       return losses.avg
   
-def deep_cluster_test():
+def deep_cluster_test(dataloader, model, device):
     
+    correct_predictions=0
+    total_predictions=0
+    model.eval()
+  
+    for input_tensor, target in dataloader:
+      
+      target = target.to(device)
+      input_tensor = input_tensor.to(device)
+      
+      output = model(input_tensor)
+      
+      predicted = torch.argmax(output,1)
+      
+      total_predictions+=target.size(0)
+      
+      correct_predictions+= (predicted==target).sum().item()
+    
+    test_acc=(100*correct_predictions/total_predictions)  
+    
+    return test_acc        
 
 def save_checkpoint(model, optimizer, epoch, checkpoint, path, architecture="unspecified", verbose=True):
     
