@@ -54,7 +54,7 @@ class NetBuilder(nn.Module):
                 
             elif isinstance(m, nn.Linear):
                 m.weight.data.normal_(0, 0.01)
-                m.bias.data.zero_()                 
+                m.bias.data.zero_()
 
 def make_convolutional_layers(cfg, input_n_channels, bn):
     
@@ -153,8 +153,14 @@ def lenet_5(bn=False, out=10):
     return model    
  
 def remove_top_layer(model):
+    """
+    :param model: The model than need its top layer to be removed
+    :return: The model output size after rmoving top layer
+    """
+    new_output_size = int(model.top_layer[0].weight.size()[1])
     model.top_layer = None
-    model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])   
+    model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])
+    return new_output_size
     
 def add_top_layer(model, top_layer_cfg, device):
     
