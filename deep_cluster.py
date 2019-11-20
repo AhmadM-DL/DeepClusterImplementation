@@ -7,7 +7,6 @@ Created on Sat Nov 16 13:26:39 2019
 
 import time
 
-#import faiss
 import numpy as np
 import utils
 import torch.utils.data as data
@@ -56,7 +55,6 @@ class labels_reassigned_dataset(data.Dataset):
     def __len__(self):
         return len(self.imgs)
 
-
 def clustered_data_indices_to_list(clustered_data_indices):
 
     pseudolabels = []
@@ -72,8 +70,6 @@ def clustered_data_indices_to_list(clustered_data_indices):
     
     return [np.sort(image_indexes), pseudolabels]
 
-
-   
 class neural_features_kmeans_with_preprocessing():
     
     

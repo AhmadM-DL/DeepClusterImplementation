@@ -56,8 +56,6 @@ class NetBuilder(nn.Module):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()                 
 
-
-
 def make_convolutional_layers(cfg, input_n_channels, bn):
     
     # cfg: 
@@ -116,7 +114,6 @@ def make_linear_layers(cfg):
             continue    
     return nn.Sequential(*layers)
 
-   
 def alexnet_cifar(sobel=False, bn=True, out=10):
     
     input_n_channels = 2 + int(not sobel)
