@@ -91,7 +91,7 @@ class neural_features_kmeans_with_preprocessing():
         end = time.time()
 
         # Preprocess features
-        self.preprocessed_data = self.__preprocess_neural_features(data=self.data, pca=self.pca)
+        self.preprocessed_data = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose)
 
         if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
@@ -113,7 +113,7 @@ class neural_features_kmeans_with_preprocessing():
         for i in range(len(self.data)):
             self.clustered_data_indices[self.assignments[i]].append(i)
 
-    def __preprocess_neural_features(self, data, pca=256):
+    def __preprocess_neural_features(self, data, pca=256, verbose=0):
 
         """Preprocess an array of features.
         Args:
@@ -125,14 +125,15 @@ class neural_features_kmeans_with_preprocessing():
         _, ndim = data.shape
         data = data.astype('float32')
 
-
         # Apply PCA-whitening with sklearn pca
         if(pca):
+            if(verbose):print("Applying PCA with %d components on features:\n"%(pca))
             mat = PCA(n_components=pca, whiten=True)
             mat.fit(data)
             data = mat.transform(data)
 
         # L2 normalization
+        if(verbose):print("Computing L2 norm of features:\n")
         row_sums = np.linalg.norm(data, axis=1)
         data = data / row_sums[:, np.newaxis]
 
