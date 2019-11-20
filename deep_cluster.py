@@ -125,10 +125,12 @@ class neural_features_kmeans_with_preprocessing():
         _, ndim = data.shape
         data = data.astype('float32')
 
+
         # Apply PCA-whitening with sklearn pca
-        mat = PCA(n_components=pca, whiten=True)
-        mat.fit(data)
-        data = mat.transform(data)
+        if(pca):
+            mat = PCA(n_components=pca, whiten=True)
+            mat.fit(data)
+            data = mat.transform(data)
 
         # L2 normalization
         row_sums = np.linalg.norm(data, axis=1)
