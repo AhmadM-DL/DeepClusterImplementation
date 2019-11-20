@@ -155,9 +155,9 @@ def lenet_5(bn=False, out=10):
 def remove_top_layer(model):
     """
     :param model: The model than need its top layer to be removed
-    :return: The model output size after rmoving top layer
+    :return: The model output size after removing top layer
     """
-    new_output_size = int(model.top_layer[0].weight.size()[1])
+    new_output_size = model.top_layer[0].weight.size()[1]
     model.top_layer = None
     model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])
     return new_output_size
