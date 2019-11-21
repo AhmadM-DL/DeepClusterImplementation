@@ -97,7 +97,8 @@ class neural_features_kmeans_with_preprocessing():
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
 
         kmeans_object = KMeans(self.n_clusters, max_iter=self.sklearn_kmeans_args.get("max_iter", 20),
-                               n_init=self.sklearn_kmeans_args.get("n_init", 1))
+                               n_init=self.sklearn_kmeans_args.get("n_init", 1),
+                               verbose=1)
 
         kmeans_object.fit_predict(self.preprocessed_data)
 
@@ -127,13 +128,13 @@ class neural_features_kmeans_with_preprocessing():
 
         # Apply PCA-whitening with sklearn pca
         if(pca):
-            if(verbose):print("Applying PCA with %d components on features:\n"%(pca))
+            if(verbose):print("Applying PCA with %d components on features"%(pca))
             mat = PCA(n_components=pca, whiten=True)
             mat.fit(data)
             data = mat.transform(data)
 
         # L2 normalization
-        if(verbose):print("Computing L2 norm of features:\n")
+        if(verbose):print("Computing L2 norm of features")
         row_sums = np.linalg.norm(data, axis=1)
         data = data / row_sums[:, np.newaxis]
 
