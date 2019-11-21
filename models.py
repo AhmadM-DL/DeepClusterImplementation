@@ -131,7 +131,7 @@ def alexnet_cifar(sobel=False, bn=True, out=10):
 
     features = make_convolutional_layers(features_cfg, input_n_channels, bn=bn)
     classifier = make_linear_layers(classifier_cfg)
-    top_layer = make_linear_layers(top_layer_cfg)
+    top_layer = make_linear_layers(top_layer_cfg)[0]
 
     model = NetBuilder(features, classifier, top_layer, sobel)
 
@@ -148,7 +148,7 @@ def lenet_5(bn=False, out=10):
 
     features = make_convolutional_layers(features_cfg, 1, bn=bn)
     classifier = make_linear_layers(classifier_cfg)
-    top_layer = make_linear_layers(top_layer_cfg)
+    top_layer = make_linear_layers(top_layer_cfg)[0]
 
     model = NetBuilder(features, classifier, top_layer, False)
 
@@ -159,7 +159,7 @@ def remove_top_layer(model):
     :param model: The model than need its top layer to be removed
     :return: The model output size after removing top layer
     """
-    new_output_size = model.top_layer[0].weight.size()[1]
+    new_output_size = model.top_layer.weight.size()[1]
     model.top_layer = None
     model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])
     return new_output_size
@@ -169,7 +169,7 @@ def add_top_layer(model, top_layer_cfg, device):
     mlp.append(nn.ReLU(inplace=True).to(device))
     model.classifier = nn.Sequential(*mlp)
 
-    model.top_layer = make_linear_layers(top_layer_cfg)
+    model.top_layer = make_linear_layers(top_layer_cfg, weight_mean=0, weight_std=0.01 )[0]
     model.top_layer.weight.data.normal_(0, 0.01)
     model.top_layer.bias.data.zero_()
 
