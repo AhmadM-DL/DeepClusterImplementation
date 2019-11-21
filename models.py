@@ -164,13 +164,13 @@ def remove_top_layer(model):
     model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])
     return new_output_size
 
-def add_top_layer(model, top_layer_cfg, device):
+def add_top_layer(model, top_layer_cfg, device, weight_mean=0, weight_std=0.01 ):
     mlp = list(model.classifier.children())
     mlp.append(nn.ReLU(inplace=True).to(device))
     model.classifier = nn.Sequential(*mlp)
 
-    model.top_layer = make_linear_layers(top_layer_cfg, weight_mean=0, weight_std=0.01 )[0]
-    model.top_layer.weight.data.normal_(0, 0.01)
+    model.top_layer = make_linear_layers(top_layer_cfg)[0]
+    model.top_layer.weight.data.normal_(weight_mean, weight_std)
     model.top_layer.bias.data.zero_()
 
     model.top_layer.to(device)
