@@ -290,7 +290,7 @@ def deep_cluster_train(dataloader, model, loss_criterion, net_optimizer, annxed_
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if verbose and (i % 20) == 0:
+        if verbose and (i % 10) == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time: {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data: {data_time.val:.3f} ({data_time.avg:.3f})\t'
@@ -326,18 +326,13 @@ def deep_cluster_test(dataloader, model, device):
     return test_acc
 
 
-def save_checkpoint(model, optimizer, epoch, checkpoint, path, architecture="unspecified", verbose=True):
-    path = os.path.join(
-        path,
-        'checkpoints',
-        'checkpoint_' + checkpoint + '.pth.tar',
-    )
+def save_checkpoint(model, optimizer, epoch, path, architecture="unspecified", verbose=True):
 
     if verbose:
         print('Save checkpoint at: {0}'.format(path))
 
     torch.save({
-        'epoch': epoch + 1,
+        'epoch': epoch ,
         'arch': architecture,
         'state_dict': model.state_dict(),
         'optimizer': optimizer.state_dict()
