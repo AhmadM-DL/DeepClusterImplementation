@@ -85,14 +85,16 @@ class neural_features_kmeans_with_preprocessing():
         self.preprocessed_data = None
         self.inertia = None
         self.assignments = None
+        self.pca_object= None
 
     def cluster(self):
 
         end = time.time()
 
         # Preprocess features
-        self.preprocessed_data = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose,
-                                                                   random_State= self.kwargs.get("random_state", None) )
+        self.preprocessed_data, self.pca_object = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose,
+                                                                   random_State= self.kwargs.get("random_state", None),
+                                                                   return_pca_object=True)
 
         if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
@@ -115,7 +117,7 @@ class neural_features_kmeans_with_preprocessing():
         for i in range(len(self.data)):
             self.clustered_data_indices[self.assignments[i]].append(i)
 
-    def __preprocess_neural_features(self, data, pca=256, verbose=0, random_State=None):
+    def __preprocess_neural_features(self, data, pca=256, verbose=0, random_State=None, return_pca_object=False):
 
         """Preprocess an array of features.
         Args:
@@ -139,4 +141,7 @@ class neural_features_kmeans_with_preprocessing():
         row_sums = np.linalg.norm(data, axis=1)
         data = data / row_sums[:, np.newaxis]
 
-        return data
+        if(return_pca_object):
+            return data, pca
+        else:
+            return data
