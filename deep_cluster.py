@@ -76,7 +76,7 @@ class neural_features_kmeans_with_preprocessing():
 
         self.data = data
         self.n_clusters = n_clusters
-        self.sklearn_kmeans_args = kwargs
+        self.kwargs = kwargs
         self.verbose = verbose
         self.pca = pca
 
@@ -91,14 +91,15 @@ class neural_features_kmeans_with_preprocessing():
         end = time.time()
 
         # Preprocess features
-        self.preprocessed_data = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose)
+        self.preprocessed_data = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose,
+                                                                   random_State= self.kwargs.get("random_state", None) )
 
         if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
 
-        kmeans_object = KMeans(self.n_clusters, max_iter=self.sklearn_kmeans_args.get("max_iter", 20),
-                               n_init=self.sklearn_kmeans_args.get("n_init", 1),
-                               verbose=1)
+        kmeans_object = KMeans(self.n_clusters, max_iter=self.kwargs.get("max_iter", 20),
+                               n_init=self.kwargs.get("n_init", 1),
+                               verbose=1, random_state=self.kwargs.get("random_state", None))
 
         kmeans_object.fit_predict(self.preprocessed_data)
 
@@ -114,7 +115,7 @@ class neural_features_kmeans_with_preprocessing():
         for i in range(len(self.data)):
             self.clustered_data_indices[self.assignments[i]].append(i)
 
-    def __preprocess_neural_features(self, data, pca=256, verbose=0):
+    def __preprocess_neural_features(self, data, pca=256, verbose=0, random_State=None):
 
         """Preprocess an array of features.
         Args:
@@ -129,7 +130,7 @@ class neural_features_kmeans_with_preprocessing():
         # Apply PCA-whitening with sklearn pca
         if(pca):
             if(verbose):print("Applying PCA with %d components on features"%(pca))
-            mat = PCA(n_components=pca, whiten=True)
+            mat = PCA(n_components=pca, whiten=True, random_state= random_State)
             mat.fit(data)
             data = mat.transform(data)
 
