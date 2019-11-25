@@ -94,7 +94,7 @@ class NMIMeter(object):
 
     def load_from_csv(self, path):
         nmis_df = pd.read_csv(path, index_col=0)
-        self.nmi_array = df['NMI'].values
+        self.nmi_array = nmis_df['NMI'].values
 
     def avg(self):
         return np.average(self.nmi_array)
