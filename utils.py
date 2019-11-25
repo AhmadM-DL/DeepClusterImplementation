@@ -17,6 +17,8 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.patches as mpatches
 from PIL import Image
 from PIL import ImageFile
+from sklearn.metrics import normalized_mutual_info_score
+import pandas as pd
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -71,6 +73,28 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+class NMIMeter(object):
+    """ Computes and store the NMI values """
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.nmi_array=[]
+
+    def update(self, ground_truth, predictions):
+        nmi = normalized_mutual_info_score(ground_truth, predictions)
+        self.nmi_array.append(nmi)
+
+    def store_as_csv(self, path):
+        nmi_rows = [ {'Epoch': index, 'NMI': nmi} for (index,nmi) in self.nmi_array]
+        nmis_df = pd.DataFrame(nmi_rows)
+        nmis_df.to_csv(path)
+
+    def load_from_csv(self, path):
+        nmis_df = pd.read_csv(path, index_col=0)
+        self.nmi_array = df['NMI'].values
 
 
 def learning_rate_decay(optimizer, t, lr_0):
