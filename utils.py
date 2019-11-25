@@ -88,13 +88,16 @@ class NMIMeter(object):
         self.nmi_array.append(nmi)
 
     def store_as_csv(self, path):
-        nmi_rows = [ {'Epoch': index, 'NMI': nmi} for (index,nmi) in self.nmi_array]
+        nmi_rows = [ {'Epoch': index, 'NMI': nmi} for (index,nmi) in enumerate(self.nmi_array)]
         nmis_df = pd.DataFrame(nmi_rows)
         nmis_df.to_csv(path)
 
     def load_from_csv(self, path):
         nmis_df = pd.read_csv(path, index_col=0)
         self.nmi_array = df['NMI'].values
+
+    def avg(self):
+        return np.average(self.nmi_array)
 
 
 def learning_rate_decay(optimizer, t, lr_0):
