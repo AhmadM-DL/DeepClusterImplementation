@@ -139,7 +139,7 @@ def alexnet_cifar(sobel=False, bn=True, out=10):
 
 
 def lenet_5(bn=False, out=10):
-    features_cfg = [(6, 5, 1, 0), 'M', (16, 5, 1, 0), 'M']
+    features_cfg = [(6, 5, 1, 0), ('M', 2, None), (16, 5, 1, 0), ('M', 2, None)]
 
     classifier_cfg = [('L', 400, 120), ('R', True),
                       ('L', 120, 84), ('R', True)]
