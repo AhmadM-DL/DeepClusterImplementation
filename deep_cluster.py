@@ -161,7 +161,7 @@ def cross_2_models_clustering_output(model_1_clusters, model_2_clusters, take_to
             sizes.append(len(cr))
 
     sorted_indices_by_size = np.argsort(sizes)[::-1] ## descending order
-    results = results[sorted_indices_by_size]
+    results = np.array(results)[sorted_indices_by_size]
 
     if(take_top):
         return results[:take_top]
