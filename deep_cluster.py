@@ -33,9 +33,9 @@ class labels_reassigned_dataset(data.Dataset):
     def make_dataset(self, image_indexes, pseudolabels, dataset):
 
         images = []
-        for idx in image_indexes:
+        for i,idx in enumerate(image_indexes):
             path = dataset.imgs[idx][0]
-            images.append((path, pseudolabels[idx]))
+            images.append((path, pseudolabels[i]))
         return images
 
     def __getitem__(self, index):
