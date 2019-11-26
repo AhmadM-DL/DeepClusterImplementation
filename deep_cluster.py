@@ -69,7 +69,7 @@ def clustered_data_indices_to_list(clustered_data_indices, reindex=False):
 
     if(reindex):
         reindexed_clustered_data_indices = [ [] for i in range( len( clustered_data_indices ) ) ]
-        for i in range(image_indexes):
+        for i in range(len(image_indexes)):
             reindexed_clustered_data_indices[pseudolabels[i]]=i
 
     if(not reindex):
