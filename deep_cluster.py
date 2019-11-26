@@ -200,7 +200,7 @@ class ClusteringTracker(object):
             flat_prev_clusters = set([item for cluster in prev_clusters for item in cluster])
             flat_curr_clusters = set([item for cluster in curr_clusters for item in cluster])
 
-            new_data_indices = np.setdiff1d(flat_curr_clusters, flat_prev_clusters)
+            new_data_indices = flat_curr_clusters - flat_prev_clusters
 
             new_data_sizes.append(len(new_data_indices))
 
