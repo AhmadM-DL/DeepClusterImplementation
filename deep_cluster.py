@@ -192,7 +192,7 @@ class ClusteringTracker(object):
 
         new_data_sizes = []
         
-        for i in len(1,self.clustering_log):
+        for i in range( 1,  len(self.clustering_log) ):
 
             prev_clusters = self.clustering_log[i-1]
             curr_clusters = self.clustering_log[i]
