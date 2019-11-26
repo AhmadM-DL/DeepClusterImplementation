@@ -55,7 +55,7 @@ class LabelsReassignedDataset(data.Dataset):
         return len(self.imgs)
 
 
-def clustered_data_indices_to_list(clustered_data_indices):
+def clustered_data_indices_to_list(clustered_data_indices, reindex=False):
     pseudolabels = []
     image_indexes = []
 
@@ -64,10 +64,18 @@ def clustered_data_indices_to_list(clustered_data_indices):
         pseudolabels.extend([cluster] * len(images))
 
     indexes = np.argsort(image_indexes)
-
     pseudolabels = np.asarray(pseudolabels)[indexes]
+    image_indexes = np.sort(image_indexes)
 
-    return [np.sort(image_indexes), pseudolabels]
+    if(reindex):
+        reindexed_clustered_data_indices = [ [] for i in range( len( clustered_data_indices ) ) ]
+        for i in range(image_indexes):
+            reindexed_clustered_data_indices[pseudolabels[i]]=i
+
+    if(not reindex):
+        return [image_indexes, pseudolabels]
+    else:
+        return [image_indexes, pseudolabels], reindexed_clustered_data_indices
 
 
 class NeuralFeaturesKmeansWithPreprocessing():
