@@ -145,3 +145,27 @@ class neural_features_kmeans_with_preprocessing():
             return data, pca
         else:
             return data
+
+def cross_2_models_clustering_output(model_1_clusters, model_2_clusters, take_top=None):
+
+    results = []
+    sizes = []
+
+    model_1_clusters_as_sets = np.array([set(x) for x in model_1_clusters])
+    model_2_clusters_as_sets = np.array([set(x) for x in model_2_clusters])
+
+    for c1 in model_1_clusters_as_sets:
+        for c2 in model_2_clusters_as_sets:
+            cr = c1 & c2
+            results.append(cr)
+            sizes.append(len(cr))
+
+    sorted_indices_by_size = np.argsort(sizes)[::-1] ## descending order
+    results = results[sorted_indices_by_size]
+
+    if(take_top):
+        return results[:take_top]
+    else:
+        return results[:len(model_1_clusters)]
+
+
