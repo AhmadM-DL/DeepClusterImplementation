@@ -14,7 +14,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 
 
-class labels_reassigned_dataset(data.Dataset):
+class LabelsReassignedDataset(data.Dataset):
     """A dataset where the new images labels are given in argument.
     Args:
         image_indexes (list): list of data indexes
@@ -70,7 +70,7 @@ def clustered_data_indices_to_list(clustered_data_indices):
     return [np.sort(image_indexes), pseudolabels]
 
 
-class neural_features_kmeans_with_preprocessing():
+class NeuralFeaturesKmeansWithPreprocessing():
 
     def __init__(self, data, n_clusters, pca=0, verbose=0, **kwargs):
 
@@ -168,5 +168,52 @@ def cross_2_models_clustering_output(model_1_clusters, model_2_clusters, take_to
         return results[:take_top]
     else:
         return results[:len(model_1_clusters)]
+
+
+class ClusteringTracker(object):
+
+    def __init__(self):
+        self.clustering_log = []
+        self.epochs= []
+
+    def update(self, epoch, clustered_data_indices):
+        self.clustering_log.append(clustered_data_indices)
+        self.epochs.append(epoch)
+
+    def size_new_data_btw_epochs(self):
+
+        new_data_sizes = []
+        
+        for i in len(1,self.clustering_log):
+
+            prev_clusters = self.clustering_log[i-1]
+            curr_clusters = self.clustering_log[i]
+
+            flat_prev_clusters = set([item for cluster in prev_clusters for item in cluster])
+            flat_curr_clusters = set([item for cluster in curr_clusters for item in cluster])
+
+            new_data_indices = np.setdiff1d(flat_curr_clusters, flat_prev_clusters)
+
+            new_data_sizes.append(len(new_data_indices))
+
+        return new_data_sizes
+
+    def cluster_evolution(self, start_epoch, target_cluster_index):
+
+        results = []
+
+        epoch_index = self.epochs.index(start_epoch)
+        target_cluster = set(self.clustering_log[epoch_index][target_cluster_index])
+        
+        for i in (epoch_index+1, len(self.clustering_log)):
+            for k,cluster in enumerate(self.clustering_log[i]):
+                results.append(
+                    (i, k, list( set(cluster) & target_cluster ) )
+                    )
+
+        return results
+
+
+
 
 
