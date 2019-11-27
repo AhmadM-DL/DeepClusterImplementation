@@ -50,11 +50,15 @@ class UnifLabelSampler(Sampler):
         np.random.shuffle(res)
         return res[:self.N].astype('int')
 
-    def __iter__(self):
-        return iter(self.indexes)
-
-    def __len__(self):
-        return self.N
+# class MaxLabelSampler(Sampler):
+#
+#     def __init__(self, ):
+#
+#     def __iter__(self):
+#         return iter(self.indexes)
+#
+#     def __len__(self):
+#         return self.N
 
 
 class AverageMeter(object):

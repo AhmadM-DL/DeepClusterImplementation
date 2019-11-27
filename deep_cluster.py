@@ -54,7 +54,6 @@ class LabelsReassignedDataset(data.Dataset):
     def __len__(self):
         return len(self.imgs)
 
-
 def clustered_data_indices_to_list(clustered_data_indices, reindex=False):
     pseudolabels = []
     image_indexes = []
@@ -213,7 +212,7 @@ class ClusteringTracker(object):
         epoch_index = self.epochs.index(start_epoch)
         target_cluster = set(self.clustering_log[epoch_index][target_cluster_index])
         
-        for i in (epoch_index+1, len(self.clustering_log)):
+        for i in range(epoch_index+1, len(self.clustering_log)):
             for k,cluster in enumerate(self.clustering_log[i]):
                 results.append(
                     (i, k, list( set(cluster) & target_cluster ) )
