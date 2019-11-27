@@ -211,12 +211,12 @@ class ClusteringTracker(object):
 
         epoch_index = self.epochs.index(start_epoch)
         target_cluster = set(self.clustering_log[epoch_index][target_cluster_index])
-        
-        for i in range(epoch_index+1, len(self.clustering_log)):
-            for k,cluster in enumerate(self.clustering_log[i]):
-                results.append(
-                    (i, k, list( set(cluster) & target_cluster ) )
-                    )
+
+        for i in range(epoch_index + 1, len(self.clustering_log)):
+            for k, cluster in enumerate(self.clustering_log[i]):
+                intersection = list(set(cluster) & target_cluster)
+                if (len(intersection) > 0):
+                    results.append((i, k, intersection))
 
         return results
 
