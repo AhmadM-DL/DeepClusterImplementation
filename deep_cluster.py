@@ -234,7 +234,7 @@ class ClusteringTracker(object):
         pos = nx.spring_layout(G)
 
         weights = nx.get_edge_attributes(G, 'weight')
-        weights = {key: (value / size_target_cluster*100) for (key, value) in weights.items()}
+        weights = {key: (value // size_target_cluster*100) for (key, value) in weights.items()}
 
         nx.draw(G, pos, edge_color='black',
                 width=1, linewidths=1, node_size=500,
