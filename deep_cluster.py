@@ -241,7 +241,7 @@ class ClusteringTracker(object):
                 node_color='pink', alpha=0.9,
                 labels={node: node for node in G.nodes()})
 
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=weights / len(weights), font_color='red')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=weights, font_color='red')
         plt.axis('off')
         plt.show()
         return
