@@ -223,7 +223,7 @@ class ClusteringTracker(object):
 
         return results
 
-    def plot_cluster_evolution(self, cluster_evolution, epoch, target_cluster):
+    def plot_cluster_evolution(self, cluster_evolution, epoch, target_cluster, weight_in_percent=True):
 
         cluster_evolution = [(target_cluster, k, len(indices)) for (i, k, indices) in cluster_evolution if i == epoch]
         size_target_cluster = np.sum([w for (_,_,w) in cluster_evolution])
@@ -234,7 +234,9 @@ class ClusteringTracker(object):
         pos = nx.spring_layout(G)
 
         weights = nx.get_edge_attributes(G, 'weight')
-        weights = {key: int(value / size_target_cluster*100) for (key, value) in weights.items()}
+
+        if(weight_in_percent):
+            weights = {key: int(value / size_target_cluster*100) for (key, value) in weights.items()}
 
         nx.draw(G, pos, edge_color='black',
                 width=1, linewidths=1, node_size=500,
