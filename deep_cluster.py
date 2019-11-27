@@ -12,6 +12,9 @@ import utils
 import torch.utils.data as data
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+import networkx as nx
+import matplotlib.pyplot as plt
+
 
 
 class LabelsReassignedDataset(data.Dataset):
@@ -219,6 +222,21 @@ class ClusteringTracker(object):
                     results.append((i, k, intersection))
 
         return results
+
+    def plot_cluster_evolution(self, cluster_evolution, epoch, target_cluster):
+
+        cluster_evolution = [(target_cluster, k, len(indices)) for (i,k,indices) in cluster_evolution if i==epoch]
+
+        G = nx.DiGraph()
+        G.add_weighted_edges_from(cluster_evolution)
+        nx.draw(G)
+
+        return
+
+
+
+
+
 
 
 
