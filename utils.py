@@ -57,6 +57,36 @@ class UnifLabelSampler(Sampler):
         return self.N
 
 
+class MaxLabelSampler(Sampler):
+
+    def __init__(self, images_lists, dataset_multiplier=1):
+        self.images_lists = images_lists
+        self.indexes = self.generate_indexes_epoch()
+        self.dataset_multiplier = dataset_multiplier
+
+    def generate_indexes_epoch(self):
+
+        pseudolabels_sizes = [len(pseudolabel_set) for pseudolabel_set in self.images_lists]
+        max_pseudolabel_size = np.max(pseudolabels_sizes)
+        res = np.zeros(self.dataset_multiplier * max_pseudolabel_size * len(self.images_lists))
+
+        for i in range(len(self.images_lists)):
+            indexes = np.random.choice(
+                self.images_lists[i],
+                max_pseudolabel_size,
+                replace=(len(self.images_lists[i]) <= max_pseudolabel_size)
+            )
+            res[i * max_pseudolabel_size: (i + 1) * max_pseudolabel_size] = indexes
+
+        np.random.shuffle(res)
+        return res[:self.N].astype('int')
+
+    def __iter__(self):
+        return iter(self.indexes)
+
+    def __len__(self):
+        return self.N
+
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):

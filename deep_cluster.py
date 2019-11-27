@@ -225,12 +225,25 @@ class ClusteringTracker(object):
 
     def plot_cluster_evolution(self, cluster_evolution, epoch, target_cluster):
 
-        cluster_evolution = [(target_cluster, k, len(indices)) for (i,k,indices) in cluster_evolution if i==epoch]
+        cluster_evolution = [(target_cluster, k, len(indices)) for (i, k, indices) in cluster_evolution if i == epoch]
+        size_target_cluster = np.sum([w for (_,_,w) in cluster_evolution])
 
         G = nx.DiGraph()
         G.add_weighted_edges_from(cluster_evolution)
-        nx.draw(G)
 
+        pos = nx.spring_layout(G)
+
+        weights = nx.get_edge_attributes(G, 'weight')
+        weights = {key: (value / size_target_cluster*100) for (key, value) in weights.items()}
+
+        nx.draw(G, pos, edge_color='black',
+                width=1, linewidths=1, node_size=500,
+                node_color='pink', alpha=0.9,
+                labels={node: node for node in G.nodes()})
+
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=weights / len(weights), font_color='red')
+        plt.axis('off')
+        plt.show()
         return
 
 
