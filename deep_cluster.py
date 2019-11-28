@@ -223,9 +223,8 @@ class ClusteringTracker(object):
 
         return results
 
-    def plot_cluster_evolution(self, start_epoch, final_epoch, target_cluster_index, weight_in_percent=True):
+    def plot_cluster_evolution(self, cluster_evolution, final_epoch, target_cluster_index, weight_in_percent=True):
 
-        cluster_evolution = self.cluster_evolution(start_epoch,target_cluster_index)
         cluster_evolution = [(target_cluster_index, k, len(indices)) for (i, k, indices) in cluster_evolution if i == final_epoch]
 
         size_target_cluster = np.sum([w for (_,_,w) in cluster_evolution])
