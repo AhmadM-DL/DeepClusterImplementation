@@ -261,7 +261,7 @@ class ClusteringTracker(object):
 
         N = len(images_indices)
         fig = plt.figure(figsize=figsize)
-        images_to_plot_paths = images_paths[images_indices]
+        images_to_plot_paths = np.array(images_paths)[images_indices]
 
         for i, image_path in enumerate(images_to_plot_paths):
             plt.subplot(N // 10 + 1, 10, i + 1)
