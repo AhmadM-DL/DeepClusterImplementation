@@ -266,7 +266,7 @@ class ClusteringTracker(object):
     def plot_cluster_images(self, epoch, cluster_index, images_paths, percent_of_images_to_plot=100):
 
         cluster_images_indices = [ image_index for image_index in self.clustering_log[epoch][cluster_index] ]
-        number_images_to_plot = len(cluster_images_indices)*percent_of_images_to_plot/100
+        number_images_to_plot = len(cluster_images_indices)*percent_of_images_to_plot//100
         images_to_plot_indices = np.random.choice(cluster_images_indices,number_images_to_plot, replace=False)
         self.plot_set_of_images(images_to_plot_indices, images_paths)
 
