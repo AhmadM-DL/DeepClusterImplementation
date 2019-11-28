@@ -61,8 +61,8 @@ class MaxLabelSampler(Sampler):
 
     def __init__(self, images_lists, dataset_multiplier=1):
         self.images_lists = images_lists
-        self.indexes = self.generate_indexes_epoch()
         self.dataset_multiplier = dataset_multiplier
+        self.indexes = self.generate_indexes_epoch()
 
     def generate_indexes_epoch(self):
 
@@ -79,7 +79,7 @@ class MaxLabelSampler(Sampler):
             res[i * max_pseudolabel_size: (i + 1) * max_pseudolabel_size] = indexes
 
         np.random.shuffle(res)
-        return res[:self.N].astype('int')
+        return res.astype('int')
 
     def __iter__(self):
         return iter(self.indexes)
