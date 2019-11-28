@@ -22,62 +22,39 @@ import pandas as pd
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-
 class UnifLabelSampler(Sampler):
-    """Samples elements uniformely accross pseudolabels.
-        Args:
-            N (int): size of returned iterator.
-            images_lists: dict of key (target), value (list of data with this target)
-    """
 
-    def __init__(self, N, images_lists):
-        self.N = N
-        self.images_lists = images_lists
-        self.indexes = self.generate_indexes_epoch()
-
-    def generate_indexes_epoch(self):
-        size_per_pseudolabel = int(self.N / len(self.images_lists)) + 1
-        res = np.zeros(size_per_pseudolabel * len(self.images_lists))
-
-        for i in range(len(self.images_lists)):
-            indexes = np.random.choice(
-                self.images_lists[i],
-                size_per_pseudolabel,
-                replace=(len(self.images_lists[i]) <= size_per_pseudolabel)
-            )
-            res[i * size_per_pseudolabel: (i + 1) * size_per_pseudolabel] = indexes
-
-        np.random.shuffle(res)
-        return res[:self.N].astype('int')
-
-    def __iter__(self):
-        return iter(self.indexes)
-
-    def __len__(self):
-        return self.N
-
-
-class MaxLabelSampler(Sampler):
-
-    def __init__(self, images_lists, dataset_multiplier=1):
+    def __init__(self, images_lists, size_per_pseudolabel="average", dataset_multiplier=1):
         self.images_lists = images_lists
         self.dataset_multiplier = dataset_multiplier
+        self.size_per_pseudolabel = size_per_pseudolabel
         self.indexes = self.generate_indexes_epoch()
 
     def generate_indexes_epoch(self):
 
         pseudolabels_sizes = [len(pseudolabel_set) for pseudolabel_set in self.images_lists]
-        max_pseudolabel_size = np.max(pseudolabels_sizes)
-        self.N = self.dataset_multiplier * max_pseudolabel_size * len(self.images_lists)
+
+        if(self.size_per_pseudolabel=="average"):
+            pseudolabel_size = np.sum(pseudolabels_sizes)//len(self.images_lists)+1
+        else:
+            if(self.size_per_pseudolabel=="max"):
+                pseudolabel_size = np.max(pseudolabels_sizes)
+            else:
+                if(self.size_per_pseudolabel=="min"):
+                    pseudolabel_size = np.min(pseudolabels_sizes)
+                else:
+                    print("UnifLabelSampler:Error: size_per_pseudolabel should be 'average', 'max', or 'min' ")
+
+        self.N = self.dataset_multiplier * pseudolabel_size * len(self.images_lists)
         res = np.zeros(self.N)
 
         for i in range(len(self.images_lists)):
             indexes = np.random.choice(
                 self.images_lists[i],
-                max_pseudolabel_size,
-                replace=(len(self.images_lists[i]) <= max_pseudolabel_size)
+                pseudolabel_size,
+                replace=(len(self.images_lists[i]) <= pseudolabel_size)
             )
-            res[i * max_pseudolabel_size: (i + 1) * max_pseudolabel_size] = indexes
+            res[i * pseudolabel_size: (i + 1) * pseudolabel_size] = indexes
 
         np.random.shuffle(res)
         return res.astype('int')
