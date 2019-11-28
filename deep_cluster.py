@@ -14,6 +14,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import networkx as nx
 import matplotlib.pyplot as plt
+from scipy.stats import entropy
 from PIL import Image
 
 
@@ -208,6 +209,19 @@ class ClusteringTracker(object):
 
         return new_data_sizes
 
+    def epochs_avg_entropy(self, ground_truth):
+        avg_entropies = []
+
+        for i,clusters in enumerate(self.clustering_log):
+            entropies = []
+            for j,cluster in enumerate(self.clustering_log[i]):
+                images_original_classes = [ground_truth[image_index] for image_index in cluster]
+                values, counts = np.unique(images_original_classes, return_counts=True)
+                entropies.append(entropy(counts))
+            avg_entropies.append( np.average(entropies) )
+
+        return avg_entropies
+
     def cluster_evolution(self, start_epoch, target_cluster_index):
 
         results = []
@@ -269,7 +283,22 @@ class ClusteringTracker(object):
             plt.axis("off")
             plt.imshow(im)
 
+    def plot_clusters_histograms(self, epoch, ground_truth):
+        fig = plt.figure(figsize=(20, 30))
 
+        for (n, cluster) in enumerate(self.clustering_log[epoch]):
+
+            images_original_classes = [ground_truth[image_index] for image_index in cluster]
+            plt.subplot(len(self.clustering_log[epoch]) // 10 + 1, 10, n + 1)
+            plt.xticks(rotation='horizontal')
+            plt.yticks([])
+
+            values, counts = np.unique(images_original_classes, return_counts=True)
+            cluster_entropy =  entropy(counts)
+            max_count_target = values[np.argmax(counts)]
+
+            plt.ylabel("C %d E %f " % (n, cluster_entropy))
+            plt.hist(np.array(images_original_classes).astype(str))
 
 
 
