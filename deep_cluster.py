@@ -14,7 +14,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from PIL import Image
 
 
 class LabelsReassignedDataset(data.Dataset):
@@ -223,9 +223,9 @@ class ClusteringTracker(object):
 
         return results
 
-    def plot_cluster_evolution(self, cluster_evolution, final_epoch, target_cluster_index, weight_in_percent=True):
+    def plot_cluster_evolution(self, cluster_evolution, final_epoch, weight_in_percent=True):
 
-        cluster_evolution = [(target_cluster_index, k, len(indices)) for (i, k, indices) in cluster_evolution if i == final_epoch]
+        cluster_evolution = [("C", k, len(indices)) for (i, k, indices) in cluster_evolution if i == final_epoch]
 
         size_target_cluster = np.sum([w for (_,_,w) in cluster_evolution])
 
@@ -249,7 +249,25 @@ class ClusteringTracker(object):
         plt.show()
         return
 
-    #def plot_cluster(self, epoch, cluster_index):
+    def plot_cluster_images(self, epoch, cluster_index, images_paths, percent_of_images_to_plot=100):
+
+        cluster_images_indices = [ image_index for image_index in self.clustering_log[epoch][cluster_index] ]
+        number_images_to_plot = len(cluster_images_indices)*percent_of_images_to_plot/100
+        images_to_plot_indices = np.random.choice(cluster_images_indices,number_images_to_plot, replace=False)
+        self.plot_set_of_images(images_to_plot_indices, images_paths)
+
+
+    def plot_set_of_images(self, images_indices, images_paths, figsize=(20,20)):
+
+        N = len(images_indices)
+        fig = plt.figure(figsize=figsize)
+        images_to_plot_paths = images_paths[images_indices]
+
+        for i, image_path in enumerate(images_to_plot_paths):
+            plt.subplot(N // 10 + 1, 10, i + 1)
+            im = Image.open(image_path)
+            plt.axis("off")
+            plt.imshow(im)
 
 
 

@@ -35,7 +35,7 @@ class UnifLabelSampler(Sampler):
         pseudolabels_sizes = [len(pseudolabel_set) for pseudolabel_set in self.images_lists]
 
         if(self.size_per_pseudolabel=="average"):
-            pseudolabel_size = np.sum(pseudolabels_sizes)//len(self.images_lists)+1
+            pseudolabel_size = int( np.average(pseudolabels_sizes) )+1
         else:
             if(self.size_per_pseudolabel=="max"):
                 pseudolabel_size = np.max(pseudolabels_sizes)
