@@ -68,7 +68,8 @@ class MaxLabelSampler(Sampler):
 
         pseudolabels_sizes = [len(pseudolabel_set) for pseudolabel_set in self.images_lists]
         max_pseudolabel_size = np.max(pseudolabels_sizes)
-        res = np.zeros(self.dataset_multiplier * max_pseudolabel_size * len(self.images_lists))
+        self.N = self.dataset_multiplier * max_pseudolabel_size * len(self.images_lists)
+        res = np.zeros(self.N)
 
         for i in range(len(self.images_lists)):
             indexes = np.random.choice(
