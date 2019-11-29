@@ -232,14 +232,6 @@ def compute_network_output(dataloader, model, device, batch_size, data_size, ver
     if (return_targets):
         return outputs, targets
 
-def compute_nmi(dataloader, model, device, batch_size, data_size, verbose=False):
-
-    outputs, targets = compute_network_output(dataloader, model, device, batch_size, data_size,
-                                              verbose=verbose, return_inputs=False, return_targets=True)
-    predicted = torch.argmax(outputs, 1)
-
-    return normalized_mutual_info_score(labels_true= targets, labels_pred= predicted)
-
 def deep_cluster_train(dataloader, model, loss_criterion, net_optimizer, annxed_layers_optimizer, epoch, device,
                        return_inputs_outputs_targets_losses=False, verbose=True, checkpoint=0):
     """Training of the CNN.
