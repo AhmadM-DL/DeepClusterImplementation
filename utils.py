@@ -308,7 +308,9 @@ def plot_feature_sapce_using_tsne( features, images, labels, percent_of_data_to_
 
     tsne = TSNE(n_components=kwargs.get("n_components",2),
                 n_iter=kwargs.get("n_iter", 1000),
-                perplexity=kwargs.get("perplexity",40))
+                perplexity=kwargs.get("perplexity",40),
+                verbose= kwargs.get("verbose",0)
+                )
 
     number_of_data_to_use = len(features)*percent_of_data_to_plot//100
     data_to_plot_indices = np.random.choice( len(features), size=number_of_data_to_use )
@@ -318,6 +320,7 @@ def plot_feature_sapce_using_tsne( features, images, labels, percent_of_data_to_
     plot_t_sne_embedding_2d(tsne_results=tsne_components,
                             images= np.array(images)[data_to_plot_indices],
                             clusters = np.array(labels)[data_to_plot_indices],
-                            n_clusters = np.unique(np.array(labels)[data_to_plot_indices]))
+                            n_clusters = len(np.unique( np.array(labels)[data_to_plot_indices]) )
+                                             )
     
     
