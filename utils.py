@@ -258,7 +258,7 @@ def plot_t_sne_embedding_2d(tsne_results, images, clusters=None, n_clusters=None
 
         fig = plt.figure(figsize=kwargs.get("figsize",(15,15)))
         ax = fig.add_subplot(111)
-        ax.set_title(kwargs.get("title"),"t_SNE results of 2 components")
+        ax.set_title(kwargs.get("title","t_SNE results of 2 components"))
 
         xmin = kwargs.get("xmin",None)
         xmax = kwargs.get("xmax", None)
