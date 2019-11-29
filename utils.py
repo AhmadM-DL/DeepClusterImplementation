@@ -6,12 +6,9 @@ Created on Sat Nov 16 09:37:58 2019
 """
 import numpy as np 
 from torch.utils.data.sampler import Sampler
-import pickle
-import os
-import copy
+import pickle, os, copy, hashlib
 import torch
 from torch.optim import SGD
-import hashlib
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.patches as mpatches
@@ -19,6 +16,8 @@ from PIL import Image
 from PIL import ImageFile
 from sklearn.metrics import normalized_mutual_info_score
 import pandas as pd
+from sklearn.manifold import TSNE
+
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -246,7 +245,7 @@ def generate_random_colors(n):
         colors[i] =  (r, g, b,1.0)
     return colors
 
-def plot_t_sne_embedding_2d(tsne_results, images, clusters, n_clusters, figSize=(15,15), title="t_SNE results of 2 components", xmin=None, xmax=None, ymin=None, ymax=None):
+def plot_t_sne_embedding_2d(tsne_results, images, clusters=None, n_clusters=None, **kwargs ):
 
     if(tsne_results.shape[1]!=2):
         print("The provided t_sne results are of "+str(tsne_results.shape[1])+
@@ -254,10 +253,17 @@ def plot_t_sne_embedding_2d(tsne_results, images, clusters, n_clusters, figSize=
         return
 
     else:
-        colors = generate_random_colors(n_clusters)
-        fig = plt.figure(figsize=figSize)
+        if(n_clusters):
+            colors = generate_random_colors(n_clusters)
+
+        fig = plt.figure(figsize=kwargs.get("figsize",(15,15)))
         ax = fig.add_subplot(111)
-        ax.set_title(title)
+        ax.set_title(kwargs.get("title"),"t_SNE results of 2 components")
+
+        xmin = kwargs.get("xmin",None)
+        xmax = kwargs.get("xmax", None)
+        ymin = kwargs.get("ymin", None)
+        ymax = kwargs.get("ymax", None)
 
         if( (xmin is not None) and (xmax is not None) and (ymin is not None) and (ymax is not None)  ):
           plt.xlim(xmin, xmax)
@@ -271,7 +277,12 @@ def plot_t_sne_embedding_2d(tsne_results, images, clusters, n_clusters, figSize=
         for i in np.arange(0, len(tsne_results)):
             image_data = images[i]
             im = OffsetImage(image_data, cmap='gray', zoom=0.8)
-            ab = AnnotationBbox(im, (tsne_results[i,0],tsne_results[i,1]), frameon=True, bboxprops= dict( edgecolor= colors[clusters[i]], facecolor = colors[clusters[i]] ) )
+
+            if(n_clusters):
+                ab = AnnotationBbox(im, (tsne_results[i,0],tsne_results[i,1]), frameon=True, bboxprops= dict( edgecolor= colors[clusters[i]], facecolor = colors[clusters[i]] ) )
+            else:
+                ab = AnnotationBbox(im, (tsne_results[i,0],tsne_results[i,1]), frameon=False )
+
             ax.add_artist(ab)
             
         lp = lambda i: mpatches.Patch(color=colors[i], label=str(i))
@@ -292,5 +303,21 @@ def pil_loader(path):
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img.convert('RGB')
+
+def plot_feature_sapce_using_tsne(self, features, images, labels, percent_of_data_to_plot=10, **kwargs):
+
+    tsne = TSNE(n_components=kwargs.get("n_components",2),
+                n_iter=kwargs.get("n_iter", 1000),
+                perplexity=kwargs.get("perplexity",40))
+
+    number_of_data_to_use = len(features)*percent_of_data_to_plot/100
+    data_to_plot_indices = np.random.random.sample(range(0,len(features)), number_of_data_to_use)
+
+    tsne_components = tsne.fit_transform(np.array(features)[data_to_plot_indices])
+
+    plot_t_sne_embedding_2d(tsne_results=tsne_components,
+                            images= np.array(images)[data_to_plot_indices],
+                            clusters = np.array(labels)[data_to_plot_indices],
+                            n_clusters = np.unique(np.array(labels)[data_to_plot_indices]))
     
     
