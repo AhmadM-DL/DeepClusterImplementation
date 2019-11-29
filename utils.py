@@ -311,7 +311,7 @@ def plot_feature_sapce_using_tsne( features, images, labels, percent_of_data_to_
                 perplexity=kwargs.get("perplexity",40))
 
     number_of_data_to_use = len(features)*percent_of_data_to_plot/100
-    data_to_plot_indices = np.random.random.sample(range(0,len(features)), number_of_data_to_use)
+    data_to_plot_indices = np.random.sample(range(0,len(features)), number_of_data_to_use)
 
     tsne_components = tsne.fit_transform(np.array(features)[data_to_plot_indices])
 
