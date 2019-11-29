@@ -304,7 +304,7 @@ def pil_loader(path):
         img = Image.open(f)
         return img.convert('RGB')
 
-def plot_feature_sapce_using_tsne(self, features, images, labels, percent_of_data_to_plot=10, **kwargs):
+def plot_feature_sapce_using_tsne( features, images, labels, percent_of_data_to_plot=10, **kwargs):
 
     tsne = TSNE(n_components=kwargs.get("n_components",2),
                 n_iter=kwargs.get("n_iter", 1000),
