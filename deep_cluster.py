@@ -185,6 +185,7 @@ class ClusteringTracker(object):
 
     def __init__(self):
         self.clustering_log = []
+        self.merged_clustering_log = []
         self.epochs= []
 
     def update(self, epoch, clustered_data_indices):
@@ -295,10 +296,37 @@ class ClusteringTracker(object):
 
             values, counts = np.unique(images_original_classes, return_counts=True)
             cluster_entropy =  entropy(counts)
-            max_count_target = values[np.argmax(counts)]
+            #max_count_target = values[np.argmax(counts)]
 
             plt.ylabel("C %d E %f " % (n, cluster_entropy))
             plt.hist(np.array(images_original_classes).astype(str))
+
+    def merge_clustering_log(self, ground_truth, merging_entropy_threshold=0):
+        self.merged_clustering_log = []
+        for (n, epoch_clustering_log) in enumerate(self.clustering_log):
+
+            clusters_to_merge_indices = [[] for i in range(len(np.unique(ground_truth)))]
+
+            for (k,cluster) in enumerate(epoch_clustering_log):
+                images_original_classes = [ground_truth[image_index] for image_index in cluster]
+                values, counts = np.unique(images_original_classes, return_counts=True)
+                cluster_entropy = entropy(counts)
+                max_count_target = values[np.argmax(counts)]
+
+                if(cluster_entropy<=merging_entropy_threshold):
+                    clusters_to_merge_indices[max_count_target].extend([k])
+
+            clusters_to_merge_indices = set(np.concatenate(clusters_to_merge_indices))
+            clusters_to_persist_indices = set(range(len(epoch_clustering_log))) - clusters_to_merge_indices
+
+            epoch_merged_clustering_log = [ epoch_clustering_log[i] for i in clusters_to_persist_indices]
+
+            for group_to_cluster in clusters_to_merge_indices:
+                new_cluster = []
+                for cluster_index in group_to_cluster:
+                    new_cluster.extend(epoch_clustering_log[cluster_index])
+                epoch_merged_clustering_log.append(new_cluster)
+
 
 
 
