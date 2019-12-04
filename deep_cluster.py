@@ -316,8 +316,7 @@ class ClusteringTracker(object):
                 if(cluster_entropy<=merging_entropy_threshold):
                     clusters_to_merge_indices[max_count_target].extend([k])
 
-            clusters_to_merge_indices = set(np.concatenate(clusters_to_merge_indices))
-            clusters_to_persist_indices = set(range(len(epoch_clustering_log))) - clusters_to_merge_indices
+            clusters_to_persist_indices = set(range(len(epoch_clustering_log))) - set(np.concatenate(clusters_to_merge_indices))
 
             epoch_merged_clustering_log = [ epoch_clustering_log[i] for i in clusters_to_persist_indices]
 
