@@ -284,13 +284,16 @@ class ClusteringTracker(object):
             plt.axis("off")
             plt.imshow(im)
 
-    def plot_clusters_histograms(self, epoch, ground_truth):
+    def plot_clusters_histograms(self, epoch, ground_truth, clustering_log=None):
         fig = plt.figure(figsize=(20, 30))
 
-        for (n, cluster) in enumerate(self.clustering_log[epoch]):
+        if not clustering_log:
+            clustering_log = self.clustering_log
+
+        for (n, cluster) in enumerate(clustering_log[epoch]):
 
             images_original_classes = [ground_truth[image_index] for image_index in cluster]
-            plt.subplot(len(self.clustering_log[epoch]) // 10 + 1, 10, n + 1)
+            plt.subplot(len(clustering_log[epoch]) // 10 + 1, 10, n + 1)
             plt.xticks(rotation='horizontal')
             plt.yticks([])
 
