@@ -9,6 +9,7 @@ import time
 
 import numpy as np
 import utils
+import os
 import torch.utils.data as data
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
@@ -235,6 +236,29 @@ class ClusteringTracker(object):
                     results.append((i, k, intersection))
 
         return results
+
+    def save_clustering_log(self, path, override=False):
+        if not os.path.isfile(path):
+            # The file don't exist; save
+            np.save(path, self.clustering_log)
+            print("Clustering Log saved at: %s" % path)
+            return
+        if os.path.isfile(path):
+            if override:
+                np.save(path, self.clustering_log)
+                print("Clustering Log saved at: %s" % path)
+                return
+            else:
+                print("Error the file already exists, rerun with parameter override=True to override.")
+                return
+
+    def load_clustering_log(self, path):
+        if not os.path.isfile(path):
+             # The file dosen't exist
+            print("The provided path %s doesn't exist" % path)
+        else:
+            self.clustering_log=np.load(path)
+            print("Loaded Clustering Log from : %s" % path)
 
     def plot_cluster_evolution(self, cluster_evolution, final_epoch, weight_in_percent=True):
 

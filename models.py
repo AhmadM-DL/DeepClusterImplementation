@@ -342,7 +342,7 @@ def save_checkpoint(model, optimizer, epoch, path, architecture="unspecified", v
 def save_model_parameter(model, path, override=False):
 
     if not os.path.isfile(path):
-        # The file don't exist save them
+        # The file don't exist; save
         torch.save(model.state_dict(), path)
         print("Model saved in directory: %s"%path)
         return
@@ -362,4 +362,5 @@ def load_model_parameter(model, path):
     else:
         model.load_state_dict(torch.load(path))
         print("Loaded model parameters from : %s"%path)
+
 
