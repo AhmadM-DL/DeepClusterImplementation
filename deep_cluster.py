@@ -257,7 +257,7 @@ class ClusteringTracker(object):
              # The file dosen't exist
             print("The provided path %s doesn't exist" % path)
         else:
-            self.clustering_log=np.load(path, allow_pickle=True)
+            self.clustering_log = np.load(path, allow_pickle=True).tolist()
             print("Loaded Clustering Log from : %s" % path)
 
     def plot_cluster_evolution(self, cluster_evolution, final_epoch, weight_in_percent=True):
