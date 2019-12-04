@@ -332,6 +332,31 @@ class ClusteringTracker(object):
             self.merged_clustering_log.append(epoch_clustering_log)
 
 
+def merge_clusters_on_entropy_ground_truth(clusters, ground_truth, merging_entropy_threshold=0):
+
+        clusters_to_merge_indices = [[] for i in range(len(np.unique(ground_truth)))]
+
+        for (k, cluster) in enumerate(clusters):
+            images_original_classes = [ground_truth[image_index] for image_index in cluster]
+            values, counts = np.unique(images_original_classes, return_counts=True)
+            cluster_entropy = entropy(counts)
+            max_count_target = values[np.argmax(counts)]
+
+            if (cluster_entropy <= merging_entropy_threshold):
+                clusters_to_merge_indices[max_count_target].extend([k])
+
+        clusters_to_persist_indices = set(range(len(clusters))) - set(
+            np.concatenate(clusters_to_merge_indices))
+
+        merged_clusters = [clusters[i] for i in clusters_to_persist_indices]
+
+        for group_to_cluster in clusters_to_merge_indices:
+            new_cluster = []
+            for cluster_index in group_to_cluster:
+                new_cluster.extend(clusters[cluster_index])
+            merged_clusters.append(new_cluster)
+
+        return merged_clusters
 
 
 
