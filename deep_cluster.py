@@ -329,6 +329,7 @@ class ClusteringTracker(object):
                     new_cluster.extend(epoch_clustering_log[cluster_index])
                 epoch_merged_clustering_log.append(new_cluster)
 
+            self.merged_clustering_log.append(epoch_clustering_log)
 
 
 
