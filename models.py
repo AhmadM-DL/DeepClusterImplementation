@@ -361,4 +361,5 @@ def load_model_parameter(model, path):
         print("The provided path %s doesn't exist"%path)
     else:
         model.load_state_dict(torch.load(path))
+        print("Loaded model parameters from : %s"%path)
 
