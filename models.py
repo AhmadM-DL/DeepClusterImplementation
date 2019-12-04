@@ -360,5 +360,5 @@ def load_model_parameter(model, path):
         # The file dosen't exist
         print("The provided path %s doesn't exist"%path)
     else:
-        torch.load(model.state_dict(),path)
+        model.load_state_dict(torch.load(path))
 
