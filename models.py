@@ -355,4 +355,10 @@ def save_model_parameter(model, path, override=False):
             print("Error the file already exists, rerun with parameter override=True to override.")
             return
 
-def
+def load_model_parameter(model, path):
+    if not os.path.isfile(path):
+        # The file dosen't exist
+        print("The provided path %s doesn't exist"%path)
+    else:
+        torch.load(model.state_dict(),path)
+
