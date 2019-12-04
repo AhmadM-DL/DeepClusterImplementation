@@ -17,7 +17,8 @@ from PIL import ImageFile
 from sklearn.metrics import normalized_mutual_info_score
 import pandas as pd
 from sklearn.manifold import TSNE
-
+from scipy.stats import entropy
+from PIL import Image
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -322,5 +323,66 @@ def plot_feature_sapce_using_tsne( features, images, labels, percent_of_data_to_
                             clusters = np.array(labels)[data_to_plot_indices],
                             n_clusters = len(np.unique( np.array(labels)[data_to_plot_indices]) )
                                              )
-    
+
+def plot_cluster_images(cluster, images_paths, percent_of_images_to_plot=100):
+    cluster_images_indices = [image_index for image_index in cluster]
+    number_images_to_plot = len(cluster_images_indices) * percent_of_images_to_plot // 100
+    images_to_plot_indices = np.random.choice(cluster_images_indices, number_images_to_plot, replace=False)
+    plot_set_of_images(images_to_plot_indices, images_paths)
+
+
+def plot_set_of_images(images_indices, images_paths, figsize=(20, 20)):
+    N = len(images_indices)
+    fig = plt.figure(figsize=figsize)
+    images_to_plot_paths = np.array(images_paths)[images_indices]
+
+    for i, image_path in enumerate(images_to_plot_paths):
+        plt.subplot(N // 10 + 1, 10, i + 1)
+        im = Image.open(image_path)
+        plt.axis("off")
+        plt.imshow(im)
+
+
+def plot_clusters_histograms(clusters, epoch, ground_truth):
+    fig = plt.figure(figsize=(20, 30))
+
+    for (n, cluster) in enumerate(clusters[epoch]):
+        images_original_classes = [ground_truth[image_index] for image_index in cluster]
+        plt.subplot(len(clusters[epoch]) // 10 + 1, 10, n + 1)
+        plt.xticks(rotation='horizontal')
+        plt.yticks([])
+
+        values, counts = np.unique(images_original_classes, return_counts=True)
+        cluster_entropy = entropy(counts)
+        # max_count_target = values[np.argmax(counts)]
+
+        plt.ylabel("C %d E %f " % (n, cluster_entropy))
+        plt.hist(np.array(images_original_classes).astype(str))
+
+
+def merge_clusters_on_entropy_ground_truth(clusters, ground_truth, merging_entropy_threshold=0):
+    clusters_to_merge_indices = [[] for i in range(len(np.unique(ground_truth)))]
+
+    for (k, cluster) in enumerate(clusters):
+        images_original_classes = [ground_truth[image_index] for image_index in cluster]
+        values, counts = np.unique(images_original_classes, return_counts=True)
+        cluster_entropy = entropy(counts)
+        max_count_target = values[np.argmax(counts)]
+
+        if (cluster_entropy <= merging_entropy_threshold):
+            clusters_to_merge_indices[max_count_target].extend([k])
+
+    clusters_to_persist_indices = set(range(len(clusters))) - set(
+        np.concatenate(clusters_to_merge_indices))
+
+    merged_clusters = [clusters[i] for i in clusters_to_persist_indices]
+
+    for group_to_cluster in clusters_to_merge_indices:
+        if group_to_cluster == []: continue
+        new_cluster = []
+        for cluster_index in group_to_cluster:
+            new_cluster.extend(clusters[cluster_index])
+        merged_clusters.append(new_cluster)
+
+    return merged_clusters
     

@@ -180,12 +180,10 @@ def cross_2_models_clustering_output(model_1_clusters, model_2_clusters, take_to
     else:
         return results[:len(model_1_clusters)]
 
-
 class ClusteringTracker(object):
 
     def __init__(self):
         self.clustering_log = []
-        self.merged_clustering_log = []
         self.epochs= []
 
     def update(self, epoch, clustered_data_indices):
@@ -264,99 +262,6 @@ class ClusteringTracker(object):
         plt.show()
         return
 
-    def plot_cluster_images(self, epoch, cluster_index, images_paths, percent_of_images_to_plot=100):
-
-        cluster_images_indices = [ image_index for image_index in self.clustering_log[epoch][cluster_index] ]
-        number_images_to_plot = len(cluster_images_indices)*percent_of_images_to_plot//100
-        images_to_plot_indices = np.random.choice(cluster_images_indices,number_images_to_plot, replace=False)
-        self.plot_set_of_images(images_to_plot_indices, images_paths)
-
-
-    def plot_set_of_images(self, images_indices, images_paths, figsize=(20,20)):
-
-        N = len(images_indices)
-        fig = plt.figure(figsize=figsize)
-        images_to_plot_paths = np.array(images_paths)[images_indices]
-
-        for i, image_path in enumerate(images_to_plot_paths):
-            plt.subplot(N // 10 + 1, 10, i + 1)
-            im = Image.open(image_path)
-            plt.axis("off")
-            plt.imshow(im)
-
-    def plot_clusters_histograms(self, epoch, ground_truth, clustering_log=None):
-        fig = plt.figure(figsize=(20, 30))
-
-        if not clustering_log:
-            clustering_log = self.clustering_log
-
-        for (n, cluster) in enumerate(clustering_log[epoch]):
-
-            images_original_classes = [ground_truth[image_index] for image_index in cluster]
-            plt.subplot(len(clustering_log[epoch]) // 10 + 1, 10, n + 1)
-            plt.xticks(rotation='horizontal')
-            plt.yticks([])
-
-            values, counts = np.unique(images_original_classes, return_counts=True)
-            cluster_entropy =  entropy(counts)
-            #max_count_target = values[np.argmax(counts)]
-
-            plt.ylabel("C %d E %f " % (n, cluster_entropy))
-            plt.hist(np.array(images_original_classes).astype(str))
-
-    def merge_clustering_log(self, ground_truth, merging_entropy_threshold=0):
-        self.merged_clustering_log = []
-        for (n, epoch_clustering_log) in enumerate(self.clustering_log):
-
-            clusters_to_merge_indices = [[] for i in range(len(np.unique(ground_truth)))]
-
-            for (k,cluster) in enumerate(epoch_clustering_log):
-                images_original_classes = [ground_truth[image_index] for image_index in cluster]
-                values, counts = np.unique(images_original_classes, return_counts=True)
-                cluster_entropy = entropy(counts)
-                max_count_target = values[np.argmax(counts)]
-
-                if(cluster_entropy<=merging_entropy_threshold):
-                    clusters_to_merge_indices[max_count_target].extend([k])
-
-            clusters_to_persist_indices = set(range(len(epoch_clustering_log))) - set(np.concatenate(clusters_to_merge_indices))
-
-            epoch_merged_clustering_log = [ epoch_clustering_log[i] for i in clusters_to_persist_indices]
-
-            for group_to_cluster in clusters_to_merge_indices:
-                new_cluster = []
-                for cluster_index in group_to_cluster:
-                    new_cluster.extend(epoch_clustering_log[cluster_index])
-                epoch_merged_clustering_log.append(new_cluster)
-
-            self.merged_clustering_log.append(epoch_clustering_log)
-
-
-def merge_clusters_on_entropy_ground_truth(clusters, ground_truth, merging_entropy_threshold=0):
-
-        clusters_to_merge_indices = [[] for i in range(len(np.unique(ground_truth)))]
-
-        for (k, cluster) in enumerate(clusters):
-            images_original_classes = [ground_truth[image_index] for image_index in cluster]
-            values, counts = np.unique(images_original_classes, return_counts=True)
-            cluster_entropy = entropy(counts)
-            max_count_target = values[np.argmax(counts)]
-
-            if (cluster_entropy <= merging_entropy_threshold):
-                clusters_to_merge_indices[max_count_target].extend([k])
-
-        clusters_to_persist_indices = set(range(len(clusters))) - set(
-            np.concatenate(clusters_to_merge_indices))
-
-        merged_clusters = [clusters[i] for i in clusters_to_persist_indices]
-
-        for group_to_cluster in clusters_to_merge_indices:
-            new_cluster = []
-            for cluster_index in group_to_cluster:
-                new_cluster.extend(clusters[cluster_index])
-            merged_clusters.append(new_cluster)
-
-        return merged_clusters
 
 
 

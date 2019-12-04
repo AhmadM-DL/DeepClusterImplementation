@@ -332,8 +332,27 @@ def save_checkpoint(model, optimizer, epoch, path, architecture="unspecified", v
         print('Save checkpoint at: {0}'.format(path))
 
     torch.save({
-        'epoch': epoch ,
+        'epoch': epoch,
         'arch': architecture,
         'state_dict': model.state_dict(),
         'optimizer': optimizer.state_dict()
     }, path)
+
+
+def save_model_parameter(model, path, override=False):
+
+    if not os.path.isfile(path):
+        # The file don't exist save them
+        torch.save(model.state_dict(), path)
+        print("Model saved in directory: %s"%path)
+        return
+    if os.path.isfile(path):
+        if override:
+            torch.save(model.state_dict(), path)
+            print("Model saved in directory: %s" % path)
+            return
+        else:
+            print("Error the file already exists, rerun with parameter override=True to override.")
+            return
+
+def
