@@ -321,8 +321,9 @@ def plot_feature_space_using_tsne( features, images, labels, percent_of_data_to_
     plot_t_sne_embedding_2d(tsne_results=tsne_components,
                             images= np.array(images)[data_to_plot_indices],
                             clusters = np.array(labels)[data_to_plot_indices],
-                            n_clusters = len(np.unique( np.array(labels)[data_to_plot_indices]) )
-                                             )
+                            n_clusters = len(np.unique( np.array(labels)[data_to_plot_indices]) ),
+                            **kwargs
+                            )
 
 def plot_cluster_images(cluster, images_paths, percent_of_images_to_plot=100):
     cluster_images_indices = [image_index for image_index in cluster]
