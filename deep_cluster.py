@@ -130,7 +130,6 @@ class Neural_Features_Clustering_With_Preprocessing():
             self.koutputs["condensed_tree"] = clustering_object.condensed_tree_
 
             if self.verbose: print('hdbscan time: {0:.0f} s'.format(time.time() - end))
-            if self.verbose: print('hdbscan loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
 
         self.assignments = clustering_object.labels_
         number_of_clusters = clustering_object.labels_.max() + 1
