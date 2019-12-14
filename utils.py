@@ -271,12 +271,11 @@ def plot_t_sne_embedding_2d(tsne_results, images, clusters=None, n_clusters=None
           plt.ylim(ymin, ymax)
 
         if (plot_images):
-            alpha=0
+            data_points_alpha=0
         else:
-            alpha=1
+            data_points_alpha=1
 
-
-        ax.scatter(tsne_results[:,0], tsne_results[:,1], c= clusters, marker='o', alpha=alpha)
+        ax.scatter(tsne_results[:,0], tsne_results[:,1], c= clusters, marker='o', alpha=data_points_alpha)
 
         ax.set_xlabel('tsne_0')
         ax.set_ylabel('tsne_1')
