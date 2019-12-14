@@ -13,6 +13,7 @@ import os
 import torch.utils.data as data
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+import hdbscan
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
@@ -84,47 +85,57 @@ def clustered_data_indices_to_list(clustered_data_indices, reindex=False):
 
 class NeuralFeaturesKmeansWithPreprocessing():
 
-    def __init__(self, data, n_clusters, pca=0, verbose=0, **kwargs):
+    def __init__(self, data, pca=0, verbose=0, **kwargs):
 
         self.data = data
-        self.n_clusters = n_clusters
         self.kwargs = kwargs
         self.verbose = verbose
         self.pca = pca
 
-        self.clustered_data_indices = [[] for i in range(n_clusters)]
+        self.clustered_data_indices = None #[[] for i in range(n_clusters)]
 
         self.preprocessed_data = None
-        self.inertia = None
         self.assignments = None
-        self.pca_object= None
+        self.koutputs={}
 
-    def cluster(self):
+    def cluster(self, alogrithem="kmeans", **kwargs):
 
         end = time.time()
 
         # Preprocess features
-        self.preprocessed_data, self.pca_object = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose,
+        self.preprocessed_data, self.koutputs["pca"] = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose,
                                                                    random_State= self.kwargs.get("random_state", None),
                                                                    return_pca_object=True)
 
         if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
 
-        kmeans_object = KMeans(self.n_clusters, max_iter=self.kwargs.get("max_iter", 20),
-                               n_init=self.kwargs.get("n_init", 1),
-                               verbose=1, random_state=self.kwargs.get("random_state", None))
+        if(alogrithem=="kmeans"):
+            clustering_object = KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
+                                   n_init=self.kwargs.get("n_init", 1),
+                                   verbose=1, random_state=self.kwargs.get("random_state", None))
 
-        kmeans_object.fit_predict(self.preprocessed_data)
+            clustering_object.fit_predict(self.preprocessed_data)
+            self.koutputs["inertia"] = clustering_object.inertia_
 
-        if self.verbose:
-            print('k-means time: {0:.0f} s'.format(time.time() - end))
+            if self.verbose: print('k-means time: {0:.0f} s'.format(time.time() - end))
+            if self.verbose: print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
 
-        self.inertia = kmeans_object.inertia_
-        self.assignments = kmeans_object.labels_
+        elif(alogrithem=="hdbscan"):
+            clustering_object = hdbscan.HDBSCAN(min_cluster_size=kwargs.get("min_cluster_size",100),
+                                                metric=kwargs.get("metric","euclidean"))
+            clustering_object.fit_predict(self.preprocessed_data)
 
-        if self.verbose:
-            print('k-means loss evolution (inertia): {0}'.format(self.inertia))
+            self.koutputs["probabilities"] = clustering_object.probabilities_
+            self.koutputs["condensed_tree"] = clustering_object.condensed_tree_
+
+            if self.verbose: print('hdbscan time: {0:.0f} s'.format(time.time() - end))
+            if self.verbose: print('hdbscan loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
+
+        self.assignments = clustering_object.labels_
+        number_of_clusters = clustering_object.labels_.max() + 1
+
+        self.clustered_data_indices = [[] for i in range(number_of_clusters)]
 
         for i in range(len(self.data)):
             self.clustered_data_indices[self.assignments[i]].append(i)
@@ -140,6 +151,7 @@ class NeuralFeaturesKmeansWithPreprocessing():
         """
         _, ndim = data.shape
         data = data.astype('float32')
+        mat=None
 
         # Apply PCA-whitening with sklearn pca
         if(pca):
@@ -154,7 +166,7 @@ class NeuralFeaturesKmeansWithPreprocessing():
         data = data / row_sums[:, np.newaxis]
 
         if(return_pca_object):
-            return data, pca
+            return data, mat
         else:
             return data
 
