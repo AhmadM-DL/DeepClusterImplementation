@@ -305,7 +305,7 @@ def pil_loader(path):
         img = Image.open(f)
         return img.convert('RGB')
 
-def plot_feature_sapce_using_tsne( features, images, labels, percent_of_data_to_plot=10, **kwargs):
+def plot_feature_space_using_tsne( features, images, labels, percent_of_data_to_plot=10, **kwargs):
 
     tsne = TSNE(n_components=kwargs.get("n_components",2),
                 n_iter=kwargs.get("n_iter", 1000),
@@ -313,7 +313,7 @@ def plot_feature_sapce_using_tsne( features, images, labels, percent_of_data_to_
                 verbose= kwargs.get("verbose",0)
                 )
 
-    number_of_data_to_use = len(features)*percent_of_data_to_plot//100
+    number_of_data_to_use = int(len(features)*percent_of_data_to_plot//100)
     data_to_plot_indices = np.random.choice( len(features), size=number_of_data_to_use )
 
     tsne_components = tsne.fit_transform(np.array(features)[data_to_plot_indices])
