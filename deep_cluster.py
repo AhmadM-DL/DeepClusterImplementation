@@ -124,7 +124,7 @@ class Neural_Features_Clustering_With_Preprocessing():
         elif(algorithm=="hdbscan"):
             clustering_object = hdbscan.HDBSCAN(min_cluster_size=kwargs.get("min_cluster_size",100),
                                                 min_samples=kwargs.get("min_samples",100),
-                                                cluster_selection_method=kwargs.get("cluster_selection_method ","eom"),
+                                                cluster_selection_method=kwargs.get("cluster_selection_method","eom"),
                                                 metric=kwargs.get("metric","euclidean"))
             clustering_object.fit_predict(self.preprocessed_data)
 
