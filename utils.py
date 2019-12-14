@@ -246,7 +246,7 @@ def generate_random_colors(n):
         colors[i] =  (r, g, b,1.0)
     return colors
 
-def plot_t_sne_embedding_2d(tsne_results, images, clusters=None, n_clusters=None, **kwargs ):
+def plot_t_sne_embedding_2d(tsne_results, images, clusters=None, n_clusters=None, plot_images=False, **kwargs ):
 
     if(tsne_results.shape[1]!=2):
         print("The provided t_sne results are of "+str(tsne_results.shape[1])+
@@ -270,27 +270,29 @@ def plot_t_sne_embedding_2d(tsne_results, images, clusters=None, n_clusters=None
           plt.xlim(xmin, xmax)
           plt.ylim(ymin, ymax)
 
-        ax.scatter(tsne_results[:,0], tsne_results[:,1], c='b', marker='o', alpha=0)
+        ax.scatter(tsne_results[:,0], tsne_results[:,1], c= clusters, marker='o', alpha=0)
 
         ax.set_xlabel('tsne_0')
         ax.set_ylabel('tsne_1')
 
-        for i in np.arange(0, len(tsne_results)):
-            image_data = images[i]
-            im = OffsetImage(image_data, cmap='gray', zoom=0.8)
+        if(plot_images):
 
-            if(n_clusters):
-                ab = AnnotationBbox(im, (tsne_results[i,0],tsne_results[i,1]), frameon=True, bboxprops= dict( edgecolor= colors[clusters[i]], facecolor = colors[clusters[i]] ) )
-            else:
-                ab = AnnotationBbox(im, (tsne_results[i,0],tsne_results[i,1]), frameon=False )
+            for i in np.arange(0, len(tsne_results)):
+                image_data = images[i]
+                im = OffsetImage(image_data, cmap='gray', zoom=0.8)
 
-            ax.add_artist(ab)
-            
-        lp = lambda i: mpatches.Patch(color=colors[i], label=str(i))
-                        
-        handles = [lp(i) for i in np.unique(clusters)]
-        
-        plt.legend(handles=handles)
+                if(n_clusters):
+                    ab = AnnotationBbox(im, (tsne_results[i,0],tsne_results[i,1]), frameon=True, bboxprops= dict( edgecolor= colors[clusters[i]], facecolor = colors[clusters[i]] ) )
+                else:
+                    ab = AnnotationBbox(im, (tsne_results[i,0],tsne_results[i,1]), frameon=False )
+
+                ax.add_artist(ab)
+
+            lp = lambda i: mpatches.Patch(color=colors[i], label=str(i))
+
+            handles = [lp(i) for i in np.unique(clusters)]
+
+            plt.legend(handles=handles)
 
         return fig
     
@@ -305,7 +307,7 @@ def pil_loader(path):
         img = Image.open(f)
         return img.convert('RGB')
 
-def plot_feature_space_using_tsne( features, images, labels, percent_of_data_to_plot=10, **kwargs):
+def plot_feature_space_using_tsne( features, images, labels, percent_of_data_to_plot=10, plot_images=False, **kwargs):
 
     tsne = TSNE(n_components=kwargs.get("n_components",2),
                 n_iter=kwargs.get("n_iter", 1000),
@@ -320,6 +322,7 @@ def plot_feature_space_using_tsne( features, images, labels, percent_of_data_to_
 
     plot_t_sne_embedding_2d(tsne_results=tsne_components,
                             images= np.array(images)[data_to_plot_indices],
+                            plot_images=plot_images,
                             clusters = np.array(labels)[data_to_plot_indices],
                             n_clusters = len(np.unique( np.array(labels)[data_to_plot_indices]) ),
                             **kwargs
