@@ -83,7 +83,7 @@ def clustered_data_indices_to_list(clustered_data_indices, reindex=False):
         return [image_indexes, pseudolabels], reindexed_clustered_data_indices
 
 
-class NeuralFeaturesKmeansWithPreprocessing():
+class Neural_Features_Clustering_With_Preprocessing():
 
     def __init__(self, data, pca=0, verbose=0, **kwargs):
 
