@@ -98,7 +98,7 @@ class Neural_Features_Clustering_With_Preprocessing():
         self.assignments = None
         self.koutputs={}
 
-    def cluster(self, alogrithem="kmeans", **kwargs):
+    def cluster(self, algorithm="kmeans", **kwargs):
 
         end = time.time()
 
@@ -110,7 +110,7 @@ class Neural_Features_Clustering_With_Preprocessing():
         if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
 
-        if(alogrithem=="kmeans"):
+        if(algorithm=="kmeans"):
             clustering_object = KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
                                    n_init=self.kwargs.get("n_init", 1),
                                    verbose=1, random_state=self.kwargs.get("random_state", None))
@@ -121,7 +121,7 @@ class Neural_Features_Clustering_With_Preprocessing():
             if self.verbose: print('k-means time: {0:.0f} s'.format(time.time() - end))
             if self.verbose: print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
 
-        elif(alogrithem=="hdbscan"):
+        elif(algorithm=="hdbscan"):
             clustering_object = hdbscan.HDBSCAN(min_cluster_size=kwargs.get("min_cluster_size",100),
                                                 metric=kwargs.get("metric","euclidean"))
             clustering_object.fit_predict(self.preprocessed_data)
