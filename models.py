@@ -342,7 +342,7 @@ def laod_from_checkpoint(model, optimizer, path):
     if os.path.isfile(path):
         print("    => loading checkpoint '{}'".format(path))
         checkpoint = torch.load(path)
-        args_start_epoch = checkpoint['epoch']
+        epoch = checkpoint['epoch']
         # remove top_layer parameters from checkpoint
         for key in checkpoint['state_dict'].copy():
             if 'top_layer' in key:
@@ -351,6 +351,7 @@ def laod_from_checkpoint(model, optimizer, path):
             optimizer.load_state_dict(checkpoint['optimizer'])
             print("    => loaded checkpoint '{}' (epoch {})"
                   .format(path, checkpoint['epoch']))
+        return epoch
     else:
         print("    => no checkpoint found at '{}'".format(path))
 
