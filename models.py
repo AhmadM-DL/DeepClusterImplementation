@@ -338,6 +338,22 @@ def save_checkpoint(model, optimizer, epoch, path, architecture="unspecified", v
         'optimizer': optimizer.state_dict()
     }, path)
 
+def laod_from_checkpoint(model, optimizer, path):
+    if os.path.isfile(path):
+        print("    => loading checkpoint '{}'".format(path))
+        checkpoint = torch.load(path)
+        args_start_epoch = checkpoint['epoch']
+        # remove top_layer parameters from checkpoint
+        for key in checkpoint['state_dict'].copy():
+            if 'top_layer' in key:
+                del checkpoint['state_dict'][key]
+            model.load_state_dict(checkpoint['state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            print("    => loaded checkpoint '{}' (epoch {})"
+                  .format(path, checkpoint['epoch']))
+    else:
+        print("    => no checkpoint found at '{}'".format(path))
+
 
 def save_model_parameter(model, path, override=False):
 
