@@ -345,6 +345,8 @@ def load_from_checkpoint(model, optimizer, path):
         epoch = checkpoint['epoch']
         # remove top_layer parameters from checkpoint
         for key in checkpoint['state_dict'].copy():
+            if 'top_layer' in key:
+                del checkpoint['state_dict'][key]
             model.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
             print("    => loaded checkpoint '{}' (epoch {})"

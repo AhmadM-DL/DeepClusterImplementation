@@ -125,7 +125,9 @@ class Neural_Features_Clustering_With_Preprocessing():
             clustering_object = hdbscan.HDBSCAN(min_cluster_size=kwargs.get("min_cluster_size",100),
                                                 min_samples=kwargs.get("min_samples",100),
                                                 cluster_selection_method=kwargs.get("cluster_selection_method","eom"),
-                                                metric=kwargs.get("metric","euclidean"))
+                                                metric=kwargs.get("metric","euclidean"),
+                                                memory=kwargs.get("memory", None)
+                                                )
             clustering_object.fit_predict(self.preprocessed_data)
 
             self.koutputs["probabilities"] = clustering_object.probabilities_
