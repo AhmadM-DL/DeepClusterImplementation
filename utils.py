@@ -67,7 +67,7 @@ class UnifLabelSampler(Sampler):
             indexes = np.random.choice(
                 self.images_lists[i],
                 size_per_pseudolabel,
-                replace=(len(self.images_lists[i]) <= pseudolabel_size)
+                replace=(len(self.images_lists[i]) <= size_per_pseudolabel)
             )
             res[i * size_per_pseudolabel: (i + 1) * size_per_pseudolabel] = indexes
 
