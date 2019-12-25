@@ -6,13 +6,15 @@ Created on Sat Nov 16 09:37:58 2019
 """
 import numpy as np 
 from torch.utils.data.sampler import Sampler
-import pickle, os, copy, hashlib
+import pickle
+import os
+import copy
+import hashlib
 import torch
 from torch.optim import SGD
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.patches as mpatches
-from PIL import Image
 from PIL import ImageFile
 from sklearn.metrics import normalized_mutual_info_score
 import pandas as pd
@@ -22,39 +24,52 @@ from PIL import Image
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+
 class UnifLabelSampler(Sampler):
 
-    def __init__(self, images_lists, size_per_pseudolabel="average", dataset_multiplier=1):
+    def __init__(self, images_lists, size_per_pseudolabel="average", dataset_multiplier=1, dataset_size=None):
         self.images_lists = images_lists
         self.dataset_multiplier = dataset_multiplier
         self.size_per_pseudolabel = size_per_pseudolabel
+        self.dataset_size = dataset_size
         self.indexes = self.generate_indexes_epoch()
 
     def generate_indexes_epoch(self):
 
         pseudolabels_sizes = [len(pseudolabel_set) for pseudolabel_set in self.images_lists]
 
-        if(self.size_per_pseudolabel=="average"):
-            pseudolabel_size = int( np.average(pseudolabels_sizes) )+1
+        if self.size_per_pseudolabel == "average":
+            pseudolabel_size = int(np.average(pseudolabels_sizes))+1
         else:
-            if(self.size_per_pseudolabel=="max"):
+            if self.size_per_pseudolabel == "max":
                 pseudolabel_size = np.max(pseudolabels_sizes)
             else:
-                if(self.size_per_pseudolabel=="min"):
+                if self.size_per_pseudolabel == "min":
                     pseudolabel_size = np.min(pseudolabels_sizes)
                 else:
                     print("UnifLabelSampler:Error: size_per_pseudolabel should be 'average', 'max', or 'min' ")
 
-        self.N = self.dataset_multiplier * pseudolabel_size * len(self.images_lists)
-        res = np.zeros(self.N)
+        if self.dataset_size:
+            self.dataset_multiplier = self.dataset_size/(pseudolabel_size * len(self.images_lists))
+
+        n = int(self.dataset_multiplier * pseudolabel_size * len(self.images_lists))
+
+        if n % len(self.images_lists) != 0:
+            if n % len(self.images_lists) <= len(self.images_lists)//2:
+                n = n-(n % len(self.images_lists))
+            else:
+                n = n + (len(self.images_lists) - (n % len(self.images_lists)))
+
+        res = np.zeros(n)
 
         for i in range(len(self.images_lists)):
+            size_per_pseudolabel = int(n / len(self.images_lists))
             indexes = np.random.choice(
                 self.images_lists[i],
-                pseudolabel_size,
+                size_per_pseudolabel,
                 replace=(len(self.images_lists[i]) <= pseudolabel_size)
             )
-            res[i * pseudolabel_size: (i + 1) * pseudolabel_size] = indexes
+            res[i * size_per_pseudolabel: (i + 1) * size_per_pseudolabel] = indexes
 
         np.random.shuffle(res)
         return res.astype('int')
@@ -63,12 +78,16 @@ class UnifLabelSampler(Sampler):
         return iter(self.indexes)
 
     def __len__(self):
-        return self.N
+        return len(self.indexes)
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
-        self.reset()
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
 
     def reset(self):
         self.val = 0
@@ -82,21 +101,22 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
+
 class NMIMeter(object):
     """ Computes and store the NMI values """
 
     def __init__(self):
-        self.reset()
+        self.nmi_array = []
 
     def reset(self):
-        self.nmi_array=[]
+        self.nmi_array = []
 
     def update(self, ground_truth, predictions):
         nmi = normalized_mutual_info_score(ground_truth, predictions)
         self.nmi_array.append(nmi)
 
     def store_as_csv(self, path):
-        nmi_rows = [ {'Epoch': index, 'NMI': nmi} for (index,nmi) in enumerate(self.nmi_array)]
+        nmi_rows = [{'Epoch': index, 'NMI': nmi} for (index, nmi) in enumerate(self.nmi_array)]
         nmis_df = pd.DataFrame(nmi_rows)
         nmis_df.to_csv(path)
 
@@ -114,7 +134,7 @@ def learning_rate_decay(optimizer, t, lr_0):
         param_group['lr'] = lr
 
 
-class Logger():
+class Logger:
     """ Class to update every epoch to keep trace of the results
     Methods:
         - log() log and save
@@ -130,7 +150,7 @@ class Logger():
             pickle.dump(self.data, fp, -1)
             
             
-class ClassSpecificImageGeneration():
+class ClassSpecificImageGeneration:
     """
         Produces an image that maximizes a certain class with gradient ascent
     """
@@ -141,24 +161,24 @@ class ClassSpecificImageGeneration():
         
         # Generate a random image
         self.created_image = np.uint8(np.random.uniform(rand_image_min, rand_image_max, (32, 32, 1)))
-        #self.created_image = np.uint8(np.zeros( (32, 32, 1) ) )
+        # self.created_image = np.uint8(np.zeros( (32, 32, 1) ) )
 
     def generate(self, n_steps=150, initial_learning_rate=6, verbose=True):
         
         for i in range(1, n_steps):
           
             # Process image and return variable
-            self.processed_image = self.__preprocess_image(self.created_image, False)
+            processed_image = self.__preprocess_image(self.created_image)
             
             # Define optimizer for the image
-            optimizer = SGD([self.processed_image], lr=initial_learning_rate)
-            #optimizer = torch.optim.Adam([self.processed_image], lr=initial_learning_rate, weight_decay=1e-6)
+            optimizer = SGD([processed_image], lr=initial_learning_rate)
+            # optimizer = torch.optim.Adam([self.processed_image], lr=initial_learning_rate, weight_decay=1e-6)
             
             # Forward
-            output = self.model(self.processed_image)
+            output = self.model(processed_image)
             
             # Target specific class
-            class_loss = -output[0, self.target_class] + self.processed_image.sum().abs().cpu().data
+            class_loss = -output[0, self.target_class] + processed_image.sum().abs().cpu().data
             if(verbose):
               print('Iteration:', str(i), 'Loss', "{0:.2f}".format(class_loss.cpu().data.numpy()))
             
