@@ -16,13 +16,16 @@ import os
 
 class NetBuilder(nn.Module):
 
-    def __init__(self, features, classifier, top_layer, apply_sobel):
+    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output, apply_sobel):
         super(NetBuilder, self).__init__()
         self.sobel = None
         self.features = features
         self.classifier = classifier
         self.top_layer = top_layer
         self._initialize_weights()
+        self.features_output = features_output
+        self.classifier_output = classifier_output
+        self.top_layer_output = top_layer_output
 
         if apply_sobel:
             self.sobel = make_sobel_layer()
@@ -134,7 +137,9 @@ def alexnet_cifar(sobel=False, bn=True, out=10):
     classifier = make_linear_layers(classifier_cfg)
     top_layer = make_linear_layers(top_layer_cfg)[0]
 
-    model = NetBuilder(features, classifier, top_layer, sobel)
+    model = NetBuilder(features, classifier, top_layer,
+                       features_output=4096, classifier_output=2048, top_layer_output=out,
+                       sobel=sobel)
 
     return model
 
@@ -151,7 +156,9 @@ def lenet_5(bn=False, out=10):
     classifier = make_linear_layers(classifier_cfg)
     top_layer = make_linear_layers(top_layer_cfg)[0]
 
-    model = NetBuilder(features, classifier, top_layer, False)
+    model = NetBuilder(features, classifier, top_layer,
+                       features_output=400, classifier_output=84, top_layer_output=out,
+                       sobel=False)
 
     return model
 
