@@ -15,8 +15,8 @@ import os
 
 
 class NetBuilder(nn.Module):
-
-    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output, apply_sobel):
+    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output,
+                 apply_sobel):
         super(NetBuilder, self).__init__()
         self.sobel = None
         self.features = features
@@ -63,12 +63,12 @@ class NetBuilder(nn.Module):
 
     def get_model_output_size(self):
         if self.top_layer:
-            return  self.top_layer_output
+            return self.top_layer_output
         if self.classifier:
             return self.classifier_output
         if self.features:
             return self.features_output
-
+        raise Exception("The model doesn't have actual modules")
 
 
 def make_convolutional_layers(cfg, input_n_channels, bn):
@@ -171,6 +171,7 @@ def lenet_5(bn=False, out=10):
 
     return model
 
+
 def remove_top_layer(model):
     """
     :param model: The model than need its top layer to be removed
@@ -181,7 +182,8 @@ def remove_top_layer(model):
     model.classifier = nn.Sequential(*list(model.classifier.children())[:-1])
     return new_output_size
 
-def add_top_layer(model, top_layer_cfg, device, weight_mean=0, weight_std=0.01 ):
+
+def add_top_layer(model, top_layer_cfg, device, weight_mean=0, weight_std=0.01):
     mlp = list(model.classifier.children())
     mlp.append(nn.ReLU(inplace=True).to(device))
     model.classifier = nn.Sequential(*mlp)
@@ -247,6 +249,7 @@ def compute_network_output(dataloader, model, device, batch_size, data_size, ver
 
     if (return_targets):
         return outputs, targets
+
 
 def deep_cluster_train(dataloader, model, loss_criterion, net_optimizer, annxed_layers_optimizer, epoch, device,
                        return_inputs_outputs_targets_losses=False, verbose=True, checkpoint=0):
@@ -343,7 +346,6 @@ def deep_cluster_test(dataloader, model, device):
 
 
 def save_checkpoint(model, optimizer, epoch, path, architecture="unspecified", verbose=True):
-
     if verbose:
         print('Save checkpoint at: {0}'.format(path))
 
@@ -353,6 +355,7 @@ def save_checkpoint(model, optimizer, epoch, path, architecture="unspecified", v
         'state_dict': model.state_dict(),
         'optimizer': optimizer.state_dict()
     }, path)
+
 
 def load_from_checkpoint(model, optimizer, path):
     if os.path.isfile(path):
@@ -373,11 +376,10 @@ def load_from_checkpoint(model, optimizer, path):
 
 
 def save_model_parameter(model, path, override=False):
-
     if not os.path.isfile(path):
         # The file don't exist; save
         torch.save(model.state_dict(), path)
-        print("Model saved in directory: %s"%path)
+        print("Model saved in directory: %s" % path)
         return
     if os.path.isfile(path):
         if override:
@@ -388,12 +390,11 @@ def save_model_parameter(model, path, override=False):
             print("Error the file already exists, rerun with parameter override=True to override.")
             return
 
+
 def load_model_parameter(model, path):
     if not os.path.isfile(path):
         # The file dosen't exist
-        print("The provided path %s doesn't exist"%path)
+        print("The provided path %s doesn't exist" % path)
     else:
         model.load_state_dict(torch.load(path))
-        print("Loaded model parameters from : %s"%path)
-
-
+        print("Loaded model parameters from : %s" % path)
