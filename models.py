@@ -61,6 +61,15 @@ class NetBuilder(nn.Module):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
 
+    def get_model_output_size(self):
+        if self.top_layer:
+            return  self.top_layer_output
+        if self.classifier:
+            return self.classifier_output
+        if self.features:
+            return self.features_output
+
+
 
 def make_convolutional_layers(cfg, input_n_channels, bn):
     # cfg:
