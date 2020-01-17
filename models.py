@@ -15,8 +15,7 @@ import os
 
 
 class NetBuilder(nn.Module):
-    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output,
-                 apply_sobel):
+    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output, apply_sobel):
         super(NetBuilder, self).__init__()
         self.sobel = None
         self.features = features
@@ -148,7 +147,7 @@ def alexnet_cifar(sobel=False, bn=True, out=10):
 
     model = NetBuilder(features, classifier, top_layer,
                        features_output=4096, classifier_output=2048, top_layer_output=out,
-                       sobel=sobel)
+                       apply_sobel=sobel)
 
     return model
 
@@ -167,7 +166,7 @@ def lenet_5(bn=False, out=10):
 
     model = NetBuilder(features, classifier, top_layer,
                        features_output=400, classifier_output=84, top_layer_output=out,
-                       sobel=False)
+                       apply_sobel=False)
 
     return model
 
