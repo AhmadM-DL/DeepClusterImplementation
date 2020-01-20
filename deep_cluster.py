@@ -25,9 +25,10 @@ class Subset(data.Dataset):
 
     def __init__(self, original_dataset, transform, subset_size):
         self.original_dataset = original_dataset
-        self.imgs = self.generate_subset_imgs()
         self.transform = transform
         self.subset_size = subset_size
+        self.imgs = self.generate_subset_imgs()
+
 
     def generate_subset_imgs(self):
 
