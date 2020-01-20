@@ -46,6 +46,18 @@ class Subset(data.Dataset):
             res.extend([self.original_dataset.imgs[index] for index in indexes])
         return res
 
+    def save_subset(self, path):
+        if not os.path.exists(path):
+            open(path,"w")
+        np.save(path, self.imgs)
+
+    def load_subset(self, path):
+        if not os.path.exists(path):
+            raise Exception("Error file %s doesn't exist"%path)
+        temp = np.load(path)
+        self.imgs = [(a[0], a[1]) for a in temp]
+        del temp
+
     def __str__(self) -> str:
         return super().__str__()
 
