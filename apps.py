@@ -131,7 +131,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
             models.save_checkpoint(model=model_2, optimizer=optimizer_2, epoch=epoch,
                                    path=checkpoint_dir + "/model_2_checkpoint_%d.pth" % epoch)
             if verbose:
-                print(" Saved models checkpoints at %s/model_n_checkpoint_$d.pth" % (checkpoint_dir, epoch))
+                print(" Saved models checkpoints at %s/model_n_checkpoint_%d.pth" % (checkpoint_dir, epoch))
 
         if verbose:
             print("Computing network output of the training set")
