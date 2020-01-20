@@ -7,7 +7,7 @@ Created on Sat Nov 16 09:37:58 2019
 from typing import Iterator, Sized
 
 import numpy as np
-from torch.utils.data.sampler import Sampler, T_co
+from torch.utils.data.sampler import Sampler
 import pickle
 import os
 import copy
