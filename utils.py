@@ -405,7 +405,7 @@ def merge_clusters_on_entropy_ground_truth(clusters, ground_truth, merging_entro
         cluster_entropy = entropy(counts)
         max_count_target = values[np.argmax(counts)]
 
-        if (cluster_entropy <= merging_entropy_threshold):
+        if cluster_entropy <= merging_entropy_threshold:
             clusters_to_merge_indices[max_count_target].extend([k])
 
     clusters_to_persist_indices = set(range(len(clusters))) - set(

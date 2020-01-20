@@ -58,7 +58,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         model_1_latest_chkpt = model_1_files[np.argmax(model_1_chkpts)][0]
 
         # Load model 1
-        start_epoch_1 = models.load_from_checkpoint(model_1, optimizer_1, checkpoint_dir + "/" + model_1_latest_chkpt)
+        last_epoch_1 = models.load_from_checkpoint(model_1, optimizer_1, checkpoint_dir + "/" + model_1_latest_chkpt)
 
         # Get latest model 2 file
         model_2_files = [(f, chkpt_number) for (f, model_id, chkpt_number) in files if model_id == 2]
@@ -66,16 +66,25 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         model_2_latest_chkpt = model_2_files[np.argmax(model_2_chkpts)][0]
 
         # Load model 2
-        start_epoch_2 = models.load_from_checkpoint(model_2, optimizer_2, checkpoint_dir + "/" + model_2_latest_chkpt)
+        last_epoch_2 = models.load_from_checkpoint(model_2, optimizer_2, checkpoint_dir + "/" + model_2_latest_chkpt)
 
-        if not start_epoch_1 == start_epoch_2:
+        if not last_epoch_1 == last_epoch_2:
             raise Exception("Error in loading from checkpoint: the 2 models doesn't have the same latest epoch")
         else:
-            start_epoch = start_epoch_1 + 1
+            start_epoch = last_epoch_1 + 1
 
         # Load previous nmi values
         nmi_meter_1.load_from_csv(output_directory + "/" + "model_1_nmi.csv")
         nmi_meter_2.load_from_csv(output_directory + "/" + "model_2_nmi.csv")
+
+        # Trim NMI to last_epoch
+        for (index, epoch, _) in enumerate(nmi_meter_1.nmi_array):
+            if epoch > last_epoch_1:
+                nmi_meter_1.nmi_array.pop(index)
+
+        for (index, epoch, _) in enumerate(nmi_meter_2.nmi_array):
+            if epoch > last_epoch_1:
+                nmi_meter_2.nmi_array.pop(index)
 
         # Load previous clustering log
         clustering_tracker.load_clustering_log(output_directory + "/" + "clustering_log.npy")
@@ -262,6 +271,12 @@ def mono_deep_cluster(model, n_epochs, output_directory,
 
         # Load previous nmi values
         nmi_meter.load_from_csv(output_directory + "/" + "model_nmi.csv")
+
+        # Trim NMI to last_epoch
+        for (index, epoch, _) in enumerate(nmi_meter.nmi_array):
+            if epoch > last_epoch:
+                nmi_meter.nmi_array.pop(index)
+
 
         # Load previous clustering log
         clustering_tracker.load_clustering_log(output_directory + "/" + "clustering_log.npy")
