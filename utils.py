@@ -4,8 +4,10 @@ Created on Sat Nov 16 09:37:58 2019
 
 @author: amm90
 """
+from typing import Iterator, Sized
+
 import numpy as np
-from torch.utils.data.sampler import Sampler
+from torch.utils.data.sampler import Sampler, T_co
 import pickle
 import os
 import copy
@@ -79,6 +81,44 @@ class UnifLabelSampler(Sampler):
 
     def __len__(self):
         return len(self.indexes)
+
+
+class SubsetUniformSampler(Sampler):
+
+    def __init__(self, dataset_imgs, size):
+        self.dataset_imgs = dataset_imgs
+        self.size = size
+        self.indices = self.get_indices()
+        return
+
+    def get_indices(self):
+
+        res = np.zeros(self.size)
+
+        # Get Unique Classes from a dataset object imgs list
+        classes = set(map(lambda x: x[1], self.dataset_imgs))
+
+        # Get images indices for each class
+        images_groups = [[index for (index, y, c) in enumerate(self.dataset_imgs) if c == x] for x in classes]
+        size_per_label = int(self.size / len(self.images_lists))
+
+        for i in range(len(self.images_groups)):
+            indexes = np.random.choice(images_groups[i], size_per_label,
+                                       replace=(len(self.images_lists[i]) <= size_per_label)
+                                       )
+
+            res[i * size_per_label: (i + 1) * size_per_label] = indexes
+
+        return res.astype('int')
+
+    def save_indices(self):
+        return
+
+    def __iter__(self):
+        return iter(self.indices)
+
+    def __len__(self):
+        return len(self.indices)
 
 
 class AverageMeter(object):

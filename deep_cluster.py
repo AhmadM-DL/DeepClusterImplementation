@@ -8,6 +8,8 @@ Created on Sat Nov 16 13:26:39 2019
 import time
 
 import numpy as np
+from torch.utils.data.dataset import T_co
+
 import utils
 import os
 import torch.utils.data as data
@@ -18,6 +20,45 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
 from PIL import Image
+
+
+class Subset(data.Dataset):
+
+    def __init__(self, original_dataset, transform, subset_size):
+        self.original_dataset = original_dataset
+        self.imgs = self.generate_subset_imgs()
+        self.transform = transform
+        self.subset_size = subset_size
+
+    def generate_subset_imgs(self):
+
+        res = np.zeros(self.subset_size)
+
+        # Get Unique Classes from a dataset object imgs list
+        classes = set(map(lambda x: x[1], self.original_dataset.imgs))
+
+        # Get images indices for each class
+        images_groups = [[index for (index, y, c) in enumerate(self.original_dataset.imgs) if c == x] for x in classes]
+        size_per_label = int(self.subset_size / len(self.images_groups))
+
+        for i in range(len(self.images_groups)):
+
+            indexes = np.random.choice(images_groups[i], size_per_label,
+                                       replace=(len(self.images_groups[i]) <= size_per_label)
+                                       )
+            res[i * size_per_label: (i + 1) * size_per_label] = self.original_dataset.imgs[indexes]
+
+        return res
+
+    def __getitem__(self, index: int) :
+        path, pseudolabel = self.imgs[index]
+        img = utils.pil_loader(path)
+        if self.transform is not None:
+            img = self.transform(img)
+        return img, pseudolabel
+
+    def __len__(self) -> int:
+        return len(self.imgs)
 
 
 class LabelsReassignedDataset(data.Dataset):
@@ -39,7 +80,7 @@ class LabelsReassignedDataset(data.Dataset):
     def make_dataset(self, image_indexes, pseudolabels, dataset):
 
         images = []
-        for i,idx in enumerate(image_indexes):
+        for i, idx in enumerate(image_indexes):
             path = dataset.imgs[idx][0]
             images.append((path, pseudolabels[i]))
         return images
@@ -60,6 +101,7 @@ class LabelsReassignedDataset(data.Dataset):
     def __len__(self):
         return len(self.imgs)
 
+
 def clustered_data_indices_to_list(clustered_data_indices, reindex=False):
     pseudolabels = []
     image_indexes = []
@@ -72,12 +114,12 @@ def clustered_data_indices_to_list(clustered_data_indices, reindex=False):
     pseudolabels = np.asarray(pseudolabels)[indexes]
     image_indexes = np.sort(image_indexes)
 
-    if(reindex):
-        reindexed_clustered_data_indices = [ [] for i in range( len( clustered_data_indices ) ) ]
+    if (reindex):
+        reindexed_clustered_data_indices = [[] for i in range(len(clustered_data_indices))]
         for i in range(len(image_indexes)):
-            reindexed_clustered_data_indices[ pseudolabels[i] ].append(i)
+            reindexed_clustered_data_indices[pseudolabels[i]].append(i)
 
-    if(not reindex):
+    if (not reindex):
         return [image_indexes, pseudolabels]
     else:
         return [image_indexes, pseudolabels], reindexed_clustered_data_indices
@@ -92,28 +134,30 @@ class Neural_Features_Clustering_With_Preprocessing():
         self.verbose = verbose
         self.pca = pca
 
-        self.clustered_data_indices = None #[[] for i in range(n_clusters)]
+        self.clustered_data_indices = None  # [[] for i in range(n_clusters)]
 
         self.preprocessed_data = None
         self.assignments = None
-        self.koutputs={}
+        self.koutputs = {}
 
     def cluster(self, algorithm="kmeans", **kwargs):
 
         end = time.time()
 
         # Preprocess features
-        self.preprocessed_data, self.koutputs["pca"] = self.__preprocess_neural_features(data=self.data, pca=self.pca, verbose=self.verbose,
-                                                                   random_State= self.kwargs.get("random_state", None),
-                                                                   return_pca_object=True)
+        self.preprocessed_data, self.koutputs["pca"] = self.__preprocess_neural_features(data=self.data, pca=self.pca,
+                                                                                         verbose=self.verbose,
+                                                                                         random_State=self.kwargs.get(
+                                                                                             "random_state", None),
+                                                                                         return_pca_object=True)
 
         if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
 
-        if(algorithm=="kmeans"):
+        if (algorithm == "kmeans"):
             clustering_object = KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
-                                   n_init=self.kwargs.get("n_init", 1),
-                                   verbose=1, random_state=self.kwargs.get("random_state", None))
+                                       n_init=self.kwargs.get("n_init", 1),
+                                       verbose=1, random_state=self.kwargs.get("random_state", None))
 
             clustering_object.fit_predict(self.preprocessed_data)
             self.koutputs["inertia"] = clustering_object.inertia_
@@ -121,11 +165,11 @@ class Neural_Features_Clustering_With_Preprocessing():
             if self.verbose: print('k-means time: {0:.0f} s'.format(time.time() - end))
             if self.verbose: print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
 
-        elif(algorithm=="hdbscan"):
-            clustering_object = hdbscan.HDBSCAN(min_cluster_size=kwargs.get("min_cluster_size",100),
-                                                min_samples=kwargs.get("min_samples",100),
-                                                cluster_selection_method=kwargs.get("cluster_selection_method","eom"),
-                                                metric=kwargs.get("metric","euclidean"),
+        elif (algorithm == "hdbscan"):
+            clustering_object = hdbscan.HDBSCAN(min_cluster_size=kwargs.get("min_cluster_size", 100),
+                                                min_samples=kwargs.get("min_samples", 100),
+                                                cluster_selection_method=kwargs.get("cluster_selection_method", "eom"),
+                                                metric=kwargs.get("metric", "euclidean"),
                                                 memory=kwargs.get("memory", None)
                                                 )
             clustering_object.fit_predict(self.preprocessed_data)
@@ -154,27 +198,27 @@ class Neural_Features_Clustering_With_Preprocessing():
         """
         _, ndim = data.shape
         data = data.astype('float32')
-        mat=None
+        mat = None
 
         # Apply PCA-whitening with sklearn pca
-        if(pca):
-            if(verbose):print("Applying PCA with %d components on features"%(pca))
-            mat = PCA(n_components=pca, whiten=True, random_state= random_State)
+        if (pca):
+            if (verbose): print("Applying PCA with %d components on features" % (pca))
+            mat = PCA(n_components=pca, whiten=True, random_state=random_State)
             mat.fit(data)
             data = mat.transform(data)
 
         # L2 normalization
-        if(verbose):print("Computing L2 norm of features")
+        if (verbose): print("Computing L2 norm of features")
         row_sums = np.linalg.norm(data, axis=1)
         data = data / row_sums[:, np.newaxis]
 
-        if(return_pca_object):
+        if (return_pca_object):
             return data, mat
         else:
             return data
 
-def cross_2_models_clustering_output(model_1_clusters, model_2_clusters, take_top=None):
 
+def cross_2_models_clustering_output(model_1_clusters, model_2_clusters, take_top=None):
     results = []
     sizes = []
 
@@ -187,20 +231,21 @@ def cross_2_models_clustering_output(model_1_clusters, model_2_clusters, take_to
             results.append(cr)
             sizes.append(len(cr))
 
-    sorted_indices_by_size = np.argsort(sizes)[::-1] ## descending order
+    sorted_indices_by_size = np.argsort(sizes)[::-1]  ## descending order
     results = np.array(results)[sorted_indices_by_size]
     results = [list(x) for x in results]
 
-    if(take_top):
+    if (take_top):
         return results[:take_top]
     else:
         return results[:len(model_1_clusters)]
+
 
 class ClusteringTracker(object):
 
     def __init__(self):
         self.clustering_log = []
-        self.epochs= []
+        self.epochs = []
 
     def update(self, epoch, clustered_data_indices):
         self.clustering_log.append(clustered_data_indices)
@@ -209,10 +254,9 @@ class ClusteringTracker(object):
     def size_new_data_btw_epochs(self):
 
         new_data_sizes = []
-        
-        for i in range( 1,  len(self.clustering_log) ):
 
-            prev_clusters = self.clustering_log[i-1]
+        for i in range(1, len(self.clustering_log)):
+            prev_clusters = self.clustering_log[i - 1]
             curr_clusters = self.clustering_log[i]
 
             flat_prev_clusters = set([item for cluster in prev_clusters for item in cluster])
@@ -227,13 +271,13 @@ class ClusteringTracker(object):
     def epochs_avg_entropy(self, ground_truth):
         avg_entropies = []
 
-        for i,clusters in enumerate(self.clustering_log):
+        for i, clusters in enumerate(self.clustering_log):
             entropies = []
-            for j,cluster in enumerate(self.clustering_log[i]):
+            for j, cluster in enumerate(self.clustering_log[i]):
                 images_original_classes = [ground_truth[image_index] for image_index in cluster]
                 values, counts = np.unique(images_original_classes, return_counts=True)
                 entropies.append(entropy(counts))
-            avg_entropies.append( np.average(entropies) )
+            avg_entropies.append(np.average(entropies))
 
         return avg_entropies
 
@@ -269,7 +313,7 @@ class ClusteringTracker(object):
 
     def load_clustering_log(self, path):
         if not os.path.isfile(path):
-             # The file dosen't exist
+            # The file dosen't exist
             print("The provided path %s doesn't exist" % path)
         else:
             self.clustering_log = np.load(path, allow_pickle=True).tolist()
@@ -279,7 +323,7 @@ class ClusteringTracker(object):
 
         cluster_evolution = [("C", k, len(indices)) for (i, k, indices) in cluster_evolution if i == final_epoch]
 
-        size_target_cluster = np.sum([w for (_,_,w) in cluster_evolution])
+        size_target_cluster = np.sum([w for (_, _, w) in cluster_evolution])
 
         G = nx.DiGraph()
         G.add_weighted_edges_from(cluster_evolution)
@@ -288,8 +332,8 @@ class ClusteringTracker(object):
 
         weights = nx.get_edge_attributes(G, 'weight')
 
-        if(weight_in_percent):
-            weights = {key: int(value / size_target_cluster*100) for (key, value) in weights.items()}
+        if (weight_in_percent):
+            weights = {key: int(value / size_target_cluster * 100) for (key, value) in weights.items()}
 
         nx.draw(G, pos, edge_color='black',
                 width=1, linewidths=1, node_size=500,
@@ -300,11 +344,3 @@ class ClusteringTracker(object):
         plt.axis('off')
         plt.show()
         return
-
-
-
-
-
-
-
-
