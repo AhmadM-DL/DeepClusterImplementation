@@ -55,7 +55,7 @@ class Subset(data.Dataset):
         if not os.path.exists(path):
             raise Exception("Error file %s doesn't exist" % path)
         temp = np.load(path)
-        self.imgs = [(a[0], a[1]) for a in temp]
+        self.imgs = [(a[0], int(a[1])) for a in temp]
         del temp
 
     def __str__(self) -> str:
