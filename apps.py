@@ -101,12 +101,12 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         nmi_meter_1.load_from_csv(output_directory + "/" + "model_1_nmi.csv")
         nmi_meter_2.load_from_csv(output_directory + "/" + "model_2_nmi.csv")
 
-        # Trim NMI to last_epoch.
+        # Trim NMI to last_epoch
         for index, (epoch, _) in enumerate(nmi_meter_1.nmi_array):
             if epoch > last_epoch_1:
                 nmi_meter_1.nmi_array.pop(index)
 
-        for (index, epoch, _) in enumerate(nmi_meter_2.nmi_array):
+        for index, (epoch, _) in enumerate(nmi_meter_2.nmi_array):
             if epoch > last_epoch_1:
                 nmi_meter_2.nmi_array.pop(index)
 
