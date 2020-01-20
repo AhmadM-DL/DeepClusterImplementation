@@ -44,8 +44,10 @@ class Subset(data.Dataset):
                                        replace=(len(images_groups[i]) <= size_per_label)
                                        )
             res.extend([tuple for index in indexes for tuple in self.original_dataset.imgs[index]])
-
         return res
+
+    def __str__(self) -> str:
+        return super().__str__()
 
     def __getitem__(self, index: int):
         path, pseudolabel = self.imgs[index]
