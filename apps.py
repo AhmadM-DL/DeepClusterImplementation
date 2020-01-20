@@ -19,7 +19,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
                       verbose=0):
     cfg_file = output_directory + "/cfg.json"
     if verbose:
-        print("Saving Configuration: %d" % cfg_file)
+        print("Saving Configuration: %s" % cfg_file)
     cfg = {"n_epochs": n_epochs,
            "output_directory": output_directory,
            "learning_rate": learning_rate,
@@ -267,9 +267,10 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                       random_state=0, pca=0, size_per_pseudolabel="average",
                       network_iterations=1, device_name="cuda:0", clustering_tech="kmeans",
                       run_from_checkpoint=False, verbose=0):
+
     cfg_file = output_directory + "/cfg.json"
     if verbose:
-        print("Saving Configuration: %d" % cfg_file)
+        print("Saving Configuration: %s" % cfg_file)
     cfg = {"n_epochs": n_epochs,
            "output_directory": output_directory,
            "learning_rate": learning_rate,
@@ -372,7 +373,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
 
         clustering_tracker.update(epoch, deepcluster.clustered_data_indices)
 
-        images_pseudolabels, rearranged_crossed_clusters = deep_cluster.clustered_data_indices_to_list(
+        images_pseudolabels, rearranged_clusters = deep_cluster.clustered_data_indices_to_list(
             deepcluster.clustered_data_indices,
             reindex=True)
 
@@ -381,7 +382,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                                                                      pseudolabels=images_pseudolabels[1],
                                                                      transform=training_transformation)
 
-        sampler = utils.UnifLabelSampler(images_lists=rearranged_crossed_clusters,
+        sampler = utils.UnifLabelSampler(images_lists=rearranged_clusters,
                                          dataset_multiplier=network_iterations,
                                          size_per_pseudolabel=size_per_pseudolabel)
 
@@ -396,7 +397,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         if verbose:
             print("Adding top layer with output size: %d" % model_output_size)
 
-        models.add_top_layer(model, [('L', model_output_size, len(rearranged_crossed_clusters))], device=device)
+        models.add_top_layer(model, [('L', model_output_size, len(rearranged_clusters))], device=device)
 
         tl_optimizer = torch.optim.SGD(
             filter(lambda x: x.requires_grad, model.top_layer.parameters()),
