@@ -1,7 +1,7 @@
 import models
 import utils
 import deep_cluster
-import os
+import os, json
 import torch
 import re
 import numpy as np
@@ -17,7 +17,31 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
                       size_per_pseudolabel="average", network_iterations=1,
                       device_name="cuda:0", clustering_tech="kmeans", run_from_checkpoint=False,
                       verbose=0):
+
+    cfg_file = output_directory + "/cfg.json"
+    if verbose:
+        print("Saving Configuration: %d" % cfg_file)
+    cfg = {"n_epochs": n_epochs,
+           "output_directory": output_directory,
+           "learning_rate": learning_rate,
+           "momentum": momentum,
+           "weight_decay": weight_decay,
+           "n_clusters": n_clusters,
+           "trainloader_batch_size": trainloader_batch_size,
+           "training_batch_size": training_batch_size,
+           "epochs_per_checkpoint": epochs_per_checkpoint,
+           "random_state": random_state,
+           "pca": pca,
+           "size_per_pseudolabel": size_per_pseudolabel,
+           "network_iterations": network_iterations,
+           "device_name": device_name,
+           "clustering_tech": clustering_tech,
+           "run_from_checkpoint": run_from_checkpoint
+           }
+    json.dump(cfg, open(cfg_file,"w"))
+
     device = torch.device(device_name)
+
     if verbose:
         print("Connected to device %s" % device_name)
 
@@ -235,6 +259,29 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                       random_state=0, pca=0, size_per_pseudolabel="average",
                       network_iterations=1, device_name="cuda:0", clustering_tech="kmeans",
                       run_from_checkpoint=False, verbose=0):
+
+    cfg_file = output_directory + "/cfg.json"
+    if verbose:
+        print("Saving Configuration: %d" % cfg_file)
+    cfg = {"n_epochs": n_epochs,
+           "output_directory": output_directory,
+           "learning_rate": learning_rate,
+           "momentum": momentum,
+           "weight_decay": weight_decay,
+           "n_clusters": n_clusters,
+           "trainloader_batch_size": trainloader_batch_size,
+           "training_batch_size": training_batch_size,
+           "epochs_per_checkpoint": epochs_per_checkpoint,
+           "random_state": random_state,
+           "pca": pca,
+           "size_per_pseudolabel": size_per_pseudolabel,
+           "network_iterations": network_iterations,
+           "device_name": device_name,
+           "clustering_tech": clustering_tech,
+           "run_from_checkpoint": run_from_checkpoint
+           }
+    json.dump(cfg, open(cfg_file,"w"))
+
     device = torch.device(device_name)
     if verbose:
         print("Connected to device %s" % device_name)
@@ -276,7 +323,6 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         for (index, epoch, _) in enumerate(nmi_meter.nmi_array):
             if epoch > last_epoch:
                 nmi_meter.nmi_array.pop(index)
-
 
         # Load previous clustering log
         clustering_tracker.load_clustering_log(output_directory + "/" + "clustering_log.npy")
