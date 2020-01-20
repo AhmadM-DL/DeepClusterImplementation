@@ -102,7 +102,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         nmi_meter_2.load_from_csv(output_directory + "/" + "model_2_nmi.csv")
 
         # Trim NMI to last_epoch
-        for (index, epoch, _) in enumerate(nmi_meter_1.nmi_array):
+        for index, (epoch, _) in enumerate(nmi_meter_1.nmi_array):
             if epoch > last_epoch_1:
                 nmi_meter_1.nmi_array.pop(index)
 
@@ -333,7 +333,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         nmi_meter.load_from_csv(output_directory + "/" + "model_nmi.csv")
 
         # Trim NMI to last_epoch
-        for (index, epoch, _) in enumerate(nmi_meter.nmi_array):
+        for index, (epoch, _) in enumerate(nmi_meter.nmi_array):
             if epoch > last_epoch:
                 nmi_meter.nmi_array.pop(index)
 
