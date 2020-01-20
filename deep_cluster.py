@@ -48,7 +48,7 @@ class Subset(data.Dataset):
 
     def save_subset(self, path, filename):
         if not os.path.exists(path):
-            os.mkdir(os.path.split(path)[0])
+            os.mkdir(path)
         np.save(os.path.join(path, filename), self.imgs)
 
     def load_subset(self, path):
