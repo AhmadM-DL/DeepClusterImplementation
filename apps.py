@@ -17,6 +17,11 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
                       size_per_pseudolabel="average", network_iterations=1,
                       device_name="cuda:0", clustering_tech="kmeans", run_from_checkpoint=False,
                       verbose=0):
+
+    utils.create_directory(output_directory, verbose)
+    if epochs_per_checkpoint:
+        checkpoint_dir = utils.create_directory(output_directory + "/checkpoints", verbose)
+
     cfg_file = output_directory + "/cfg.json"
     if verbose:
         print("Saving Configuration: %s" % cfg_file)
@@ -43,10 +48,6 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
 
     if verbose:
         print("Connected to device %s" % device_name)
-
-    utils.create_directory(output_directory, verbose)
-    if epochs_per_checkpoint:
-        checkpoint_dir = utils.create_directory(output_directory + "/checkpoints", verbose)
 
     optimizer_1 = torch.optim.SGD(
         filter(lambda x: x.requires_grad, model_1.parameters()),
@@ -267,6 +268,10 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                       random_state=0, pca=0, size_per_pseudolabel="average",
                       network_iterations=1, device_name="cuda:0", clustering_tech="kmeans",
                       run_from_checkpoint=False, verbose=0):
+
+    utils.create_directory(output_directory, verbose)
+    if epochs_per_checkpoint:
+        checkpoint_dir = utils.create_directory(output_directory + "/checkpoints", verbose)
 
     cfg_file = output_directory + "/cfg.json"
     if verbose:
