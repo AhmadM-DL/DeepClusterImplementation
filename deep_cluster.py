@@ -43,7 +43,7 @@ class Subset(data.Dataset):
             indexes = np.random.choice(images_groups[i], size_per_label,
                                        replace=(len(images_groups[i]) <= size_per_label)
                                        )
-            res.extend([(a[0],a[1]) for index in indexes for a in self.original_dataset.imgs[index]])
+            res.extend([self.original_dataset.imgs[index] for index in indexes])
         return res
 
     def __str__(self) -> str:
