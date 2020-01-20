@@ -327,7 +327,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
 
         # Load model
         last_epoch = models.load_from_checkpoint(model, optimizer, checkpoint_dir + "/" + model_latest_chkpt)
-        start_epoch = last_epoch + 1
+        start_epoch = last_epoch
 
         # Load previous nmi values
         nmi_meter.load_from_csv(output_directory + "/" + "model_nmi.csv")
