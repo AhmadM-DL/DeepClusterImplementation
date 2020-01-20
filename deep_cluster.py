@@ -8,7 +8,6 @@ Created on Sat Nov 16 13:26:39 2019
 import time
 
 import numpy as np
-from torch.utils.data.dataset import T_co
 
 import utils
 import os
