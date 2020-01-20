@@ -156,10 +156,23 @@ class NMIMeter(object):
         nmi = normalized_mutual_info_score(ground_truth, predictions)
         self.nmi_array.append((epoch, nmi))
 
-    def store_as_csv(self, path):
+    def store_as_csv(self, path, override=False):
         nmi_rows = [{'Epoch': epoch, 'NMI': nmi} for (epoch, nmi) in self.nmi_array]
         nmis_df = pd.DataFrame(nmi_rows)
-        nmis_df.to_csv(path)
+
+        if not os.path.exists(path):
+            # The file don't exist; save
+            nmis_df.to_csv(path)
+            return
+        else:
+            if override:
+                nmis_df.to_csv(path)
+                return
+            else:
+                print("Error the file already exists, rerun with parameter override=True to override.")
+                return
+
+
 
     def load_from_csv(self, path):
         self.reset()

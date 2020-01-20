@@ -308,12 +308,12 @@ class ClusteringTracker(object):
         return results
 
     def save_clustering_log(self, path, override=False):
-        if not os.path.isfile(path):
+        if not os.path.exists(path):
             # The file don't exist; save
             np.save(path, self.clustering_log)
             print("Clustering Log saved at: %s" % path)
             return
-        if os.path.isfile(path):
+        if os.path.exists(path):
             if override:
                 np.save(path, self.clustering_log)
                 print("Clustering Log saved at: %s" % path)
