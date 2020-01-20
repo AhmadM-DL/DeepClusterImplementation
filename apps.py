@@ -17,7 +17,6 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
                       size_per_pseudolabel="average", network_iterations=1,
                       device_name="cuda:0", clustering_tech="kmeans", run_from_checkpoint=False,
                       verbose=0):
-
     cfg_file = output_directory + "/cfg.json"
     if verbose:
         print("Saving Configuration: %d" % cfg_file)
@@ -38,7 +37,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
            "clustering_tech": clustering_tech,
            "run_from_checkpoint": run_from_checkpoint
            }
-    json.dump(cfg, open(cfg_file,"w"))
+    json.dump(cfg, open(cfg_file, "w"))
 
     device = torch.device(device_name)
 
@@ -130,6 +129,8 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
 
             models.save_checkpoint(model=model_2, optimizer=optimizer_2, epoch=epoch,
                                    path=checkpoint_dir + "/model_2_checkpoint_%d.pth" % epoch)
+            if verbose:
+                print(" Saved models checkpoints at %s/model_n_checkpoint_$d.pth" % (checkpoint_dir, epoch))
 
         if verbose:
             print("Computing network output of the training set")
@@ -250,6 +251,15 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         models.remove_top_layer(model_1)
         models.remove_top_layer(model_2)
 
+    # Save final model
+    models.save_checkpoint(model=model_1, optimizer=optimizer_1, epoch=epoch,
+                           path=output_directory + "/final_model_1.pth")
+
+    models.save_checkpoint(model=model_2, optimizer=optimizer_2, epoch=epoch,
+                           path=output_directory + "/final_model_2.pth")
+    if verbose:
+        print(" Saved final models at %s/final_model_.pth" % output_directory)
+
 
 def mono_deep_cluster(model, n_epochs, output_directory,
                       training_transformation, trainset,
@@ -280,7 +290,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
            "clustering_tech": clustering_tech,
            "run_from_checkpoint": run_from_checkpoint
            }
-    json.dump(cfg, open(cfg_file,"w"))
+    json.dump(cfg, open(cfg_file, "w"))
 
     device = torch.device(device_name)
     if verbose:
@@ -342,6 +352,8 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         if epochs_per_checkpoint > 0 and epoch != 0 and epoch % epochs_per_checkpoint == 0:
             models.save_checkpoint(model=model, optimizer=optimizer, epoch=epoch,
                                    path=checkpoint_dir + "/model_checkpoint_%d.pth" % epoch)
+            if verbose:
+                print(" Saved a checkpoint at %s/model_checkpoint_$d.pth" % (checkpoint_dir, epoch))
 
         if verbose:
             print("Computing network output of the training set")
@@ -424,3 +436,9 @@ def mono_deep_cluster(model, n_epochs, output_directory,
             print("Removing added top layer")
 
         models.remove_top_layer(model)
+
+    # Save final model
+    models.save_checkpoint(model=model, optimizer=optimizer, epoch=epoch,
+                           path=output_directory + "/final_model.pth")
+    if verbose:
+        print(" Saved final model at %s/final_model.pth" % (output_directory))
