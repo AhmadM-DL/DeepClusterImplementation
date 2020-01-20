@@ -48,12 +48,12 @@ class Subset(data.Dataset):
 
     def save_subset(self, path):
         if not os.path.exists(path):
-            open(path,"w")
+            open(path, "w")
         np.save(path, self.imgs)
 
     def load_subset(self, path):
         if not os.path.exists(path):
-            raise Exception("Error file %s doesn't exist"%path)
+            raise Exception("Error file %s doesn't exist" % path)
         temp = np.load(path)
         self.imgs = [(a[0], a[1]) for a in temp]
         del temp

@@ -3,7 +3,7 @@ import utils
 import deep_cluster
 import os, json
 import torch
-import re
+import re, time
 import numpy as np
 from torch import nn
 
@@ -252,11 +252,9 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         models.remove_top_layer(model_2)
 
     # Save final model
-    models.save_checkpoint(model=model_1, optimizer=optimizer_1, epoch=epoch,
-                           path=output_directory + "/final_model_1.pth")
+    models.save_model_parameter(model=model_1, path=output_directory + "/final_model_1.pth", override=True)
 
-    models.save_checkpoint(model=model_2, optimizer=optimizer_2, epoch=epoch,
-                           path=output_directory + "/final_model_2.pth")
+    models.save_model_parameter(model=model_2, path=output_directory + "/final_model_2.pth", override=True)
     if verbose:
         print(" Saved final models at %s/final_model_.pth" % output_directory)
 
@@ -269,7 +267,6 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                       random_state=0, pca=0, size_per_pseudolabel="average",
                       network_iterations=1, device_name="cuda:0", clustering_tech="kmeans",
                       run_from_checkpoint=False, verbose=0):
-
     cfg_file = output_directory + "/cfg.json"
     if verbose:
         print("Saving Configuration: %d" % cfg_file)
@@ -438,7 +435,37 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         models.remove_top_layer(model)
 
     # Save final model
-    models.save_checkpoint(model=model, optimizer=optimizer, epoch=epoch,
-                           path=output_directory + "/final_model.pth")
+    models.save_model_parameter(model=model, path=output_directory + "/final_model.pth", override=True)
     if verbose:
-        print(" Saved final model at %s/final_model.pth" % (output_directory))
+        print(" Saved final model at %s/final_model.pth" % output_directory)
+
+
+def multinomial_regressor_train(model, model_path, dataloader,
+                                learning_rate, momentum, weight_decay, n_epochs,
+                                number_of_classes, device, output_directory, verbose=0):
+
+    models.load_model_parameter(model, model_path)
+
+    model_output_size = model.get_output_size()
+    models.add_top_layer(model, [('L', model_output_size, number_of_classes)], device=device)
+
+    models.freeze_module(model.features)
+    models.freeze_module(model.classifier)
+
+    loss_criterion = nn.CrossEntropyLoss(reduction='none').to(device)
+
+    optimizer = torch.optim.SGD(
+        filter(lambda x: x.requires_grad, model.top_layer.parameters()),
+        lr=learning_rate,
+        momentum=momentum,
+        weight_decay=weight_decay,
+    )
+
+    # switch to train mode
+    model.train()
+
+    for epoch in range(n_epochs):
+        models.normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, verbose)
+
+
+

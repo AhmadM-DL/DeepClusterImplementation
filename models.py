@@ -14,6 +14,11 @@ from sklearn.metrics import normalized_mutual_info_score
 import os
 
 
+def freeze_module(module):
+    for param in module.parameters():
+        param.requires_grad = False
+
+
 class NetBuilder(nn.Module):
     def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output, apply_sobel):
         super(NetBuilder, self).__init__()
@@ -237,17 +242,84 @@ def compute_network_output(dataloader, model, device, batch_size, data_size, ver
     inputs = np.squeeze(np.array(inputs))
     targets = np.array(targets)
 
-    if (return_inputs and return_targets):
+    if return_inputs and return_targets:
         return inputs, outputs, targets
 
-    if (not return_inputs and not return_targets):
+    if not return_inputs and not return_targets:
         return outputs
 
-    if (return_inputs):
+    if return_inputs:
         return inputs, outputs
 
-    if (return_targets):
+    if return_targets:
         return outputs, targets
+
+
+def normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, verbose=0):
+    # switch to train mode
+    model.train()
+
+    batch_time = utils.AverageMeter()
+    losses = utils.AverageMeter()
+    data_time = utils.AverageMeter()
+
+    end = time.time()
+    for i, (input_tensor, target_tensor) in enumerate(dataloader):
+
+        data_time.update(time.time() - end)
+
+        target = target_tensor.to(device)
+        output = model(input)
+
+        loss = loss_criterion(output, target)
+
+        if loss.dim() == 0:
+            print("Error This function expects a loss criterion that doesn't apply reduction\n")
+
+        loss = loss.mean()
+
+        losses.update(loss.item(), input_tensor.size(0))
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        if verbose and (i % 10) == 0:
+            print('Epoch: [{0}][{1}/{2}]\t'
+                  'Time: {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                  'Data: {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                  'Loss: {loss.val:.4f} ({loss.avg:.4f})'
+                  .format(epoch, i, len(dataloader), batch_time=batch_time,
+                          data_time=data_time, loss=losses))
+
+    return model
+
+
+def normal_test(model, dataloader, device):
+
+    correct_predictions = 0
+    total_predictions = 0
+    model.eval()
+
+    for input_tensor, target in dataloader:
+        target = target.to(device)
+        input_tensor = input_tensor.to(device)
+
+        output = model(input_tensor)
+
+        predicted = torch.argmax(output, 1)
+
+        total_predictions += target.size(0)
+
+        correct_predictions += (predicted == target).sum().item()
+
+    test_acc = (100 * correct_predictions / total_predictions)
+
+    return test_acc
 
 
 def deep_cluster_train(dataloader, model, loss_criterion, net_optimizer, annxed_layers_optimizer, epoch, device,

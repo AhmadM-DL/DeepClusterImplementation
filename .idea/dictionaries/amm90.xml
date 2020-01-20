@@ -1,20 +1,28 @@
 <component name="ProjectDictionaryState">
   <dictionary name="amm90">
     <words>
+      <w>alexnet</w>
       <w>chkpt</w>
       <w>chkpts</w>
+      <w>cifar</w>
+      <w>conv</w>
+      <w>convolutional</w>
       <w>cuda</w>
       <w>dataloader</w>
       <w>dataset</w>
       <w>deepcluster</w>
       <w>imgs</w>
       <w>kmeans</w>
+      <w>lenet</w>
+      <w>multinomial</w>
       <w>nmis</w>
       <w>optim</w>
       <w>preprocess</w>
       <w>preprocessing</w>
       <w>pseudolabel</w>
       <w>pseudolabels</w>
+      <w>regressor</w>
+      <w>sobel</w>
       <w>trainloader</w>
       <w>trainset</w>
       <w>unif</w>
