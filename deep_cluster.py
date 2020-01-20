@@ -39,7 +39,7 @@ class Subset(data.Dataset):
 
         # Get images indices for each class
         images_groups = [[index for (index, (y, c)) in enumerate(self.original_dataset.imgs) if c == x] for x in classes]
-        size_per_label = int(self.subset_size / len(self.images_groups))
+        size_per_label = int(self.subset_size / len(images_groups))
 
         for i in range(len(images_groups)):
 
