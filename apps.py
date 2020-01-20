@@ -95,7 +95,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         if not last_epoch_1 == last_epoch_2:
             raise Exception("Error in loading from checkpoint: the 2 models doesn't have the same latest epoch")
         else:
-            start_epoch = last_epoch_1 + 1
+            start_epoch = last_epoch_1
 
         # Load previous nmi values
         nmi_meter_1.load_from_csv(output_directory + "/" + "model_1_nmi.csv")
