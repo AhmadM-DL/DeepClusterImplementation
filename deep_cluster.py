@@ -29,28 +29,25 @@ class Subset(data.Dataset):
         self.subset_size = subset_size
         self.imgs = self.generate_subset_imgs()
 
-
     def generate_subset_imgs(self):
-
-        res = np.zeros(self.subset_size)
-
+        res = []
         # Get Unique Classes from a dataset object imgs list
         classes = set(map(lambda x: x[1], self.original_dataset.imgs))
 
         # Get images indices for each class
-        images_groups = [[index for (index, (y, c)) in enumerate(self.original_dataset.imgs) if c == x] for x in classes]
+        images_groups = [[index for (index, (y, c)) in enumerate(self.original_dataset.imgs) if c == x] for x in
+                         classes]
         size_per_label = int(self.subset_size / len(images_groups))
 
         for i in range(len(images_groups)):
-
             indexes = np.random.choice(images_groups[i], size_per_label,
                                        replace=(len(images_groups[i]) <= size_per_label)
                                        )
-            res[i * size_per_label: (i + 1) * size_per_label] = self.original_dataset.imgs[indexes]
+            res.extend(self.original_dataset.imgs[indexes])
 
         return res
 
-    def __getitem__(self, index: int) :
+    def __getitem__(self, index: int):
         path, pseudolabel = self.imgs[index]
         img = utils.pil_loader(path)
         if self.transform is not None:
