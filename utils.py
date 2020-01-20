@@ -172,13 +172,11 @@ class NMIMeter(object):
                 print("Error the file already exists, rerun with parameter override=True to override.")
                 return
 
-
-
     def load_from_csv(self, path):
         self.reset()
         nmis_df = pd.read_csv(path, index_col=0)
-        for row in nmis_df.iterrows():
-            self.nmi_array.append((row["Epoch"], row['NMI']))
+        for _, row in nmis_df.iterrows():
+            self.nmi_array.append((int(row["Epoch"]), row['NMI']))
 
     def avg(self):
         return np.average(self.nmi_array)
