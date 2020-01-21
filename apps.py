@@ -446,7 +446,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         print(" Saved final model at %s/final_model.pth" % output_directory)
 
 
-def multinomial_regressor_train(model, model_path, dataloader,
+def multinomial_regressor_train_test(model, model_path, train_dataloader, test_dataloader,
                                 learning_rate, momentum, weight_decay, n_epochs,
                                 number_of_classes, device, output_directory, verbose=0):
 
@@ -471,7 +471,9 @@ def multinomial_regressor_train(model, model_path, dataloader,
     model.train()
 
     for epoch in range(n_epochs):
-        models.normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, verbose)
+        models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
 
-
+   # test  
+    acc= models.normal_test(model, test_dataloader, device)
+    return acc
 
