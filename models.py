@@ -323,7 +323,7 @@ def normal_test(model, epoch, dataloader, device, loss_criterion=None, return_lo
         if loss.dim() == 0:
             raise Exception("Error this function expects a loss criterion that doesn't apply reduction\n")
         loss = loss.mean()
-        losses.append(loss)
+        losses.append(loss.item())
 
         predicted = torch.argmax(output, 1)
 
