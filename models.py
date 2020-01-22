@@ -20,7 +20,8 @@ def freeze_module(module):
 
 
 class NetBuilder(nn.Module):
-    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output, apply_sobel):
+    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output,
+                 apply_sobel):
         super(NetBuilder, self).__init__()
         self.sobel = None
         self.features = features
@@ -300,18 +301,15 @@ def normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, ve
     return loss_meter.avg
 
 
-def normal_test(model, epoch, dataloader, device, loss_criterion=None, return_loss=False, verbose=0):
-
+def normal_test(model, epoch, dataloader, device, loss_criterion, verbose=0):
     correct_predictions = 0
     total_predictions = 0
     model.eval()
     losses = []
 
-    if return_loss and not loss_criterion:
-        raise Exception("Error please add a loss criterion")
-
     if verbose:
         print("Testing")
+
     for i, (input_tensor, target) in enumerate(dataloader):
 
         target = target.to(device)
@@ -334,14 +332,11 @@ def normal_test(model, epoch, dataloader, device, loss_criterion=None, return_lo
         if verbose and (i % 10) == 0:
             print('Epoch: [%d][%d/%d]\t'
                   'Loss: %0.4f (%0.4f)'
-                  %(epoch, i, len(dataloader), loss, np.mean(losses)))
+                  % (epoch, i, len(dataloader), loss, np.mean(losses)))
 
     test_acc = (100 * correct_predictions / total_predictions)
 
-    if not return_loss:
-        return test_acc
-    else:
-        return test_acc, np.mean(losses)
+    return test_acc, np.mean(losses)
 
 
 def deep_cluster_train(dataloader, model, loss_criterion, net_optimizer, annxed_layers_optimizer, epoch, device,
