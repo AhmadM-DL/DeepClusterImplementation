@@ -449,7 +449,7 @@ def multinomial_regressor_train_test(model, model_path, train_dataloader, test_d
                                      number_of_classes, device, output_directory, verbose=0):
     models.load_model_parameter(model, model_path)
 
-    model_output_size = model.get_output_size()
+    model_output_size = model.get_model_output_size()
     models.add_top_layer(model, [('L', model_output_size, number_of_classes)], device=device)
 
     models.freeze_module(model.features)
