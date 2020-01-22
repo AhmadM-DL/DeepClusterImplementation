@@ -260,10 +260,12 @@ def normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, ve
     model.train()
 
     batch_time = utils.AverageMeter()
-    losses = utils.AverageMeter()
+    loss_meter = utils.AverageMeter()
     data_time = utils.AverageMeter()
 
     end = time.time()
+    if verbose:
+        print("Training")
     for i, (input_tensor, target_tensor) in enumerate(dataloader):
 
         data_time.update(time.time() - end)
@@ -278,8 +280,7 @@ def normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, ve
 
         loss = loss.mean()
 
-        losses.update(loss.item(), input_tensor.size(0))
-
+        loss_meter.update(loss.item(), input_tensor.size(0))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -294,22 +295,35 @@ def normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, ve
                   'Data: {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss: {loss.val:.4f} ({loss.avg:.4f})'
                   .format(epoch, i, len(dataloader), batch_time=batch_time,
-                          data_time=data_time, loss=losses))
+                          data_time=data_time, loss=loss_meter))
 
-    return model
+    return loss_meter.avg
 
 
-def normal_test(model, dataloader, device):
+def normal_test(model, epoch, dataloader, device, loss_criterion=None, return_loss=False, verbose=0):
 
     correct_predictions = 0
     total_predictions = 0
     model.eval()
+    losses = []
 
-    for input_tensor, target in dataloader:
+    if return_loss and not loss_criterion:
+        raise Exception("Error please add a loss criterion")
+
+    if verbose:
+        print("Testing")
+    for i, (input_tensor, target) in enumerate(dataloader):
+
         target = target.to(device)
         input_tensor = input_tensor.to(device)
 
         output = model(input_tensor)
+
+        loss = loss_criterion(output, target)
+        if loss.dim() == 0:
+            raise Exception("Error this function expects a loss criterion that doesn't apply reduction\n")
+        loss = loss.mean()
+        losses.append(loss)
 
         predicted = torch.argmax(output, 1)
 
@@ -317,9 +331,17 @@ def normal_test(model, dataloader, device):
 
         correct_predictions += (predicted == target).sum().item()
 
+        if verbose and (i % 10) == 0:
+            print('Epoch: [{0}][{1}/{2}]\t'
+                  'Loss: {3} (4})'
+                  .format(epoch, i, len(dataloader), loss, np.mean(losses)))
+
     test_acc = (100 * correct_predictions / total_predictions)
 
-    return test_acc
+    if not return_loss:
+        return test_acc
+    else:
+        return test_acc, np.mean(losses)
 
 
 def deep_cluster_train(dataloader, model, loss_criterion, net_optimizer, annxed_layers_optimizer, epoch, device,

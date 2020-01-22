@@ -444,7 +444,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         print(" Saved final model at %s/final_model.pth" % output_directory)
 
 
-def multinomial_regressor_train_test(model, model_path, train_dataloader, test_dataloader,
+def multinomial_regressor_train_test(model, model_path, train_dataloader, valid_dataloader, test_dataloader,
                                      learning_rate, momentum, weight_decay, n_epochs,
                                      number_of_classes, device, output_directory, verbose=0):
     models.load_model_parameter(model, model_path)
@@ -464,12 +464,16 @@ def multinomial_regressor_train_test(model, model_path, train_dataloader, test_d
         weight_decay=weight_decay,
     )
 
-    # switch to train mode
-    model.train()
-
+    train_losses = []
+    valid_losses = []
     for epoch in range(n_epochs):
-        models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
+        train_loss = models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
+        valid_loss = models.normal_test(model, epoch, test_dataloader, device, loss_criterion, return_loss= True)
+        train_losses.append(train_loss)
+        valid_losses.append(valid_loss)
 
     # test
     acc = models.normal_test(model, test_dataloader, device)
+    json.dump({"train_losses":train_losses, "valid_losses": valid_losses, "test_acc":acc}, open(output_directory+"/multinomial_regressor_output.json","w"))
+
     return acc
