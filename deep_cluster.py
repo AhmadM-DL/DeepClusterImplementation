@@ -19,6 +19,17 @@ from scipy.stats import entropy
 from PIL import Image
 
 
+def split_dataset(original_dataset, split_ratios: list, random_state=0):
+    subsets = []
+    if not np.sum(split_ratios) == 1:
+        raise Exception("Error the passed split_ratios doesn't sum to 1")
+    all_indices = range(0,len(original_dataset))
+    random_splitter = np.random.RandomState(random_state)
+    for ratio in split_ratios:
+        subsets.append(MySubset(random_splitter.choice(all_indices, len(original_dataset)*ratio)))
+    return subsets
+
+
 class MySubset(data.Dataset):
 
     def __init__(self, original_dataset: data.Dataset, indices: list) -> None:
