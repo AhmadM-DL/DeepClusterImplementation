@@ -35,7 +35,7 @@ class MySubset(data.Dataset):
 
     def __init__(self, original_dataset: data.Dataset, indices: list) -> None:
         self.imgs = [original_dataset.imgs[i] for i in indices]
-        self.transform = original_dataset.transfrom
+        self.transform = original_dataset.transform
 
     def __getitem__(self, index: int):
         path, pseudolabel = self.imgs[index]
