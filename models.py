@@ -269,7 +269,7 @@ def normal_train(model, dataloader, loss_criterion, optimizer, epoch, device, ve
         data_time.update(time.time() - end)
 
         target = target_tensor.to(device)
-        output = model(input)
+        output = model(input_tensor)
 
         loss = loss_criterion(output, target)
 
