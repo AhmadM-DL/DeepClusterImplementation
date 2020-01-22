@@ -468,7 +468,7 @@ def multinomial_regressor_train_test(model, model_path, train_dataloader, valid_
     valid_losses = []
     for epoch in range(n_epochs):
         train_loss = models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
-        valid_loss = models.normal_test(model, epoch, test_dataloader, device, loss_criterion, return_loss= True)
+        valid_loss = models.normal_test(model, epoch, test_dataloader, device, loss_criterion, return_loss= True, verbose=verbose)
         train_losses.append(train_loss)
         valid_losses.append(valid_loss)
 
