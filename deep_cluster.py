@@ -26,7 +26,8 @@ def split_dataset(original_dataset, split_ratios: list, random_state=0):
     all_indices = range(0,len(original_dataset))
     random_splitter = np.random.RandomState(random_state)
     for ratio in split_ratios:
-        subsets.append(MySubset(original_dataset, random_splitter.choice(all_indices, int(len(original_dataset)*ratio))))
+        subset_indices = random_splitter.choice(all_indices, int(len(original_dataset)*ratio))
+        subsets.append(MySubset(original_dataset, subset_indices))
     return subsets
 
 
