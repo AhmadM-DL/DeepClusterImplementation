@@ -333,7 +333,7 @@ def normal_test(model, epoch, dataloader, device, loss_criterion=None, return_lo
 
         if verbose and (i % 10) == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
-                  'Loss: {3} ({4})'
+                  'Loss: {:0.2f} ({:0.2f})'
                   .format(epoch, i, len(dataloader), loss, np.mean(losses)))
 
     test_acc = (100 * correct_predictions / total_predictions)
