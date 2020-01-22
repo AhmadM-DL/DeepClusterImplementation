@@ -6,9 +6,7 @@ Created on Sat Nov 16 13:26:39 2019
 """
 
 import time
-
 import numpy as np
-
 import utils
 import os
 import torch.utils.data as data
@@ -21,45 +19,11 @@ from scipy.stats import entropy
 from PIL import Image
 
 
-class Subset(data.Dataset):
+class MySubset(data.Dataset):
 
-    def __init__(self, original_dataset, transform, subset_size):
-        self.original_dataset = original_dataset
-        self.transform = transform
-        self.subset_size = subset_size
-        self.imgs = self.generate_subset_imgs()
-
-    def generate_subset_imgs(self):
-        res = []
-        # Get Unique Classes from a dataset object imgs list
-        classes = set(map(lambda x: x[1], self.original_dataset.imgs))
-
-        # Get images indices for each class
-        images_groups = [[index for (index, (y, c)) in enumerate(self.original_dataset.imgs) if c == x] for x in
-                         classes]
-        size_per_label = int(self.subset_size / len(images_groups))
-
-        for i in range(len(images_groups)):
-            indexes = np.random.choice(images_groups[i], size_per_label,
-                                       replace=(len(images_groups[i]) <= size_per_label)
-                                       )
-            res.extend([self.original_dataset.imgs[index] for index in indexes])
-        return res
-
-    def save_subset(self, path, filename="subset.npy"):
-        if not os.path.exists(path):
-            os.mkdir(path)
-        np.save(os.path.join(path, filename), self.imgs)
-
-    def load_subset(self, path):
-        if not os.path.exists(path):
-            raise Exception("Error file %s doesn't exist" % path)
-        temp = np.load(path)
-        self.imgs = [(a[0], int(a[1])) for a in temp]
-        del temp
-
-    def __str__(self) -> str:
-        return super().__str__()
+    def __init__(self, original_dataset: data.Dataset, indices: list) -> None:
+        self.imgs = [original_dataset.imgs[i] for i in indices]
+        self.transform = original_dataset.transfrom
 
     def __getitem__(self, index: int):
         path, pseudolabel = self.imgs[index]

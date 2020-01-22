@@ -17,7 +17,6 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
                       size_per_pseudolabel="average", network_iterations=1,
                       device_name="cuda:0", clustering_tech="kmeans", run_from_checkpoint=False,
                       verbose=0):
-
     utils.create_directory(output_directory, verbose)
     if epochs_per_checkpoint:
         checkpoint_dir = utils.create_directory(output_directory + "/checkpoints", verbose)
@@ -268,7 +267,6 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                       random_state=0, pca=0, size_per_pseudolabel="average",
                       network_iterations=1, device_name="cuda:0", clustering_tech="kmeans",
                       run_from_checkpoint=False, verbose=0):
-
     utils.create_directory(output_directory, verbose)
     if epochs_per_checkpoint:
         checkpoint_dir = utils.create_directory(output_directory + "/checkpoints", verbose)
@@ -447,9 +445,8 @@ def mono_deep_cluster(model, n_epochs, output_directory,
 
 
 def multinomial_regressor_train_test(model, model_path, train_dataloader, test_dataloader,
-                                learning_rate, momentum, weight_decay, n_epochs,
-                                number_of_classes, device, output_directory, verbose=0):
-
+                                     learning_rate, momentum, weight_decay, n_epochs,
+                                     number_of_classes, device, output_directory, verbose=0):
     models.load_model_parameter(model, model_path)
 
     model_output_size = model.get_output_size()
@@ -473,7 +470,6 @@ def multinomial_regressor_train_test(model, model_path, train_dataloader, test_d
     for epoch in range(n_epochs):
         models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
 
-   # test  
-    acc= models.normal_test(model, test_dataloader, device)
+    # test
+    acc = models.normal_test(model, test_dataloader, device)
     return acc
-
