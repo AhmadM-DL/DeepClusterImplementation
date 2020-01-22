@@ -473,7 +473,7 @@ def multinomial_regressor_train_test(model, model_path, train_dataloader, valid_
         valid_losses.append(valid_loss)
 
     # test
-    acc = models.normal_test(model, epoch=0, dataloader=test_dataloader, device=device, loss_criterion,  verbose)
+    acc = models.normal_test(model, 0, test_dataloader, device, loss_criterion,  verbose)
     json.dump({"train_losses": train_losses, "valid_losses": valid_losses, "test_acc":acc}, open(output_directory+"/multinomial_regressor_output.json","w"))
 
     return acc
