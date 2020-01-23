@@ -33,6 +33,14 @@ class FeatureExctractor(nn.Module):
         x = x.view(x.size(0), -1)
         return x
 
+    def get_model_output_size(self, input_image_hight, input_image_width, image_channels, device):
+        dummy_image = np.random.rand(1, image_channels, input_image_hight, input_image_width)
+        dummy_image = torch.tensor(dummy_image, dtype=torch.float, device=device)
+        dummy_output = self.forward(dummy_image)
+
+        return dummy_output.shape[1]
+
+
     def _get_sub_features(self, original_model, layer_type, layer_index):
         if not original_model.features:
             raise Exception("Error the passed original_net doesn't have a features layer")
@@ -44,7 +52,7 @@ class FeatureExctractor(nn.Module):
         else:
             sub_layers = self._get_layers_to_nonconv(original_model.features, layer_type, layer_index)
 
-        return nn.Sequential(*sub_layers)
+        return nn.SequentQial(*sub_layers)
 
 
     def _get_layers_to_conv2d(self, features, layer_index):
@@ -273,8 +281,8 @@ def compute_network_output(dataloader, model, device, batch_size, data_size, ver
 
     for i, (input_tensor, target) in enumerate(dataloader):
 
-        input = input_tensor.to(device)
-        output = model(input).data.cpu().numpy()
+        input_tensor = input_tensor.to(device)
+        output = model(input_tensor).data.cpu().numpy()
 
         if i == 0:
             outputs = np.zeros((data_size, output.shape[1])).astype('float32')
