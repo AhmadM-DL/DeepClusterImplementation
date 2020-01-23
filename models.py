@@ -39,7 +39,7 @@ class FeatureExctractor(nn.Module):
 
         sub_layers = []
 
-        if isinstance(layer_type, nn.Conv2d):
+        if layer_type == nn.Conv2d:
             sub_layers = self._get_layers_to_conv2d(original_model.features, layer_index)
         else:
             sub_layers = self._get_layers_to_nonconv(original_model.features, layer_type, layer_index)
