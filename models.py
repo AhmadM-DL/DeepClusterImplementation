@@ -19,6 +19,64 @@ def freeze_module(module):
         param.requires_grad = False
 
 
+class FeatureExctractor(nn.Module):
+
+    def __init__(self, original_model, layer_type, layer_index):
+        super(FeatureExctractor, self).__init__()
+        self.sobel = original_model.sobel
+        self.features = self._get_sub_features(original_model, layer_type, layer_index)
+
+    def forward(self, x):
+        if self.sobel:
+            x = self.sobel(x)
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        return x
+
+    def _get_sub_features(self, original_model, layer_type, layer_index):
+        if not original_model.features:
+            raise Exception("Error the passed original_net doesn't have a features layer")
+
+        sub_layers = []
+
+        if isinstance(layer_type, nn.Conv2d):
+            sub_layers = self._get_layers_to_conv2d(original_model.features, layer_index)
+        else:
+            sub_layers = self._get_layers_to_nonconv(original_model.features, layer_type, layer_index)
+
+        return nn.Sequential(*sub_layers)
+
+
+    def _get_layers_to_conv2d(self, features, layer_index):
+        sub_layers = []
+        all_layers = list(features.children())
+        current_conv_index = 0
+        for i in range(len(all_layers)):
+            sub_layers.append(all_layers[i])
+            if isinstance(all_layers[i], nn.Conv2d):
+                current_conv_index+=1
+                if current_conv_index == layer_index:
+                    # In my case a conv2d is followed by a BN, ReLU layers
+                    sub_layers.append(all_layers[i+1])
+                    sub_layers.append(all_layers[i+2])
+                    break
+        return sub_layers
+
+    def _get_layers_to_nonconv(self, features, layer_type, layer_index):
+        sub_layers = []
+        all_layers = list(features.children())
+        current_nonconv_index = 0
+        for i in range(len(all_layers)):
+            sub_layers.append(all_layers[i])
+            if isinstance(all_layers[i], nn.MaxPool2d):
+                current_nonconv_index+=1
+                if current_nonconv_index == layer_index:
+                    break
+        return sub_layers
+
+
+
+
 class NetBuilder(nn.Module):
     def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output,
                  apply_sobel):

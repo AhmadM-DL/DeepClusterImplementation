@@ -444,6 +444,15 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         print(" Saved final model at %s/final_model.pth" % output_directory)
 
 
+def nn_linear_probe(model, model_parameters_path, target_layer_type, traget_layer_index,
+                    train_dataloader, valid_dataloader, test_dataloader,
+                    learning_rate, momentum, weight_decay, n_epochs,
+                    number_of_classes, device, output_directory, verbose)
+
+    models.load_model_parameter(model, model_parameters_path)
+
+    
+
 def multinomial_regressor_train_test(model, model_path, train_dataloader, valid_dataloader, test_dataloader,
                                      learning_rate, momentum, weight_decay, n_epochs,
                                      number_of_classes, device, output_directory, verbose=0):
