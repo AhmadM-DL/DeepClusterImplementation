@@ -68,7 +68,7 @@ class FeatureExctractor(nn.Module):
         current_nonconv_index = 0
         for i in range(len(all_layers)):
             sub_layers.append(all_layers[i])
-            if isinstance(all_layers[i], nn.MaxPool2d):
+            if isinstance(all_layers[i], layer_type):
                 current_nonconv_index+=1
                 if current_nonconv_index == layer_index:
                     break
