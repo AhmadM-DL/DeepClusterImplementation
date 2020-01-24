@@ -444,11 +444,16 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         print(" Saved final model at %s/final_model.pth" % output_directory)
 
 
-def nn_linear_probe(model, model_parameters_path, target_layer_type, traget_layer_index,
+def nn_linear_probe(model, model_parameters_path, target_layer_type, target_layer_index,
                     train_dataloader, valid_dataloader, test_dataloader,
                     learning_rate, momentum, weight_decay, n_epochs,
                     number_of_classes, device, output_directory, verbose,
                     input_height, input_width, input_channel):
+
+    # Get layer type and index as str
+    target_layer_type_str = str(nn.MaxPool2d).split(".")[-1]
+    target_layer_type_str = ''.join([c for c in target_layer_type_str if c.isalpha() or c.isnumeric()])
+    target_layer_str = target_layer_type_str+target_layer_index
 
     # Load model parameters
     models.load_model_parameter(model, model_parameters_path)
@@ -485,7 +490,7 @@ def nn_linear_probe(model, model_parameters_path, target_layer_type, traget_laye
 
     # Test Model and get Accuracy
     acc = models.normal_test(model, 0, test_dataloader, device, loss_criterion,  verbose)
-    json.dump({"train_losses": train_losses, "valid_losses": valid_losses, "test_acc":acc}, open(output_directory+"/multinomial_regressor_output.json","w"))
+    json.dump({"train_losses": train_losses, "valid_losses": valid_losses, "test_acc":acc}, open(output_directory+"/linear_probe_"+target_layer_str+"_output.json","w"))
 
     return acc
 
