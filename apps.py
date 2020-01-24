@@ -354,7 +354,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
             models.save_checkpoint(model=model, optimizer=optimizer, epoch=epoch,
                                    path=checkpoint_dir + "/model_checkpoint_%d.pth" % epoch)
             if verbose:
-                print(" Saved a checkpoint at %s/model_checkpoint_$d.pth" % (checkpoint_dir, epoch))
+                print(" Saved a checkpoint at %s/model_checkpoint_%d.pth" % (checkpoint_dir, epoch))
 
         if verbose:
             print("Computing network output of the training set")
