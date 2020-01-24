@@ -451,7 +451,7 @@ def nn_linear_probe(model, model_parameters_path, target_layer_type, target_laye
                     input_height, input_width, input_channel):
 
     # Get layer type and index as str
-    target_layer_type_str = str(nn.MaxPool2d).split(".")[-1]
+    target_layer_type_str = str(target_layer_type).split(".")[-1]
     target_layer_type_str = ''.join([c for c in target_layer_type_str if c.isalpha() or c.isnumeric()])
     target_layer_str = target_layer_type_str + str(target_layer_index)
 
