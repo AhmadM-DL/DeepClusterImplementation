@@ -25,6 +25,9 @@ class FeatureExctractor(nn.Module):
         super(FeatureExctractor, self).__init__()
         self.sobel = original_model.sobel
         self.features = self._get_sub_features(original_model, layer_type, layer_index)
+        # Freeze Layers
+        for param in module.parameter():
+            param.requires_grad = False
 
     def forward(self, x):
         if self.sobel:
@@ -112,7 +115,7 @@ class NetBuilder(nn.Module):
         return x
 
     def _initialize_weights(self):
-        for y, m in enumerate(self.modules()):
+        for _, m in enumerate(self.modules()):
 
             if isinstance(m, nn.Conv2d):
 
@@ -528,6 +531,21 @@ def load_from_checkpoint(model, optimizer, path):
     else:
         print("    => no checkpoint found at '{}'".format(path))
 
+def add_probe_layer(model, layer_input_size, layer_output_size, device, weight_mean=0, weight_std=0.01):
+
+    if not model.features:
+        raise Exception("Error model deosn't have a features module")
+
+    layers = list(model.features.children())
+
+    probe_layer = nn.Linear(layer_input_size, layer_output_size)
+    probe_layer.weight.data.normal_(weight_mean, weight_std)
+    probe_layer.bias.data.zero_()
+    probe_layer.to(device)
+
+    layers.append(probe_layer)
+
+    return nn.sequential(*layers)
 
 def save_model_parameter(model, path, override=False):
     if not os.path.isfile(path):

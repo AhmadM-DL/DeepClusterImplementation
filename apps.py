@@ -447,9 +447,48 @@ def mono_deep_cluster(model, n_epochs, output_directory,
 def nn_linear_probe(model, model_parameters_path, target_layer_type, traget_layer_index,
                     train_dataloader, valid_dataloader, test_dataloader,
                     learning_rate, momentum, weight_decay, n_epochs,
-                    number_of_classes, device, output_directory, verbose):
+                    number_of_classes, device, output_directory, verbose,
+                    input_height, input_width, input_channel):
 
+    # Load model parameters
     models.load_model_parameter(model, model_parameters_path)
+
+    # Get specified model features
+    submodel = models.FeatureExctractor(model, target_layer_type, target_layer_index)
+
+    # Get submodel output size
+    submodel_output_size = submodel.get_model_output_size(input_height, input_width, input_channel, device)
+
+    # Add probing layer
+    models.add_probe_layer(submodel, layer_input_size=submodel_output_size,
+                           layer_output_size=number_of_classes, device=device)
+
+    # Use Cross Entropy Loss Criterion
+    loss_criterion = nn.CrossEntropyLoss(reduction='none').to(device)
+
+    # Declare Optimizer
+    optimizer = torch.optim.SGD(
+        filter(lambda x: x.requires_grad, submodel.parameters()),
+        lr=learning_rate,
+        momentum=momentum,
+        weight_decay=weight_decay,
+    )
+
+    # Train Model
+    train_losses = []
+    valid_losses = []
+    for epoch in range(n_epochs):
+        train_loss = models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
+        valid_loss = models.normal_test(model, epoch, valid_dataloader, device, loss_criterion, verbose=verbose)
+        train_losses.append(train_loss)
+        valid_losses.append(valid_loss)
+
+    # Test Model and get Accuracy
+    acc = models.normal_test(model, 0, test_dataloader, device, loss_criterion,  verbose)
+    json.dump({"train_losses": train_losses, "valid_losses": valid_losses, "test_acc":acc}, open(output_directory+"/multinomial_regressor_output.json","w"))
+
+    return acc
+
 
 
 
