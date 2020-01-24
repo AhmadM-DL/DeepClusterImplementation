@@ -55,7 +55,7 @@ class FeatureExctractor(nn.Module):
         else:
             sub_layers = self._get_layers_to_nonconv(original_model.features, layer_type, layer_index)
 
-        return nn.SequentQial(*sub_layers)
+        return nn.Sequential(*sub_layers)
 
 
     def _get_layers_to_conv2d(self, features, layer_index):
