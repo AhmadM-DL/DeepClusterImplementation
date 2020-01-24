@@ -545,7 +545,9 @@ def add_probe_layer(model, layer_input_size, layer_output_size, device, weight_m
 
     layers.append(probe_layer)
 
-    return nn.Sequential(*layers)
+    model.features = nn.Sequential(*layers)
+
+    return
 
 def save_model_parameter(model, path, override=False):
     if not os.path.isfile(path):
