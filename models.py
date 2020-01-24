@@ -26,7 +26,7 @@ class FeatureExctractor(nn.Module):
         self.sobel = original_model.sobel
         self.features = self._get_sub_features(original_model, layer_type, layer_index)
         # Freeze Layers
-        for param in module.parameter():
+        for param in features.parameter():
             param.requires_grad = False
 
     def forward(self, x):
