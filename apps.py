@@ -483,13 +483,13 @@ def nn_linear_probe(model, model_parameters_path, target_layer_type, target_laye
     train_losses = []
     valid_losses = []
     for epoch in range(n_epochs):
-        train_loss = models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
-        valid_loss = models.normal_test(model, epoch, valid_dataloader, device, loss_criterion, verbose=verbose)
+        train_loss = models.normal_train(submodel, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
+        valid_loss = models.normal_test(submodel, epoch, valid_dataloader, device, loss_criterion, verbose=verbose)
         train_losses.append(train_loss)
         valid_losses.append(valid_loss)
 
     # Test Model and get Accuracy
-    acc = models.normal_test(model, 0, test_dataloader, device, loss_criterion,  verbose)
+    acc = models.normal_test(submodel, 0, test_dataloader, device, loss_criterion,  verbose)
     json.dump({"train_losses": train_losses, "valid_losses": valid_losses, "test_acc":acc}, open(output_directory+"/linear_probe_"+target_layer_str+"_output.json","w"))
 
     return acc
