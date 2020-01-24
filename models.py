@@ -25,6 +25,9 @@ class FeatureExctractor(nn.Module):
         super(FeatureExctractor, self).__init__()
         self.sobel = original_model.sobel
         self.features = self._get_sub_features(original_model, layer_type, layer_index)
+        self.classifier = None
+        self.top_layer = None
+
         # Freeze Layers
         for param in self.features.parameters():
             param.requires_grad = False
@@ -32,8 +35,13 @@ class FeatureExctractor(nn.Module):
     def forward(self, x):
         if self.sobel:
             x = self.sobel(x)
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
+        if self.features:
+            x = self.features(x)
+            x = x.view(x.size(0), -1)
+        if self.classifier:
+            x = self.classifier(x)
+        if self.top_layer:
+            x = self.top_layer(x)
         return x
 
     def get_model_output_size(self, input_image_hight, input_image_width, image_channels, device):
@@ -533,19 +541,12 @@ def load_from_checkpoint(model, optimizer, path):
 
 def add_probe_layer(model, layer_input_size, layer_output_size, device, weight_mean=0, weight_std=0.01):
 
-    if not model.features:
-        raise Exception("Error model deosn't have a features module")
-
-    layers = list(model.features.children())
-
     probe_layer = nn.Linear(layer_input_size, layer_output_size)
     probe_layer.weight.data.normal_(weight_mean, weight_std)
     probe_layer.bias.data.zero_()
     probe_layer.to(device)
 
-    layers.append(probe_layer)
-
-    model.features = nn.Sequential(*layers)
+    model.top_layer = probe_layer
 
     return
 
