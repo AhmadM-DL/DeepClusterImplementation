@@ -309,7 +309,7 @@ def compute_network_output(dataloader, model, device, batch_size, data_size, ver
         batch_time.update(time.time() - end)
         end = time.time()
 
-        inputs.extend(input_tensor.data.numpy())
+        inputs.extend(input_tensor.data.cpu().numpy())
         targets.extend(target.data.numpy())
 
         if verbose and (i % 10) == 0:

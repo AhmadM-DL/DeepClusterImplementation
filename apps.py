@@ -267,6 +267,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                       random_state=0, pca=0, size_per_pseudolabel="average",
                       network_iterations=1, device_name="cuda:0", clustering_tech="kmeans",
                       run_from_checkpoint=False, verbose=0):
+                      
     utils.create_directory(output_directory, verbose)
     if epochs_per_checkpoint:
         checkpoint_dir = utils.create_directory(output_directory + "/checkpoints", verbose)
