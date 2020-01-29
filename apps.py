@@ -457,7 +457,8 @@ def nn_linear_probe(model, model_parameters_path, target_layer_type, target_laye
     target_layer_str = target_layer_type_str + str(target_layer_index)
 
     # Load model parameters
-    models.load_model_parameter(model, model_parameters_path)
+    if model_parameters_path:
+        models.load_model_parameter(model, model_parameters_path)
 
     # Get specified model features
     submodel = models.FeatureExctractor(model, target_layer_type, target_layer_index)
