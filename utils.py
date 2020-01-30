@@ -485,7 +485,19 @@ def create_directory(path, verbose=0):
             print("Directory: %s already exists" % path)
     return path
 
-def plot_nmi(nmi_path, image_output_path=None, **kwargs):
+def plot_clustering_log(clustering_log_path, plots_output_path=none, **kwargs):
+    clustering_tracker = deep_cluster.ClusteringTracker()
+    filename = os.path.split(nmi_path)[1].split(".")[0]
+    clustering_tracker.load_clustering_log(clustering_log_path)
+
+    
+
+    plt.plot(clustering_tracker.epochs_avg_entropy(ground_truth=[t for (_,t )in trainset.imgs]))
+    plt.title("Intersected Clusters Entropy vs Epoch")
+    plt.xlabel("Epoch")
+    plt.ylabel("Avg. Entropy")
+
+def plot_nmi(nmi_path, plot_output_path=None, **kwargs):
     nmi_meter = utils.NMIMeter()
     filename = os.path.split(nmi_path)[1].split(".")[0]
     nmi_meter.load_from_csv(nmi_path)
@@ -497,5 +509,5 @@ def plot_nmi(nmi_path, image_output_path=None, **kwargs):
     plt.title("NMI vs Epochs _ %s"%(filename))
     plt.xlabel("Epoch")
     plt.ylabel("NMI")
-    if image_output_path:
-        plt.savefig(image_output_path+"/"+filename+".png")
+    if plot_output_path:
+        plt.savefig(plot_output_path+"/"+filename+".png")

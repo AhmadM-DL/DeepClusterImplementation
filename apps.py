@@ -9,7 +9,7 @@ from torch import nn
 
 
 def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
-                      training_transformation, trainset,
+                      training_transformation,
                       learning_rate, momentum, weight_decay, n_clusters,
                       trainloader, trainloader_batch_size=256,
                       training_batch_size=256,
@@ -170,7 +170,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         images_pseudolabels, rearranged_crossed_clusters = deep_cluster.clustered_data_indices_to_list(crossed_clusters,
                                                                                                        reindex=True)
 
-        deep_cluster_trainset = deep_cluster.LabelsReassignedDataset(original_dataset=trainset,
+        deep_cluster_trainset = deep_cluster.LabelsReassignedDataset(original_dataset=trainloader.dataset,
                                                                      image_indexes=images_pseudolabels[0],
                                                                      pseudolabels=images_pseudolabels[1],
                                                                      transform=training_transformation)
@@ -260,7 +260,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
 
 
 def mono_deep_cluster(model, n_epochs, output_directory,
-                      training_transformation, trainset,
+                      training_transformation,
                       learning_rate, momentum, weight_decay, n_clusters,
                       trainloader, trainloader_batch_size=256,
                       training_batch_size=256, epochs_per_checkpoint=20,
@@ -381,7 +381,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
             deepcluster.clustered_data_indices,
             reindex=True)
 
-        deep_cluster_trainset = deep_cluster.LabelsReassignedDataset(original_dataset=trainset,
+        deep_cluster_trainset = deep_cluster.LabelsReassignedDataset(original_dataset=trainloader.dataset,
                                                                      image_indexes=images_pseudolabels[0],
                                                                      pseudolabels=images_pseudolabels[1],
                                                                      transform=training_transformation)
@@ -496,39 +496,3 @@ def nn_linear_probe(model, model_parameters_path, target_layer_type, target_laye
 
     return acc
 
-
-
-
-def multinomial_regressor_train_test(model, model_path, train_dataloader, valid_dataloader, test_dataloader,
-                                     learning_rate, momentum, weight_decay, n_epochs,
-                                     number_of_classes, device, output_directory, verbose=0):
-    models.load_model_parameter(model, model_path)
-
-    model_output_size = model.get_model_output_size()
-    models.add_top_layer(model, [('L', model_output_size, number_of_classes)], device=device)
-
-    models.freeze_module(model.features)
-    models.freeze_module(model.classifier)
-
-    loss_criterion = nn.CrossEntropyLoss(reduction='none').to(device)
-
-    optimizer = torch.optim.SGD(
-        filter(lambda x: x.requires_grad, model.top_layer.parameters()),
-        lr=learning_rate,
-        momentum=momentum,
-        weight_decay=weight_decay,
-    )
-
-    train_losses = []
-    valid_losses = []
-    for epoch in range(n_epochs):
-        train_loss = models.normal_train(model, train_dataloader, loss_criterion, optimizer, epoch, device, verbose)
-        valid_loss = models.normal_test(model, epoch, valid_dataloader, device, loss_criterion, verbose=verbose)
-        train_losses.append(train_loss)
-        valid_losses.append(valid_loss)
-
-    # test
-    acc = models.normal_test(model, 0, test_dataloader, device, loss_criterion,  verbose)
-    json.dump({"train_losses": train_losses, "valid_losses": valid_losses, "test_acc":acc}, open(output_directory+"/multinomial_regressor_output.json","w"))
-
-    return acc

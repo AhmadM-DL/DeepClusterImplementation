@@ -232,19 +232,17 @@ class ClusteringTracker(object):
 
     def __init__(self):
         self.clustering_log = []
-        self.epochs = []
 
     def update(self, epoch, clustered_data_indices):
-        self.clustering_log.append(clustered_data_indices)
-        self.epochs.append(epoch)
+        self.clustering_log.append( (epoch, clustered_data_indices) )
 
     def size_new_data_btw_epochs(self):
 
         new_data_sizes = []
 
         for i in range(1, len(self.clustering_log)):
-            prev_clusters = self.clustering_log[i - 1]
-            curr_clusters = self.clustering_log[i]
+            prev_clusters = self.clustering_log[1][i - 1]
+            curr_clusters = self.clustering_log[1][i]
 
             flat_prev_clusters = set([item for cluster in prev_clusters for item in cluster])
             flat_curr_clusters = set([item for cluster in curr_clusters for item in cluster])
