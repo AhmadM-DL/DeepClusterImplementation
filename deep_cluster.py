@@ -241,8 +241,8 @@ class ClusteringTracker(object):
         new_data_sizes = []
 
         for i in range(1, len(self.clustering_log)):
-            prev_clusters = self.clustering_log[1][i - 1]
-            curr_clusters = self.clustering_log[1][i]
+            prev_clusters = self.clustering_log[i - 1][1]
+            curr_clusters = self.clustering_log[i][1]
 
             flat_prev_clusters = set([item for cluster in prev_clusters for item in cluster])
             flat_curr_clusters = set([item for cluster in curr_clusters for item in cluster])
@@ -334,4 +334,9 @@ def plot_clustering_log(clustering_log_path, plots_output_path=None, **kwargs):
     clustering_tracker = ClusteringTracker()
     filename = os.path.split(clustering_log_path)[1].split(".")[0]
     clustering_tracker.load_clustering_log(clustering_log_path)
+    # TODO update to new Clustering tracker: old -> 
+    # old -> self.epochs self.clustering_logs
+    # new -> self.clustering_logs (epoch, clusters)
+    # i.e remove the below line
+    clustering_tracker.clustering_log= [ (epoch, clusters) for epoch,clusters in enumerate(clustering_tracker.clustering_log)]
 
