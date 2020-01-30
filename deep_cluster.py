@@ -331,7 +331,7 @@ class ClusteringTracker(object):
         return
 
 def plot_clustering_log(clustering_log_path, plots_output_path=None, **kwargs):
-    clustering_tracker = deep_cluster.ClusteringTracker()
-    filename = os.path.split(nmi_path)[1].split(".")[0]
+    clustering_tracker = ClusteringTracker()
+    filename = os.path.split(clustering_log_path)[1].split(".")[0]
     clustering_tracker.load_clustering_log(clustering_log_path)
 
