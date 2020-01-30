@@ -487,10 +487,10 @@ def create_directory(path, verbose=0):
 
 def plot_nmi(nmi_path, image_output_path=None, **kwargs):
     nmi_meter = utils.NMIMeter()
-    filename = os.path.split(nmi_path)[1].split(".")[1]
+    filename = os.path.split(nmi_path)[1].split(".")[0]
     nmi_meter.load_from_csv(nmi_path)
 
-    plt.figure(figsize= kwargs.get("figsize",(10,10)))
+    plt.figure(figsize= kwargs.get("figsize",(8,8)))
     epochs = [epoch for epoch,_ in nmi_meter.nmi_array]
     nmis = [nmi for _,nmi in nmi_meter.nmi_array]
     plt.plot(epochs, nmis)
