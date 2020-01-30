@@ -483,3 +483,16 @@ def create_directory(path, verbose=0):
         if verbose:
             print("Directory: %s already exists" % path)
     return path
+
+def plot_nmi(nmi_path, image_output_path=None, **kwargs):
+    nmi_meter = utils.NMIMeter()
+    filename = os.path.split(nmi_path)[1].split(".")[1]
+    nmi_meter.load_from_csv(nmi_path)
+
+    plt.figure(figsize= kwargs.get("figsize",(20,20)))
+    plt.plot(nmi_meter.nmi_array)
+    plt.title("NMI vs Epochs _ %s"%(filename))
+    plt.xlabel("Epoch")
+    plt.ylabel("NMI")
+    if image_output_path:
+        plt.savefig(image_output_path+"/"+filename+".png")
