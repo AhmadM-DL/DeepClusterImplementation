@@ -256,11 +256,11 @@ class ClusteringTracker(object):
     def epochs_avg_entropy(self, ground_truth):
         avg_entropies = []
 
-        for i, clusters in enumerate(self.clustering_log):
+        for (_, clusters) in self.clustering_log:
             entropies = []
-            for j, cluster in enumerate(self.clustering_log[i]):
+            for cluster in clusters:
                 images_original_classes = [ground_truth[image_index] for image_index in cluster]
-                values, counts = np.unique(images_original_classes, return_counts=True)
+                _, counts = np.unique(images_original_classes, return_counts=True)
                 entropies.append(entropy(counts))
             avg_entropies.append(np.average(entropies))
 
@@ -270,11 +270,11 @@ class ClusteringTracker(object):
 
         results = []
 
-        epoch_index = self.epochs.index(start_epoch)
-        target_cluster = set(self.clustering_log[epoch_index][target_cluster_index])
+        start_epoch_index = [ epoch for epoch,_ in self.clustering_log].index(start_epoch)
+        target_cluster = set(self.clustering_log[start_epoch_index][1][target_cluster_index])
 
-        for i in range(epoch_index + 1, len(self.clustering_log)):
-            for k, cluster in enumerate(self.clustering_log[i]):
+        for i in range(start_epoch_index + 1, len(self.clustering_log)):
+            for k, cluster in enumerate(self.clustering_log[i][1]):
                 intersection = list(set(cluster) & target_cluster)
                 if (len(intersection) > 0):
                     results.append((i, k, intersection))
