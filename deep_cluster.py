@@ -342,8 +342,8 @@ def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=Non
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Entropy")
 
-    if plot_output_path:
-        plt.savefig(plot_output_path+"/"+filename+"_entropy.png")
+    if plots_output_path:
+        plt.savefig(plots_output_path+"/"+filename+"_entropy.png")
 
     # Plot crossed clusters size vs epochs
     l_sizes= []
@@ -357,8 +357,8 @@ def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=Non
     plt.xlabel("Epoch")
     plt.ylabel("Size")
 
-    if plot_output_path:
-        plt.savefig(plot_output_path+"/"+filename+"_cluster_size.png")
+    if plots_output_path:
+        plt.savefig(plots_output_path+"/"+filename+"_cluster_size.png")
 
     # Plot size of new images arising from crossed clusters vs epochs
     plt.plot( clustering_tracker.size_new_data_btw_epochs() )
@@ -366,5 +366,5 @@ def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=Non
     plt.xlabel("Epoch")
     plt.ylabel("Size")
 
-    if plot_output_path:
-        plt.savefig(plot_output_path+"/"+filename+"new_imgs_size.png")
+    if plots_output_path:
+        plt.savefig(plots_output_paths+"/"+filename+"new_imgs_size.png")
