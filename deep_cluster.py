@@ -363,7 +363,7 @@ def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=Non
         plt.savefig(plots_output_path+"/"+filename+"_cluster_size.png")
 
     # Plot size of new images arising from crossed clusters vs epochs
-    fig = plt.figure(kwargs.get("figsize",(8,8)))
+    fig = plt.figure(figsize=kwargs.get("figsize",(8,8)))
     plt.plot( clustering_tracker.size_new_data_btw_epochs() )
     plt.title("The size of new images arising from crossing clusters vs epochs")
     plt.xlabel("Epoch")
