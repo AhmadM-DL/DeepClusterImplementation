@@ -370,4 +370,4 @@ def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=Non
     plt.ylabel("Size")
 
     if plots_output_path:
-        plt.savefig(plots_output_path+"/"+filename+"new_imgs_size.png")
+        plt.savefig(plots_output_path+"/"+filename+"_new_imgs_size.png")
