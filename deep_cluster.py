@@ -330,13 +330,41 @@ class ClusteringTracker(object):
         plt.show()
         return
 
-def plot_clustering_log(clustering_log_path, plots_output_path=None, **kwargs):
+def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=None, **kwargs):
     clustering_tracker = ClusteringTracker()
     filename = os.path.split(clustering_log_path)[1].split(".")[0]
     clustering_tracker.load_clustering_log(clustering_log_path)
-    # TODO update to new Clustering tracker: old -> 
-    # old -> self.epochs self.clustering_logs
-    # new -> self.clustering_logs (epoch, clusters)
-    # i.e remove the below line
     clustering_tracker.clustering_log= [ (epoch, clusters) for epoch,clusters in enumerate(clustering_tracker.clustering_log)]
 
+    # Plot clusters avg. entropy vs. epochs 
+    plt.plot(clustering_tracker.epochs_avg_entropy(ground_truth=[t for (_,t )in trainset.imgs]))
+    plt.title("Intersected Clusters Entropy vs Epoch")
+    plt.xlabel("Epoch")
+    plt.ylabel("Avg. Entropy")
+
+    if plot_output_path:
+        plt.savefig(plot_output_path+"/"+filename+"_entropy.png")
+
+    # Plot crossed clusters size vs epochs
+    l_sizes= []
+    for _,clusters_log in clustering_tracker.clustering_log:
+        sizes = []
+        for cluster in clusters_log:
+            sizes.append(len(cluster))
+        l_sizes.append(np.sum(sizes))
+    plt.plot(l_sizes)
+    plt.title("Intersected Clusters Size")
+    plt.xlabel("Epoch")
+    plt.ylabel("Size")
+
+    if plot_output_path:
+        plt.savefig(plot_output_path+"/"+filename+"_cluster_size.png")
+
+    # Plot size of new images arising from crossed clusters vs epochs
+    plt.plot( clustering_tracker.size_new_data_btw_epochs() )
+    plt.title("The size of new images arising from crossing clusters vs epochs")
+    plt.xlabel("Epoch")
+    plt.ylabel("Size")
+
+    if plot_output_path:
+        plt.savefig(plot_output_path+"/"+filename+"new_imgs_size.png")
