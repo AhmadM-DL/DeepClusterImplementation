@@ -51,7 +51,6 @@ class FeatureExctractor(nn.Module):
 
         return dummy_output.shape[1]
 
-
     def _get_sub_features(self, original_model, layer_type, layer_index):
         if not original_model.features:
             raise Exception("Error the passed original_net doesn't have a features layer")
@@ -65,7 +64,6 @@ class FeatureExctractor(nn.Module):
 
         return nn.Sequential(*sub_layers)
 
-
     def _get_layers_to_conv2d(self, features, layer_index):
         sub_layers = []
         all_layers = list(features.children())
@@ -73,11 +71,11 @@ class FeatureExctractor(nn.Module):
         for i in range(len(all_layers)):
             sub_layers.append(all_layers[i])
             if isinstance(all_layers[i], nn.Conv2d):
-                current_conv_index+=1
+                current_conv_index += 1
                 if current_conv_index == layer_index:
                     # In my case a conv2d is followed by a BN, ReLU layers
-                    sub_layers.append(all_layers[i+1])
-                    sub_layers.append(all_layers[i+2])
+                    sub_layers.append(all_layers[i + 1])
+                    sub_layers.append(all_layers[i + 2])
                     break
         return sub_layers
 
@@ -88,12 +86,10 @@ class FeatureExctractor(nn.Module):
         for i in range(len(all_layers)):
             sub_layers.append(all_layers[i])
             if isinstance(all_layers[i], layer_type):
-                current_nonconv_index+=1
+                current_nonconv_index += 1
                 if current_nonconv_index == layer_index:
                     break
         return sub_layers
-
-
 
 
 class NetBuilder(nn.Module):
@@ -539,8 +535,8 @@ def load_from_checkpoint(model, optimizer, path):
     else:
         print("    => no checkpoint found at '{}'".format(path))
 
-def add_probe_layer(model, layer_input_size, layer_output_size, device, weight_mean=0, weight_std=0.01):
 
+def add_probe_layer(model, layer_input_size, layer_output_size, device, weight_mean=0, weight_std=0.01):
     probe_layer = nn.Linear(layer_input_size, layer_output_size)
     probe_layer.weight.data.normal_(weight_mean, weight_std)
     probe_layer.bias.data.zero_()
@@ -549,6 +545,7 @@ def add_probe_layer(model, layer_input_size, layer_output_size, device, weight_m
     model.top_layer = probe_layer
 
     return
+
 
 def save_model_parameter(model, path, override=False):
     if not os.path.isfile(path):

@@ -330,6 +330,7 @@ class ClusteringTracker(object):
         plt.show()
         return
 
+
 def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=None, **kwargs):
     clustering_tracker = ClusteringTracker()
     filename = os.path.split(clustering_log_path)[1].split(".")[0]
