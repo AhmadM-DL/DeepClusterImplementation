@@ -93,6 +93,7 @@ class SubsetUniformSampler(Sampler):
         return
 
     def get_indices(self):
+
         res = np.zeros(self.size)
 
         # Get Unique Classes from a dataset object imgs list
@@ -484,18 +485,30 @@ def create_directory(path, verbose=0):
             print("Directory: %s already exists" % path)
     return path
 
+def plot_probing_evolution(probing_output_path, probing_layer, probing_layer_index,**kwargs):
+    porbing_output = json.load(open(probing_ouput_path,"r"))
+    fig = plt.figure(kwargs.get("figsize",(8,8)))
+    train_losses = porbing_output["train_losses"]
+    valid_losses = [loss for _,loss in porbing_output["valid_losses"]]
+    plt.plot(train_losses)
+    plt.plot(valid_losses)
+    plt.legend(["Training_loss", "Validation_loss"])
+    plt.title("Linear Probing on Layer %s_%d"%(probing_layer, probing_layer_index))
+    plt.xlabel("Epoch")
+    plt.ylabel("Cross Entropy Loss")
+
 
 def plot_nmi(nmi_path, plot_output_path=None, **kwargs):
     nmi_meter = utils.NMIMeter()
     filename = os.path.split(nmi_path)[1].split(".")[0]
     nmi_meter.load_from_csv(nmi_path)
 
-    plt.figure(figsize=kwargs.get("figsize", (8, 8)))
-    epochs = [epoch for epoch, _ in nmi_meter.nmi_array]
-    nmis = [nmi for _, nmi in nmi_meter.nmi_array]
+    plt.figure(figsize= kwargs.get("figsize",(8,8)))
+    epochs = [epoch for epoch,_ in nmi_meter.nmi_array]
+    nmis = [nmi for _,nmi in nmi_meter.nmi_array]
     plt.plot(epochs, nmis)
-    plt.title("NMI vs Epochs _ %s" % (filename))
+    plt.title("NMI vs Epochs _ %s"%(filename))
     plt.xlabel("Epoch")
     plt.ylabel("NMI")
     if plot_output_path:
-        plt.savefig(plot_output_path + "/" + filename + ".png")
+        plt.savefig(plot_output_path+"/"+filename+".png")
