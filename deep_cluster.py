@@ -23,11 +23,12 @@ def split_dataset(original_dataset, split_ratios: list, random_state=0):
     subsets = []
     if not np.sum(split_ratios) == 1:
         raise Exception("Error the passed split_ratios doesn't sum to 1")
-    all_indices = range(0,len(original_dataset))
+    available_indices = range(0,len(original_dataset))
     random_splitter = np.random.RandomState(random_state)
     for ratio in split_ratios:
-        subset_indices = random_splitter.choice(all_indices, int(len(original_dataset)*ratio))
-        subsets.append(MySubset(original_dataset, subset_indices))
+        subset_indices = random_splitter.choice(available_indices, int(len(original_dataset)*ratio), replace=False)
+        available_indices = list(set(available_indices) - set(subset_indices))
+        subsets.append( MySubset(original_dataset, subset_indices))
     return subsets
 
 
