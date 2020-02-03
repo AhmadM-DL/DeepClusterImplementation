@@ -245,11 +245,11 @@ class ClassSpecificImageGeneration:
             optimizer.step()
 
             # Recreate image
-            self.created_image = self.__recreate_image(self.processed_image)
+            self.created_image = self.__recreate_image(processed_image)
 
-        return self.processed_image
+        return processed_image
 
-    def __preprocess_image(pil_im, resize_im=0):
+    def __preprocess_image(self, pil_im, resize_im=0):
         """
             Processes image for CNNs
         Args:
@@ -286,7 +286,7 @@ class ClassSpecificImageGeneration:
 
         return im_as_var
 
-    def __recreate_image(im_as_var):
+    def __recreate_image(self, im_as_var):
         """
             Recreates images from a torch variable, sort of reverse preprocessing
         Args:
@@ -418,7 +418,7 @@ def plot_cluster_images(cluster, images_paths, percent_of_images_to_plot=100):
 
 def plot_set_of_images(images_indices, images_paths, figsize=(20, 20)):
     N = len(images_indices)
-    fig = plt.figure(figsize=figsize)
+    plt.figure(figsize=figsize)
     images_to_plot_paths = np.array(images_paths)[images_indices]
 
     for i, image_path in enumerate(images_to_plot_paths):
@@ -429,7 +429,7 @@ def plot_set_of_images(images_indices, images_paths, figsize=(20, 20)):
 
 
 def plot_clusters_histograms(clusters, epoch, ground_truth):
-    fig = plt.figure(figsize=(20, 30))
+    plt.figure(figsize=(20, 30))
 
     for (n, cluster) in enumerate(clusters[epoch]):
         images_original_classes = [ground_truth[image_index] for image_index in cluster]
@@ -437,7 +437,7 @@ def plot_clusters_histograms(clusters, epoch, ground_truth):
         plt.xticks(rotation='horizontal')
         plt.yticks([])
 
-        values, counts = np.unique(images_original_classes, return_counts=True)
+        _, counts = np.unique(images_original_classes, return_counts=True)
         cluster_entropy = entropy(counts)
         # max_count_target = values[np.argmax(counts)]
 
@@ -484,7 +484,7 @@ def create_directory(path, verbose=0):
 
 def plot_probing_evolution(probing_output_path, probing_layer, probing_layer_index, plot_output_path=None, **kwargs):
     porbing_output = json.load(open(probing_output_path,"r"))
-    fig = plt.figure(kwargs.get("figsize",(8,8)))
+    plt.figure(figsize=kwargs.get("figsize",(8,8)))
     train_losses = porbing_output["train_losses"]
     valid_losses = [loss for _,loss in porbing_output["valid_losses"]]
     plt.plot(train_losses)
