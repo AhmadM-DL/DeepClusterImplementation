@@ -9,6 +9,8 @@ from typing import Iterator, Sized
 import numpy as np
 from torch.utils.data.sampler import Sampler
 import utils
+import random
+
 import pickle, os, copy, hashlib, json
 import torch
 from torch.optim import SGD
@@ -497,6 +499,14 @@ def plot_probing_evolution(probing_output_path, probing_layer, probing_layer_ind
         filename = "%s_%d_probing_output"%(probing_layer, probing_layer_index)
         plt.savefig(plot_output_path+"/"+filename+".png")
 
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    np.random.seed(seed)
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
 
 def plot_nmi(nmi_path, plot_output_path=None, **kwargs):
     nmi_meter = utils.NMIMeter()
