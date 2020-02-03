@@ -483,7 +483,7 @@ def create_directory(path, verbose=0):
     return path
 
 def plot_probing_evolution(probing_output_path, probing_layer, probing_layer_index, plot_output_path=None, **kwargs):
-    porbing_output = json.load(open(probing_ouput_path,"r"))
+    porbing_output = json.load(open(probing_output_path,"r"))
     fig = plt.figure(kwargs.get("figsize",(8,8)))
     train_losses = porbing_output["train_losses"]
     valid_losses = [loss for _,loss in porbing_output["valid_losses"]]
