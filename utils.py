@@ -485,7 +485,7 @@ def create_directory(path, verbose=0):
             print("Directory: %s already exists" % path)
     return path
 
-def plot_probing_evolution(probing_output_path, probing_layer, probing_layer_index,**kwargs):
+def plot_probing_evolution(probing_output_path, probing_layer, probing_layer_index, plot_output_path=None, **kwargs):
     porbing_output = json.load(open(probing_ouput_path,"r"))
     fig = plt.figure(kwargs.get("figsize",(8,8)))
     train_losses = porbing_output["train_losses"]
@@ -496,6 +496,9 @@ def plot_probing_evolution(probing_output_path, probing_layer, probing_layer_ind
     plt.title("Linear Probing on Layer %s_%d"%(probing_layer, probing_layer_index))
     plt.xlabel("Epoch")
     plt.ylabel("Cross Entropy Loss")
+    if plot_output_path:
+        filename = "%s_%d_probing_output"%(probing_layer, probing_layer_index)
+        plt.savefig(plot_output_path+"/"+filename+".png")
 
 
 def plot_nmi(nmi_path, plot_output_path=None, **kwargs):
