@@ -11,7 +11,8 @@ import utils
 import os
 import torch.utils.data as data
 from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans as sk_KMeans
+from cuml.cluster import KMeans as cu_KMeans
 import hdbscan
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -23,12 +24,12 @@ def split_dataset(original_dataset, split_ratios: list, random_state=0):
     subsets = []
     if not np.sum(split_ratios) == 1:
         raise Exception("Error the passed split_ratios doesn't sum to 1")
-    available_indices = range(0,len(original_dataset))
+    available_indices = range(0, len(original_dataset))
     random_splitter = np.random.RandomState(random_state)
     for ratio in split_ratios:
-        subset_indices = random_splitter.choice(available_indices, int(len(original_dataset)*ratio), replace=False)
+        subset_indices = random_splitter.choice(available_indices, int(len(original_dataset) * ratio), replace=False)
         available_indices = list(set(available_indices) - set(subset_indices))
-        subsets.append( MySubset(original_dataset, subset_indices))
+        subsets.append(MySubset(original_dataset, subset_indices))
     return subsets
 
 
@@ -128,7 +129,7 @@ class Neural_Features_Clustering_With_Preprocessing():
         self.assignments = None
         self.koutputs = {}
 
-    def cluster(self, algorithm="kmeans", **kwargs):
+    def cluster(self, algorithm="kmeans", use_rapids_kmeans=False, **kwargs):
 
         end = time.time()
 
@@ -142,18 +143,31 @@ class Neural_Features_Clustering_With_Preprocessing():
         if self.verbose:
             print('Preprocessing Features (PCA, Whitening, L2_normalization) Time: {0:.0f} s'.format(time.time() - end))
 
-        if (algorithm == "kmeans"):
-            clustering_object = KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
-                                       n_init=self.kwargs.get("n_init", 1),
-                                       verbose=1, random_state=self.kwargs.get("random_state", None))
+        if algorithm == "kmeans":
+            if use_rapids_kmeans:
+                clustering_object = cu_KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
+                                              verbose=1, random_state=self.kwargs.get("random_state", None))
 
-            clustering_object.fit_predict(self.preprocessed_data)
-            self.koutputs["inertia"] = clustering_object.inertia_
+                clustering_object.fit_predict(self.preprocessed_data)
+                self.assignments = np.array(clustering_object.labels_.tolist())
 
-            if self.verbose: print('k-means time: {0:.0f} s'.format(time.time() - end))
-            if self.verbose: print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
+                if self.verbose:
+                    print('k-means time: {0:.0f} s'.format(time.time() - end))
+                    print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
+            else:
+                clustering_object = sk_KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
+                                              n_init=self.kwargs.get("n_init", 1),
+                                              verbose=1, random_state=self.kwargs.get("random_state", None))
 
-        elif (algorithm == "hdbscan"):
+                clustering_object.fit_predict(self.preprocessed_data)
+                self.koutputs["inertia"] = clustering_object.inertia_
+                self.assignments = clustering_object.labels_
+
+                if self.verbose:
+                    print('k-means time: {0:.0f} s'.format(time.time() - end))
+                    print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
+
+        elif algorithm == "hdbscan":
             clustering_object = hdbscan.HDBSCAN(min_cluster_size=kwargs.get("min_cluster_size", 100),
                                                 min_samples=kwargs.get("min_samples", 100),
                                                 cluster_selection_method=kwargs.get("cluster_selection_method", "eom"),
@@ -161,13 +175,13 @@ class Neural_Features_Clustering_With_Preprocessing():
                                                 memory=kwargs.get("memory", None)
                                                 )
             clustering_object.fit_predict(self.preprocessed_data)
+            self.assignments = clustering_object.labels_
 
             self.koutputs["probabilities"] = clustering_object.probabilities_
             self.koutputs["condensed_tree"] = clustering_object.condensed_tree_
 
             if self.verbose: print('hdbscan time: {0:.0f} s'.format(time.time() - end))
 
-        self.assignments = clustering_object.labels_
         number_of_clusters = clustering_object.labels_.max() + 1
 
         self.clustered_data_indices = [[] for i in range(number_of_clusters)]
@@ -235,7 +249,7 @@ class ClusteringTracker(object):
         self.clustering_log = []
 
     def update(self, epoch, clustered_data_indices):
-        self.clustering_log.append( (epoch, clustered_data_indices) )
+        self.clustering_log.append((epoch, clustered_data_indices))
 
     def size_new_data_btw_epochs(self):
 
@@ -271,7 +285,7 @@ class ClusteringTracker(object):
 
         results = []
 
-        start_epoch_index = [ epoch for epoch,_ in self.clustering_log].index(start_epoch)
+        start_epoch_index = [epoch for epoch, _ in self.clustering_log].index(start_epoch)
         target_cluster = set(self.clustering_log[start_epoch_index][1][target_cluster_index])
 
         for i in range(start_epoch_index + 1, len(self.clustering_log)):
@@ -331,25 +345,26 @@ class ClusteringTracker(object):
         plt.show()
         return
 
+
 def plot_clustering_log(clustering_log_path, trainset, plots_output_path=None, **kwargs):
     clustering_tracker = ClusteringTracker()
     filename = os.path.split(clustering_log_path)[1].split(".")[0]
     clustering_tracker.load_clustering_log(clustering_log_path)
 
     # Plot clusters avg. entropy vs. epochs
-    fig = plt.figure(figsize=kwargs.get("figsize",(8,8)))
-    plt.plot(clustering_tracker.epochs_avg_entropy(ground_truth=[t for (_,t )in trainset.imgs]))
+    fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
+    plt.plot(clustering_tracker.epochs_avg_entropy(ground_truth=[t for (_, t) in trainset.imgs]))
     plt.title("Intersected Clusters Entropy vs Epoch")
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Entropy")
 
     if plots_output_path:
-        plt.savefig(plots_output_path+"/"+filename+"_entropy.png")
+        plt.savefig(plots_output_path + "/" + filename + "_entropy.png")
 
     # Plot crossed clusters size vs epochs
-    fig = plt.figure(figsize=kwargs.get("figsize",(8,8)))
-    l_sizes= []
-    for _,clusters_log in clustering_tracker.clustering_log:
+    fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
+    l_sizes = []
+    for _, clusters_log in clustering_tracker.clustering_log:
         sizes = []
         for cluster in clusters_log:
             sizes.append(len(cluster))
@@ -360,39 +375,40 @@ def plot_clustering_log(clustering_log_path, trainset, plots_output_path=None, *
     plt.ylabel("Size")
 
     if plots_output_path:
-        plt.savefig(plots_output_path+"/"+filename+"_cluster_size.png")
+        plt.savefig(plots_output_path + "/" + filename + "_cluster_size.png")
 
     # Plot size of new images arising from crossed clusters vs epochs
-    fig = plt.figure(figsize=kwargs.get("figsize",(8,8)))
-    plt.plot( clustering_tracker.size_new_data_btw_epochs() )
+    fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
+    plt.plot(clustering_tracker.size_new_data_btw_epochs())
     plt.title("The size of new images arising from crossing clusters vs epochs")
     plt.xlabel("Epoch")
     plt.ylabel("Size")
 
     if plots_output_path:
-        plt.savefig(plots_output_path+"/"+filename+"_new_imgs_size.png")
+        plt.savefig(plots_output_path + "/" + filename + "_new_imgs_size.png")
 
 
 def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=None, **kwargs):
     clustering_tracker = ClusteringTracker()
     filename = os.path.split(clustering_log_path)[1].split(".")[0]
     clustering_tracker.load_clustering_log(clustering_log_path)
-    clustering_tracker.clustering_log= [ (epoch, clusters) for epoch,clusters in enumerate(clustering_tracker.clustering_log)]
+    clustering_tracker.clustering_log = [(epoch, clusters) for epoch, clusters in
+                                         enumerate(clustering_tracker.clustering_log)]
 
     # Plot clusters avg. entropy vs. epochs
-    fig = plt.figure(figsize=kwargs.get("figsize",(8,8)))
-    plt.plot(clustering_tracker.epochs_avg_entropy(ground_truth=[t for (_,t )in trainset.imgs]))
+    fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
+    plt.plot(clustering_tracker.epochs_avg_entropy(ground_truth=[t for (_, t) in trainset.imgs]))
     plt.title("Intersected Clusters Entropy vs Epoch")
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Entropy")
 
     if plots_output_path:
-        plt.savefig(plots_output_path+"/"+filename+"_entropy.png")
+        plt.savefig(plots_output_path + "/" + filename + "_entropy.png")
 
     # Plot crossed clusters size vs epochs
-    fig = plt.figure(figsize=kwargs.get("figsize",(8,8)))
-    l_sizes= []
-    for _,clusters_log in clustering_tracker.clustering_log:
+    fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
+    l_sizes = []
+    for _, clusters_log in clustering_tracker.clustering_log:
         sizes = []
         for cluster in clusters_log:
             sizes.append(len(cluster))
@@ -403,14 +419,14 @@ def old_plot_clustering_log(clustering_log_path, trainset, plots_output_path=Non
     plt.ylabel("Size")
 
     if plots_output_path:
-        plt.savefig(plots_output_path+"/"+filename+"_cluster_size.png")
+        plt.savefig(plots_output_path + "/" + filename + "_cluster_size.png")
 
     # Plot size of new images arising from crossed clusters vs epochs
-    fig = plt.figure(figsize=kwargs.get("figsize",(8,8)))
-    plt.plot( clustering_tracker.size_new_data_btw_epochs() )
+    fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
+    plt.plot(clustering_tracker.size_new_data_btw_epochs())
     plt.title("The size of new images arising from crossing clusters vs epochs")
     plt.xlabel("Epoch")
     plt.ylabel("Size")
 
     if plots_output_path:
-        plt.savefig(plots_output_path+"/"+filename+"_new_imgs_size.png")
+        plt.savefig(plots_output_path + "/" + filename + "_new_imgs_size.png")
