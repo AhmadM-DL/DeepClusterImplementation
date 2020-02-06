@@ -17,10 +17,18 @@ try:
     # get cuml if cuda-rapids envirnoment is set
     from cuml.cluster import KMeans as cu_KMeans
 except ImportError:
-    print("cuml ws not imported, cuda-rapids envirnoment is not set")
+    print("Import Error: cuml was not imported (rapids-kmeans won't be availabel)")
+    print(" Reason: cuda-rapids envirnoment is not set")
+    print(" Resolve: run prepare_rapids.sh and prepare_rapids.py")
 
+try:
+    # get hdbscan if available
+    import hdbscan
+except ImportError:
+    print("Import Error: hdbscan was not imported (dbscan won't be available)")
+    print(" Reason: hdbcscan is not install")
+    print(" Resolve: run pip install hdbscan")
 
-import hdbscan
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
