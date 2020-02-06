@@ -168,7 +168,7 @@ class Neural_Features_Clustering_With_Preprocessing():
 
                 if self.verbose:
                     print('k-means time: {0:.0f} s'.format(time.time() - end))
-                    print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
+                    
             else:
                 clustering_object = sk_KMeans(n_clusters = kwargs.get("n_clusters", 100), max_iter=self.kwargs.get("max_iter", 20),
                                               n_init=self.kwargs.get("n_init", 1),
