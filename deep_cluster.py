@@ -12,7 +12,14 @@ import os
 import torch.utils.data as data
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans as sk_KMeans
-from cuml.cluster import KMeans as cu_KMeans
+
+try:
+    # get cuml if cuda-rapids envirnoment is set
+    from cuml.cluster import KMeans as cu_KMeans
+except ImportError:
+    print("cuml ws not imported, cuda-rapids envirnoment is not set")
+
+
 import hdbscan
 import networkx as nx
 import matplotlib.pyplot as plt
