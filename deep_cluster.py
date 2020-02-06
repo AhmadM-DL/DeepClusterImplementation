@@ -160,7 +160,7 @@ class Neural_Features_Clustering_With_Preprocessing():
 
         if algorithm == "kmeans":
             if use_rapids_kmeans:
-                clustering_object = cu_KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
+                clustering_object = cu_KMeans(kwargs.get("n_clusters",100), max_iter=self.kwargs.get("max_iter", 20),
                                               verbose=1, random_state=self.kwargs.get("random_state", None))
 
                 clustering_object.fit_predict(self.preprocessed_data)
@@ -170,7 +170,7 @@ class Neural_Features_Clustering_With_Preprocessing():
                     print('k-means time: {0:.0f} s'.format(time.time() - end))
                     print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
             else:
-                clustering_object = sk_KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
+                clustering_object = sk_KMeans(kwargs.get("n_clusters", 100), max_iter=self.kwargs.get("max_iter", 20),
                                               n_init=self.kwargs.get("n_init", 1),
                                               verbose=1, random_state=self.kwargs.get("random_state", None))
 
