@@ -12,8 +12,23 @@ import os
 import torch.utils.data as data
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans as sk_KMeans
-from cuml.cluster import KMeans as cu_KMeans
-import hdbscan
+
+try:
+    # get cuml if cuda-rapids envirnoment is set
+    from cuml.cluster import KMeans as cu_KMeans
+except ImportError:
+    print("Import Error: cuml was not imported (rapids-kmeans won't be availabel)")
+    print(" Reason: cuda-rapids envirnoment is not set")
+    print(" Resolve: run prepare_rapids.sh and prepare_rapids.py")
+
+try:
+    # get hdbscan if available
+    import hdbscan
+except ImportError:
+    print("Import Error: hdbscan was not imported (dbscan won't be available)")
+    print(" Reason: hdbcscan is not install")
+    print(" Resolve: run pip install hdbscan")
+
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.stats import entropy
@@ -145,7 +160,7 @@ class Neural_Features_Clustering_With_Preprocessing():
 
         if algorithm == "kmeans":
             if use_rapids_kmeans:
-                clustering_object = cu_KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
+                clustering_object = cu_KMeans(n_clusters = kwargs.get("n_clusters",100), max_iter=self.kwargs.get("max_iter", 20),
                                               verbose=1, random_state=self.kwargs.get("random_state", None))
 
                 clustering_object.fit_predict(self.preprocessed_data)
@@ -153,9 +168,9 @@ class Neural_Features_Clustering_With_Preprocessing():
 
                 if self.verbose:
                     print('k-means time: {0:.0f} s'.format(time.time() - end))
-                    print('k-means loss evolution (inertia): {0}'.format(self.koutputs["inertia"]))
+                    
             else:
-                clustering_object = sk_KMeans(kwargs.get("n_clusters"), max_iter=self.kwargs.get("max_iter", 20),
+                clustering_object = sk_KMeans(n_clusters = kwargs.get("n_clusters", 100), max_iter=self.kwargs.get("max_iter", 20),
                                               n_init=self.kwargs.get("n_init", 1),
                                               verbose=1, random_state=self.kwargs.get("random_state", None))
 

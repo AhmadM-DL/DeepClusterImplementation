@@ -16,7 +16,7 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
                       epochs_per_checkpoint=20, random_state=0, pca=0,
                       size_per_pseudolabel="average", network_iterations=1,
                       device_name="cuda:0", clustering_tech="kmeans", run_from_checkpoint=False,
-                      verbose=0):
+                      use_rapids_kmeans=False, verbose=0):
     utils.create_directory(output_directory, verbose)
     if epochs_per_checkpoint:
         checkpoint_dir = utils.create_directory(output_directory + "/checkpoints", verbose)
@@ -158,8 +158,8 @@ def dual_deep_cluster(model_1, model_2, n_epochs, output_directory,
         deepcluster_2 = deep_cluster.Neural_Features_Clustering_With_Preprocessing(data=features_2, verbose=verbose,
                                                                                    random_state=random_state, pca=pca)
 
-        deepcluster_1.cluster(algorithm=clustering_tech, n_clusters=n_clusters)
-        deepcluster_2.cluster(algorithm=clustering_tech, n_clusters=n_clusters)
+        deepcluster_1.cluster(algorithm=clustering_tech, use_rapids_kmeans=use_rapids_kmeans, n_clusters=n_clusters)
+        deepcluster_2.cluster(algorithm=clustering_tech, use_rapids_kmeans=use_rapids_kmeans, n_clusters=n_clusters)
 
         if verbose:
             print("Crossing clustering results")
@@ -267,7 +267,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
                       training_batch_size=256, epochs_per_checkpoint=20,
                       random_state=0, pca=0, size_per_pseudolabel="average",
                       network_iterations=1, device_name="cuda:0", clustering_tech="kmeans",
-                      run_from_checkpoint=False, verbose=0):
+                      run_from_checkpoint=False, verbose=0, use_rapids_kmeans=False):
                       
     utils.create_directory(output_directory, verbose)
     if epochs_per_checkpoint:
@@ -374,7 +374,7 @@ def mono_deep_cluster(model, n_epochs, output_directory,
         deepcluster = deep_cluster.Neural_Features_Clustering_With_Preprocessing(data=features, verbose=verbose,
                                                                                  random_state=random_state, pca=pca)
 
-        deepcluster.cluster(algorithm=clustering_tech, n_clusters=n_clusters)
+        deepcluster.cluster(algorithm=clustering_tech, use_rapids_kmeans=use_rapids_kmeans,  n_clusters=n_clusters)
 
         clustering_tracker.update(epoch, deepcluster.clustered_data_indices)
 
