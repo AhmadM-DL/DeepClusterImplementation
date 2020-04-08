@@ -299,13 +299,20 @@ class ClusteringTracker(object):
         return avg_entropies
     
     def inter_clusters_NMI(self):
-        clusters_nmi = []
 
-        for i in range(0, len(self.clustering_log), 2):
+        paired = zip(self.clustering_log, self.clustering_log[1:])
 
-            clusters_nmi[i] = normalized_mutual_info_score( self.clustering_log[i][1], self.clustering_log[i+1][1]   )
+        clusters_nmis = []
 
-        return clusters_nmi
+        for (epoch_1, clusters_1), (epoch_2, clusters_2) in paired:
+
+        (indices_1, assignments_1) = zip(*[ (int(index),int(i)) for i,cluster in enumerate(clusters_1) for index in cluster])
+        assignments_1 = [ assignments_1[i] for i in np.argsort(indices_1)]
+
+        (indices_2, assignments_2) = zip(*[ (index,i) for i,cluster in enumerate(clusters_2) for index in cluster])
+        assignments_2 = [ assignments_2[i] for i in np.argsort(indices_2)]
+
+        clusters_nmis.append(sklearn.metrics.normalized_mutual_info_score(assignments_1, assignments_2))
 
 
 
