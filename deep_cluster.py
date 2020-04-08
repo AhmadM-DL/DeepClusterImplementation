@@ -312,7 +312,7 @@ class ClusteringTracker(object):
             (indices_2, assignments_2) = zip(*[ (index,i) for i,cluster in enumerate(clusters_2) for index in cluster])
             assignments_2 = [ assignments_2[i] for i in np.argsort(indices_2)]
 
-            clusters_nmis.append(sklearn.metrics.normalized_mutual_info_score(assignments_1, assignments_2))
+            clusters_nmis.append(normalized_mutual_info_score(assignments_1, assignments_2))
 
         return clusters_nmis
 
