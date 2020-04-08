@@ -306,14 +306,15 @@ class ClusteringTracker(object):
 
         for (epoch_1, clusters_1), (epoch_2, clusters_2) in paired:
 
-        (indices_1, assignments_1) = zip(*[ (int(index),int(i)) for i,cluster in enumerate(clusters_1) for index in cluster])
-        assignments_1 = [ assignments_1[i] for i in np.argsort(indices_1)]
+            (indices_1, assignments_1) = zip(*[ (int(index),int(i)) for i,cluster in enumerate(clusters_1) for index in cluster])
+            assignments_1 = [ assignments_1[i] for i in np.argsort(indices_1)]
 
-        (indices_2, assignments_2) = zip(*[ (index,i) for i,cluster in enumerate(clusters_2) for index in cluster])
-        assignments_2 = [ assignments_2[i] for i in np.argsort(indices_2)]
+            (indices_2, assignments_2) = zip(*[ (index,i) for i,cluster in enumerate(clusters_2) for index in cluster])
+            assignments_2 = [ assignments_2[i] for i in np.argsort(indices_2)]
 
-        clusters_nmis.append(sklearn.metrics.normalized_mutual_info_score(assignments_1, assignments_2))
+            clusters_nmis.append(sklearn.metrics.normalized_mutual_info_score(assignments_1, assignments_2))
 
+        return clusters_nmis
 
 
     def cluster_evolution(self, start_epoch, target_cluster_index):
