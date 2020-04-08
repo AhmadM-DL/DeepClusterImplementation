@@ -12,6 +12,8 @@ import os
 import torch.utils.data as data
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans as sk_KMeans
+from sklearn.metrics import normalized_mutual_info_score
+
 
 try:
     # get cuml if cuda-rapids envirnoment is set
@@ -295,6 +297,17 @@ class ClusteringTracker(object):
             avg_entropies.append(np.average(entropies))
 
         return avg_entropies
+    
+    def inter_clusters_NMI(self):
+        clusters_nmi = []
+
+        for i in range(0, len(self.clustering_log), 2):
+
+            clusters_nmi[i] = normalized_mutual_info_score( self.clustering_log[i][1], self.clustering_log[i+1][1]   )
+
+        return clusters_nmi
+
+
 
     def cluster_evolution(self, start_epoch, target_cluster_index):
 
@@ -375,6 +388,16 @@ def plot_clustering_log(clustering_log_path, trainset, plots_output_path=None, *
 
     if plots_output_path:
         plt.savefig(plots_output_path + "/" + filename + "_entropy.png")
+
+    # Plot between-clusters NMI vs. epochs
+    fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
+    plt.plot(clustering_tracker.inter_clusters_NMI())
+    plt.title("Inter-Cluster NMI vs Epoch")
+    plt.xlabel("Epoch")
+    plt.ylabel("Inter-Cluster NMI")
+
+    if plots_output_path:
+        plt.savefig(plots_output_path + "/" + filename + "_inter_cluster_nmi.png")
 
     # Plot crossed clusters size vs epochs
     fig = plt.figure(figsize=kwargs.get("figsize", (8, 8)))
