@@ -297,6 +297,18 @@ class ClusteringTracker(object):
             avg_entropies.append(np.average(entropies))
 
         return avg_entropies
+
+    def epochs_entropies(self, ground_truth):
+        entropies = []
+
+        for (_, clusters) in self.clustering_log:
+            epoch_entropies = []
+            for cluster in clusters:
+                images_original_classes = [ground_truth[image_index] for image_index in cluster]
+                epoch_entropies.append(entropy(images_original_classes))
+            entropies.append(epoch_entropies)
+
+        return avg_entropies        
     
     def inter_clusters_NMI(self):
 
