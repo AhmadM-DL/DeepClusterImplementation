@@ -319,7 +319,7 @@ class ClusteringTracker(object):
                 images_original_classes = [ground_truth[image_index] for image_index in cluster]
                 values, counts = np.unique(images_original_classes, return_counts=True)
                 max_class = values[np.argmax(counts)]
-                max_class_counts = values[np.argmax(counts)]
+                max_class_counts = counts[np.argmax(counts)]
                 noise_ratio = 1 - (max_class_counts/np.sum(counts))
                 epoch_noise_ratios.append(noise_ratio)
             noise_ratios.append(epoch_noise_ratios)
