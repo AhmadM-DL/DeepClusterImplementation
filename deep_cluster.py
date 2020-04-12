@@ -308,7 +308,7 @@ class ClusteringTracker(object):
                 epoch_entropies.append(entropy(images_original_classes))
             entropies.append(epoch_entropies)
 
-        return avg_entropies        
+        return entropies        
     
     def inter_clusters_NMI(self):
 
