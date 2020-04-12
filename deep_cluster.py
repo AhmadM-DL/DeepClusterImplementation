@@ -308,7 +308,23 @@ class ClusteringTracker(object):
                 epoch_entropies.append(entropy(images_original_classes))
             entropies.append(epoch_entropies)
 
-        return entropies        
+        return entropies
+
+    def epochs_noise_ratios(self, ground_truth):
+        noise_ratios = []
+
+        for (_, clusters) in self.clustering_log:
+            epoch_noise_ratios = []
+            for cluster in clusters:
+                images_original_classes = [ground_truth[image_index] for image_index in cluster]
+                values, counts = np.unique(images_original_classes, return_counts=True)
+                max_class = values[np.argmax(counts)]
+                max_class_counts = values[np.argmax(counts)]
+                noise_ratio = 1 - (max_class_counts/np.sum(counts))
+                epoch_noise_ratios.append(noise_ratio)
+            noise_ratios.append(epoch_noise_ratios)
+
+        return noise_ratios       
     
     def inter_clusters_NMI(self):
 
