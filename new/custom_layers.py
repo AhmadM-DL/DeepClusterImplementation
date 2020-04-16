@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import torch
 
-
 class SobelFilter(torch.nn.Module):
     def __init__(self):
         """
@@ -34,3 +33,5 @@ class SobelFilter(torch.nn.Module):
         x = self.grayscale(x)
         x = self.sobel_filter(x)
         return x
+
+

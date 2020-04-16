@@ -25,88 +25,6 @@ require to know the input size which I prefer to be dynamic for convolutions.
 import torch
 from collections import OrderedDict
 
-example_convolutional_cfg = [
-                {
-                "type": "convolution",
-                "out_channels":96,
-                "kernel_size":11,
-                "stride":4,
-                "padding":2,
-                "activation":"ReLU",
-                },
-
-                {
-                "type":"max_pool",
-                "kernel_size":3,
-                "stride":2,
-                },
-
-                {
-                "type": "convolution",
-                "out_channels":256,
-                "kernel_size":5,
-                "stride":1,
-                "padding":2,
-                "activation":"ReLU",
-                },
-
-                {
-                "type":"max_pool",
-                "kernel_size":3,
-                "stride":2,
-                },
-
-                {
-                "type": "convolution",
-                "out_channels":384,
-                "kernel_size":3,
-                "stride":1,
-                "padding":1,
-                "activation":"ReLU",
-                },
-
-                {
-                "type": "convolution",
-                "out_channels":384,
-                "kernel_size":3,
-                "stride":1,
-                "padding":1,
-                "activation":"ReLU",
-                },
-
-                {
-                "type": "convolution",
-                "out_channels":256,
-                "kernel_size":3,
-                "stride":1,
-                "padding":1,
-                "activation":"ReLU",
-                },
-
-                {
-                "type":"max_pool",
-                "kernel_size":3,
-                "stride":2,
-                }
-                
-]
-
-example_linear_cfg = [{"type":"drop_out",
-                       "drop_ratio": 0.5},
-
-                      {"type":"linear",
-                       "out_features":4096,
-                       "activation":"ReLU"},
-
-                      {"type":"drop_out",
-                       "drop_ratio": 0.5},
-
-                      {"type":"linear",
-                      "out_features":4096,
-                      "activation":"ReLU"}
-
-                       ]
-
 activations = ["ReLU", "Sigmoid"]
 
 def stack_convolutional_layers(input_channels, cfg, with_modules_names=True, batch_normalization=False):
@@ -147,19 +65,7 @@ def stack_convolutional_layers(input_channels, cfg, with_modules_names=True, bat
     else:
         return torch.nn.Sequential(*layers)
 
-def test_stack_convolutional_layers():
-    named_layers = stack_convolutional_layers(input_channels=3, cfg=example_convolutional_cfg, batch_normalization=False)
-    # get number conv modules
-    n_conv = len([ name for (name,module) in list(named_layers.named_modules()) if "conv" in name])
-    assert n_conv == 5
-    assert len(list(named_layers.named_children())) == len(example_convolutional_cfg) + n_conv
-    assert named_layers.relu_2
-    assert named_layers.conv_4
-    assert named_layers.max_pool_3
-    named_layers = stack_convolutional_layers(input_channels=3, cfg=example_convolutional_cfg, batch_normalization=True)
-    assert len(list(named_layers.named_children())) == len(example_convolutional_cfg) + 2*n_conv
-    assert named_layers.batch_norm_3
-    return 
+
 
 def stack_linear_layers(input_features, cfg, with_modules_names=True):
     """
@@ -189,16 +95,7 @@ def stack_linear_layers(input_features, cfg, with_modules_names=True):
     else:
         return torch.nn.Sequential(*layers)
 
-def test_stack_linear_layers():
-    named_layers = stack_linear_layers(input_features=256*6*6, cfg=example_linear_cfg)
-    # get number conv modules
-    n_lin = len([ name for (name,module) in list(named_layers.named_modules()) if "linear" in name])
-    assert n_lin == 2
-    assert len(list(named_layers.named_children())) == len(example_convolutional_cfg) + n_lin
-    assert named_layers.relu_2
-    assert named_layers.drop_out_1
-    assert named_layers.linear_2
-    return
+
 
 def name_layers(layers_list):
     """
@@ -234,20 +131,6 @@ def name_layers(layers_list):
         else:
             raise Exception("name_layers", "Paramters layers_list contain an unsupported layer type %s"%(type(layer)))
     return OrderedDict(named_layers)
-
-def test_name_layers():
-    layers = [ torch.nn.Conv2d(3,16,11,2),
-               torch.nn.MaxPool2d(2, 3),
-               torch.nn.Conv2d(3,16,11,2),
-               torch.nn.Dropout(0.3),
-               torch.nn.Linear(100,20) ]
-    named_layers= name_layers(layers)
-
-    assert named_layers.get("conv_1",0)!=0
-    assert named_layers.get("max_pool_1",0)!=0
-    assert named_layers.get("conv_2",0)!=0
-    assert named_layers.get("drop_out_1",0)!=0
-    assert named_layers.get("linear_1",0)!=0 
 
 def parse_convolution(in_channels, cfg):
     """
