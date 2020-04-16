@@ -1,6 +1,7 @@
 from new.custom_layers import *
 import unittest
 
+import torch
 #import matplotlib.pyplot as plt
 #import numpy as np
 
