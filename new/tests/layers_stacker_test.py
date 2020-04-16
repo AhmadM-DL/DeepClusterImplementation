@@ -153,7 +153,7 @@ class LayersStackerTests(unittest.TestCase):
         assert named_layers.relu_2
         assert named_layers.drop_out_1
         assert named_layers.linear_2
-        return
+        
 
     def test_stack_convolutional_layers(self):
         named_layers = stack_convolutional_layers(input_channels=3, cfg=example_convolutional_cfg, batch_normalization=False)
@@ -167,7 +167,7 @@ class LayersStackerTests(unittest.TestCase):
         named_layers = stack_convolutional_layers(input_channels=3, cfg=example_convolutional_cfg, batch_normalization=True)
         assert len(list(named_layers.named_children())) == len(example_convolutional_cfg) + 2*n_conv
         assert named_layers.batch_norm_3
-        return 
+         
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,11 +4,9 @@ import torch
 #import matplotlib.pyplot as plt
 #import numpy as np
 
-class SobelFilterTests(unittest.TestCase):
-
-    def sobel_filter_test(self):
+class CustomLayersTests(unittest.TestCase):
+    def test_sobel_filter(self):
         sobel_filter = SobelFilter()
-
         img = torch.rand((1,3,100,100))
         #plt.imshow(np.moveaxis(img.numpy(), 1, 3)[0])
 
@@ -27,3 +25,4 @@ class SobelFilterTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
