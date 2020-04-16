@@ -1,7 +1,8 @@
+from new.custom_layers import *
 import unittest
-from custom_layers import *
-import matplotlib.pyplot as plt
-import numpy as np
+
+#import matplotlib.pyplot as plt
+#import numpy as np
 
 class SobelFilterTests(unittest.TestCase):
 
@@ -23,6 +24,8 @@ class SobelFilterTests(unittest.TestCase):
         img_sobel = sobel_filter(img)
         assert img_sobel.size()[1] == 2
         #plt.imshow(np.moveaxis(img_sobel.numpy(), 1, 3)[0])
+
+        return
 
 if __name__ == '__main__':
     unittest.main()
