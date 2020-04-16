@@ -1,1 +1,0 @@
-bash ./rapids-colab.sh
