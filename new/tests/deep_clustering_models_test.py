@@ -1,4 +1,4 @@
-from new.models.DeepClusteringModels import *
+from new.models.deep_clustering_models import *
 import unittest
 
 class DeepClusteringModelsTests(unittest.TestCase):
