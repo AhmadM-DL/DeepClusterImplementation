@@ -3,7 +3,6 @@
 Created on Tuesday April 14 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
 """
-import torch.nn as nn
 import torch
 
 import math
@@ -13,11 +12,11 @@ import os
 
 import numpy as np
 
-from custom_layers import SobelFilter
+from new.custom_layers import SobelFilter
 
 from sklearn.metrics import normalized_mutual_info_score
 
-class BaseNet(nn.Module):
+class DeepClusteringNet(torch.nn.Module):
 
     def __init__(self, features, classifier, top_layer, with_sobel=False):
 
@@ -33,23 +32,28 @@ class BaseNet(nn.Module):
         return
 
     def forward(self,x):
-        if self.with_sobel:
+        if self.sobel:
             x = self.sobel(x)
-        
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        if self.top_layer:
+            x = torch.nn.ReLU(x)
+            x = self.top_layer(x)
         return x
-    
+
     def _initialize_weights(self):
         for y, m in enumerate(self.modules()):
-            if isinstance(m, nn.Conv2d):
+            if isinstance(m, torch.nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
                 for i in range(m.out_channels):
                     m.weight.data[i].normal_(0, math.sqrt(2. / n))
                 if m.bias is not None:
                     m.bias.data.zero_()
-            elif isinstance(m, nn.BatchNorm2d):
+            elif isinstance(m, torch.nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
-            elif isinstance(m, nn.Linear):
+            elif isinstance(m, torch.nn.Linear):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
     
@@ -69,140 +73,6 @@ class BaseNet(nn.Module):
         for param in self.classifier.parameters():
             param.requires_grad = True
     
-
-class FeatureExctractor(nn.Module):
-
-    def __init__(self, original_model, layer_type, layer_index):
-        super(FeatureExctractor, self).__init__()
-        self.sobel = original_model.sobel
-        self.features = self._get_sub_features(original_model, layer_type, layer_index)
-        self.classifier = None
-        self.top_layer = None
-
-        # Freeze Layers
-        for param in self.features.parameters():
-            param.requires_grad = False
-
-    def forward(self, x):
-        if self.sobel:
-            x = self.sobel(x)
-        if self.features:
-            x = self.features(x)
-            x = x.view(x.size(0), -1)
-        if self.classifier:
-            x = self.classifier(x)
-        if self.top_layer:
-            x = self.top_layer(x)
-        return x
-
-    def get_model_output_size(self, input_image_hight, input_image_width, image_channels, device):
-        dummy_image = np.random.rand(1, image_channels, input_image_hight, input_image_width)
-        dummy_image = torch.tensor(dummy_image, dtype=torch.float, device=device)
-        dummy_output = self.forward(dummy_image)
-
-        return dummy_output.shape[1]
-
-    def _get_sub_features(self, original_model, layer_type, layer_index):
-        if not original_model.features:
-            raise Exception("Error the passed original_net doesn't have a features layer")
-
-        sub_layers = []
-
-        if layer_type == nn.Conv2d:
-            sub_layers = self._get_layers_to_conv2d(original_model.features, layer_index)
-        else:
-            sub_layers = self._get_layers_to_nonconv(original_model.features, layer_type, layer_index)
-
-        return nn.Sequential(*sub_layers)
-
-    def _get_layers_to_conv2d(self, features, layer_index):
-        sub_layers = []
-        all_layers = list(features.children())
-        current_conv_index = 0
-        for i in range(len(all_layers)):
-            sub_layers.append(all_layers[i])
-            if isinstance(all_layers[i], nn.Conv2d):
-                current_conv_index += 1
-                if current_conv_index == layer_index:
-                    # In my case a conv2d is followed by a BN, ReLU layers
-                    sub_layers.append(all_layers[i + 1])
-                    sub_layers.append(all_layers[i + 2])
-                    break
-        return sub_layers
-
-    def _get_layers_to_nonconv(self, features, layer_type, layer_index):
-        sub_layers = []
-        all_layers = list(features.children())
-        current_nonconv_index = 0
-        for i in range(len(all_layers)):
-            sub_layers.append(all_layers[i])
-            if isinstance(all_layers[i], layer_type):
-                current_nonconv_index += 1
-                if current_nonconv_index == layer_index:
-                    break
-        return sub_layers
-
-
-class NetBuilder(nn.Module):
-    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output,
-                 apply_sobel):
-        super(NetBuilder, self).__init__()
-        self.sobel = None
-        self.features = features
-        self.classifier = classifier
-        self.top_layer = top_layer
-        self._initialize_weights()
-        self.features_output = features_output
-        self.classifier_output = classifier_output
-        self.top_layer_output = top_layer_output
-
-        if apply_sobel:
-            self.sobel = make_sobel_layer()
-
-    def forward(self, x):
-        if self.sobel:
-            x = self.sobel(x)
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-        if self.top_layer:
-            x = self.top_layer(x)
-        return x
-
-    def _initialize_weights(self):
-        for _, m in enumerate(self.modules()):
-
-            if isinstance(m, nn.Conv2d):
-
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-
-                for i in range(m.out_channels):
-                    m.weight.data[i].normal_(0, math.sqrt(2. / n))
-
-                if m.bias is not None:
-                    m.bias.data.zero_()
-
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-            elif isinstance(m, nn.Linear):
-                m.weight.data.normal_(0, 0.01)
-                m.bias.data.zero_()
-
-    def get_model_output_size(self):
-        if self.top_layer:
-            return self.top_layer_output
-        if self.classifier:
-            return self.classifier_output
-        if self.features:
-            return self.features_output
-        raise Exception("The model doesn't have actual modules")
-
-
-
-
-
 
 def alexnet_cifar(sobel=False, bn=True, out=10):
     input_n_channels = 2 + int(not sobel)

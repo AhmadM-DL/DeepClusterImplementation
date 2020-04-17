@@ -64,8 +64,7 @@ example_convolutional_cfg = [
                 "type":"max_pool",
                 "kernel_size":3,
                 "stride":2,
-                }
-                
+                }          
 ]
 
 example_linear_cfg = [{"type":"drop_out",
@@ -80,7 +79,7 @@ example_linear_cfg = [{"type":"drop_out",
 
                       {"type":"linear",
                       "out_features":4096,
-                      "activation":"ReLU"}
+                      }
 
                        ]
 class LayersStackerTests(unittest.TestCase):
@@ -93,6 +92,8 @@ class LayersStackerTests(unittest.TestCase):
         assert isinstance(linear_layer2[1], torch.nn.Sigmoid)
         with self.assertRaises(Exception):
             linear_layer3 = parse_linear(in_features=100, cfg={"out_feature":20, "activation":"Sigmoid"})
+        linear_layer4 = parse_linear(in_features=100, cfg={"out_features":20})
+        assert isinstance(linear_layer4, torch.nn.Linear)
         
 
     def test_parse_drop_out(self):
@@ -149,8 +150,7 @@ class LayersStackerTests(unittest.TestCase):
         # get number conv modules
         n_lin = len([ name for (name,module) in list(named_layers.named_modules()) if "linear" in name])
         assert n_lin == 2
-        assert len(list(named_layers.named_children())) == len(example_linear_cfg) + n_lin
-        assert named_layers.relu_2
+        assert len(list(named_layers.named_children())) == len(example_linear_cfg) + n_lin - 1
         assert named_layers.drop_out_1
         assert named_layers.linear_2
         

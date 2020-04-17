@@ -81,7 +81,11 @@ def stack_linear_layers(input_features, cfg, with_modules_names=True):
             raise Exception("stack_linear_layers", "A layer cfg is missing 'type' attribute")
 
         if layer_type == "linear":
-            layers.extend(parse_linear(in_features, layer_cfg))
+            parsed_layers = parse_linear(in_features, layer_cfg)
+            if isinstance(parsed_layers,list):
+                layers.extend(parsed_layers)
+            else:
+                layers.append(parsed_layers)
             in_features = layer_cfg["out_features"]
 
         elif layer_type == "drop_out":
@@ -194,16 +198,21 @@ def parse_linear(in_features, cfg):
     if cfg.get("out_features", None) == None:
         raise Exception("Layers_Generator_CFG_Error", "Linear should include out_channels attribute")
     if cfg.get("activation", None) == None:
-        raise Exception("Layers_Generator_CFG_Error", "Linear should include activation attribute")
-
+        cfg["activation"] = ""
+    
     if cfg["activation"] == "ReLU":
         activation_layer = torch.nn.ReLU()
+
     elif cfg["activation"] == "Sigmoid":
         activation_layer = torch.nn.Sigmoid()
+
+    elif cfg["activation"] == "":
+        return torch.nn.Linear(in_features= in_features, out_features=cfg["out_features"])  
+
     else:
         raise Exception("Layers_Generator_CFG_Error", "Activation %s is not supproted."%(cfg["activation"]))
 
-    return [torch.nn.Linear(in_features= in_features,
-                            out_features=cfg["out_features"]),
-                activation_layer]
+    return [torch.nn.Linear(in_features= in_features, out_features=cfg["out_features"]),
+            activation_layer]
+
 

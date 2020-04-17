@@ -2,6 +2,9 @@
 """
 Created on Tuesday April 14 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
+
+This module implements a number of standard benchmarks architectures, however by utilizing
+DeepClusteringNet class.
 """
 import torch.nn as nn
 import torch
@@ -13,290 +16,138 @@ import os
 
 import numpy as np
 
-from custom_layers import SobelFilter
-
+from new.custom_layers import SobelFilter
+from DeepClusteringNet import DeepClusteringNet
 from sklearn.metrics import normalized_mutual_info_score
 
-class AlexNet(nn.Module):
+from new.layers_stacker import stack_convolutional_layers, stack_linear_layers
 
-    def __init__(self, input_dim, num_classes, with_sobel=False, with_batch_normalization=False):
-
-        self.with_sobel = with_sobel
-
-        self.sobel = SobelFilter()
-        self.features= NotImplemented  
-        self.classifier = NotImplemented
-        self.top_layer = NotImplemented  
-
-        self._initialize_weights()
-
-        return
-
-    def forward(self,x):
-        if self.with_sobel:
-            x = self.sobel(x)
-        
-        return x
+def AlexNet(sobel, batch_normalization):
+    """
+    Implementation of AlexNet
+    """
+    n_input_channels = 2 + int(not sobel)
     
-    def _initialize_weights(self):
-        for y, m in enumerate(self.modules()):
-            if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                for i in range(m.out_channels):
-                    m.weight.data[i].normal_(0, math.sqrt(2. / n))
-                if m.bias is not None:
-                    m.bias.data.zero_()
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-            elif isinstance(m, nn.Linear):
-                m.weight.data.normal_(0, 0.01)
-                m.bias.data.zero_()
-    
-    def freeze_features(self):
-        for param in self.features.parameters():
-            param.requires_grad = False
+    alexnet_features_cfg = [
+                {
+                "type": "convolution",
+                "out_channels":96,
+                "kernel_size":11,
+                "stride":4,
+                "padding":2,
+                "activation":"ReLU",
+                },
 
-    def unfreeze_features(self):
-        for param in self.features.parameters():
-            param.requires_grad = True
-    
-    def freeze_classifier(self):
-        for param in self.classifier.parameters():
-            param.requires_grad = False
+                {
+                "type":"max_pool",
+                "kernel_size":3,
+                "stride":2,
+                },
 
-    def unfreeze_classifier(self):
-        for param in self.classifier.parameters():
-            param.requires_grad = True
-    
+                {
+                "type": "convolution",
+                "out_channels":256,
+                "kernel_size":5,
+                "stride":1,
+                "padding":2,
+                "activation":"ReLU",
+                },
 
-class FeatureExctractor(nn.Module):
+                {
+                "type":"max_pool",
+                "kernel_size":3,
+                "stride":2,
+                },
 
-    def __init__(self, original_model, layer_type, layer_index):
-        super(FeatureExctractor, self).__init__()
-        self.sobel = original_model.sobel
-        self.features = self._get_sub_features(original_model, layer_type, layer_index)
-        self.classifier = None
-        self.top_layer = None
+                {
+                "type": "convolution",
+                "out_channels":384,
+                "kernel_size":3,
+                "stride":1,
+                "padding":1,
+                "activation":"ReLU",
+                },
 
-        # Freeze Layers
-        for param in self.features.parameters():
-            param.requires_grad = False
+                {
+                "type": "convolution",
+                "out_channels":384,
+                "kernel_size":3,
+                "stride":1,
+                "padding":1,
+                "activation":"ReLU",
+                },
 
-    def forward(self, x):
-        if self.sobel:
-            x = self.sobel(x)
-        if self.features:
-            x = self.features(x)
-            x = x.view(x.size(0), -1)
-        if self.classifier:
-            x = self.classifier(x)
-        if self.top_layer:
-            x = self.top_layer(x)
-        return x
+                {
+                "type": "convolution",
+                "out_channels":256,
+                "kernel_size":3,
+                "stride":1,
+                "padding":1,
+                "activation":"ReLU",
+                },
 
-    def get_model_output_size(self, input_image_hight, input_image_width, image_channels, device):
-        dummy_image = np.random.rand(1, image_channels, input_image_hight, input_image_width)
-        dummy_image = torch.tensor(dummy_image, dtype=torch.float, device=device)
-        dummy_output = self.forward(dummy_image)
+                {
+                "type":"max_pool",
+                "kernel_size":3,
+                "stride":2,
+                }         
+                ]
 
-        return dummy_output.shape[1]
+    classifier_cfg = [
+                      {"type":"drop_out",
+                       "drop_ratio": 0.5},
 
-    def _get_sub_features(self, original_model, layer_type, layer_index):
-        if not original_model.features:
-            raise Exception("Error the passed original_net doesn't have a features layer")
+                      {"type":"linear",
+                       "out_features":4096,
+                       "activation":"ReLU"},
 
-        sub_layers = []
+                      {"type":"drop_out",
+                       "drop_ratio": 0.5},
 
-        if layer_type == nn.Conv2d:
-            sub_layers = self._get_layers_to_conv2d(original_model.features, layer_index)
-        else:
-            sub_layers = self._get_layers_to_nonconv(original_model.features, layer_type, layer_index)
+                      {"type":"linear",
+                      "out_features":4096}
+        ]
 
-        return nn.Sequential(*sub_layers)
-
-    def _get_layers_to_conv2d(self, features, layer_index):
-        sub_layers = []
-        all_layers = list(features.children())
-        current_conv_index = 0
-        for i in range(len(all_layers)):
-            sub_layers.append(all_layers[i])
-            if isinstance(all_layers[i], nn.Conv2d):
-                current_conv_index += 1
-                if current_conv_index == layer_index:
-                    # In my case a conv2d is followed by a BN, ReLU layers
-                    sub_layers.append(all_layers[i + 1])
-                    sub_layers.append(all_layers[i + 2])
-                    break
-        return sub_layers
-
-    def _get_layers_to_nonconv(self, features, layer_type, layer_index):
-        sub_layers = []
-        all_layers = list(features.children())
-        current_nonconv_index = 0
-        for i in range(len(all_layers)):
-            sub_layers.append(all_layers[i])
-            if isinstance(all_layers[i], layer_type):
-                current_nonconv_index += 1
-                if current_nonconv_index == layer_index:
-                    break
-        return sub_layers
-
-
-class NetBuilder(nn.Module):
-    def __init__(self, features, classifier, top_layer, features_output, classifier_output, top_layer_output,
-                 apply_sobel):
-        super(NetBuilder, self).__init__()
-        self.sobel = None
-        self.features = features
-        self.classifier = classifier
-        self.top_layer = top_layer
-        self._initialize_weights()
-        self.features_output = features_output
-        self.classifier_output = classifier_output
-        self.top_layer_output = top_layer_output
-
-        if apply_sobel:
-            self.sobel = make_sobel_layer()
-
-    def forward(self, x):
-        if self.sobel:
-            x = self.sobel(x)
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-        if self.top_layer:
-            x = self.top_layer(x)
-        return x
-
-    def _initialize_weights(self):
-        for _, m in enumerate(self.modules()):
-
-            if isinstance(m, nn.Conv2d):
-
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-
-                for i in range(m.out_channels):
-                    m.weight.data[i].normal_(0, math.sqrt(2. / n))
-
-                if m.bias is not None:
-                    m.bias.data.zero_()
-
-            elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-            elif isinstance(m, nn.Linear):
-                m.weight.data.normal_(0, 0.01)
-                m.bias.data.zero_()
-
-    def get_model_output_size(self):
-        if self.top_layer:
-            return self.top_layer_output
-        if self.classifier:
-            return self.classifier_output
-        if self.features:
-            return self.features_output
-        raise Exception("The model doesn't have actual modules")
-
-
-def make_convolutional_layers(cfg, input_n_channels, bn):
-    # cfg:
-    # (number of filters, kernel size, stride, pad)
-    # ('M', kernel size, stride)
-
-    layers = []
-    in_channels = input_n_channels
-    for v in cfg:
-        if v[0] == 'M':
-            layers += [nn.MaxPool2d(kernel_size=v[1], stride=v[2])]
-        else:
-            conv2d = nn.Conv2d(in_channels, v[0], kernel_size=v[1],
-                               stride=v[2], padding=v[3])
-            if bn:
-                layers += [conv2d, nn.BatchNorm2d(v[0]), nn.ReLU(inplace=True)]
-            else:
-                layers += [conv2d, nn.ReLU(inplace=True)]
-            in_channels = v[0]
-    return nn.Sequential(*layers)
-
-
-def make_sobel_layer():
-    grayscale = nn.Conv2d(3, 1, kernel_size=1, stride=1, padding=0)
-    grayscale.weight.data.fill_(1.0 / 3.0)
-    grayscale.bias.data.zero_()
-
-    sobel_filter = nn.Conv2d(1, 2, kernel_size=3, stride=1, padding=1)
-
-    sobel_filter.weight.data[0, 0].copy_(
-        torch.FloatTensor([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-    )
-    sobel_filter.weight.data[1, 0].copy_(
-        torch.FloatTensor([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
-    )
-
-    sobel_filter.bias.data.zero_()
-
-    sobel = nn.Sequential(grayscale, sobel_filter)
-
-    for p in sobel.parameters():
-        p.requires_grad = False
-
-    return sobel
-
-
-def make_linear_layers(cfg):
-    layers = []
-    for v in cfg:
-        if v[0] == 'L':
-            layers += [nn.Linear(v[1], v[2])]
-        if v[0] == 'R':
-            layers += [nn.ReLU(inplace=v[1])]
-            continue
-        if v[0] == 'D':
-            layers += [nn.Dropout(v[1])]
-            continue
-    return nn.Sequential(*layers)
-
-
-def alexnet_cifar(sobel=False, bn=True, out=10):
-    input_n_channels = 2 + int(not sobel)
-
-    features_cfg = [(64, 3, 1, 2), ('M', 2, None), (192, 3, 1, 2),
-                    ('M', 2, None), (384, 3, 1, 1), (256, 3, 1, 1),
-                    (256, 3, 1, 1), ('M', 3, 2)]
-
-    classifier_cfg = [('D', 0.5), ('L', 4096, 2048), ('R', True), ('D', 0.5),
-                      ('L', 2048, 2048), ('R', True)]
-
-    top_layer_cfg = [('L', 2048, out)]
-
-    features = make_convolutional_layers(features_cfg, input_n_channels, bn=bn)
-    classifier = make_linear_layers(classifier_cfg)
-    top_layer = make_linear_layers(top_layer_cfg)[0]
-
-    model = NetBuilder(features, classifier, top_layer,
-                       features_output=4096, classifier_output=2048, top_layer_output=out,
-                       apply_sobel=sobel)
-
+    model = DeepClusteringNet(features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
+                              classifier= stack_linear_layers(input_features= 256 * 6 * 6, cfg= classifier_cfg),
+                              top_layer = None,
+                              with_sobel=sobel)
     return model
 
+def LeNet(sobel, batch_normalization):
+    """
+    Implementation of LeNet
+    """
+    lenet_features_cfg = [{"type":"convolution",
+                            "out_channels": 6,
+                            "kernel_size": 5,
+                            "padding": 0,
+                            "stride":1,
+                            "activation": "ReLU",
+                            },
+                            {"type":"max_pool",
+                            "kernel_size": 2,
+                            "stride": 2,
+                            },
+                            {"type":"convolution",
+                            "out_channels": 16,
+                            "kernel_size": 5,
+                            "padding": 0,
+                            "stride":1,
+                            "activation": "ReLU",
+                            },
+                            {"type":"max_pool",
+                            "kernel_size": 2,
+                            "stride": 2,
+                            }]
 
-def lenet_5(bn=False, out=10):
-    features_cfg = [(6, 5, 1, 0), ('M', 2, None), (16, 5, 1, 0), ('M', 2, None)]
+    classifier_cfg = [{"type":"linear", "out_features":"120", "activation":"ReLU"},
+                      {"type":"linear", "out_features":"84"}]
 
-    classifier_cfg = [('L', 400, 120), ('R', True),
-                      ('L', 120, 84), ('R', True)]
-
-    top_layer_cfg = [('L', 84, out)]
-
-    features = make_convolutional_layers(features_cfg, 1, bn=bn)
-    classifier = make_linear_layers(classifier_cfg)
-    top_layer = make_linear_layers(top_layer_cfg)[0]
-
-    model = NetBuilder(features, classifier, top_layer,
-                       features_output=400, classifier_output=84, top_layer_output=out,
-                       apply_sobel=False)
+    model = DeepClusteringNet(features= stack_convolutional_layers(input_channels=3, cfg=lenet_features_cfg, batch_normalization=batch_normalization),
+                       classifier= stack_linear_layers(input_features=16*5*5, cfg= classifier_cfg),
+                       top_layer= None,
+                       with_sobel=False)
 
     return model
 
