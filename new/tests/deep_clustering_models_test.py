@@ -1,12 +1,10 @@
-from new.models.deep_clustering_models import *
 import unittest
+from new.deep_clustering_models import AlexNet
 
 class DeepClusteringModelsTests(unittest.TestCase):
-
-    def test_alex_net(self):
-        model = AlexNet(sobel=True, batch_normalization=True)
-
+        def test_alexnet(self):
+                model = AlexNet(sobel=True, batch_normalization=True)
+                assert True
 
 if __name__ == "__main__":
     unittest.main()
-    

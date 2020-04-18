@@ -4,10 +4,17 @@
         "--errors-only",
         "--generated-members=numpy.* ,torch.* ,cv2.* , cv.*"
         ],
+
+
+    "files.exclude": {
+        "**/*.pyc": {"when": "$(basename).py"}, 
+        "**/__pycache__": true,
+    },
+
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        "./new/tests",
+        "new/tests",
         "-p",
         "*_test.py"
     ],
@@ -15,6 +22,9 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.unittestEnabled": true,
     "cSpell.words": [
+        "cfg",
+        "features",
         "lenet"
-    ]
+    ],
+
 }
