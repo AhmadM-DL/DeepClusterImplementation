@@ -1,2 +1,5 @@
 */__pycache__/*
 new/tests/__pycache__/*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
