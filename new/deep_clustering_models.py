@@ -21,7 +21,7 @@ from sklearn.metrics import normalized_mutual_info_score
 
 from  layers_stacker import stack_convolutional_layers, stack_linear_layers
 
-def AlexNet(sobel, batch_normalization):
+def AlexNet_ImageNet(sobel, batch_normalization):
     """
     Implementation of AlexNet
     """
@@ -113,7 +113,7 @@ def AlexNet(sobel, batch_normalization):
                               with_sobel=sobel)
     return model
 
-def LeNet(sobel, batch_normalization):
+def LeNet_MNIST(sobel, batch_normalization):
     """
     Implementation of LeNet
     """

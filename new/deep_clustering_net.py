@@ -18,6 +18,7 @@ from sklearn.metrics import normalized_mutual_info_score
 class DeepClusteringNet(torch.nn.Module):
 
     def __init__(self, features, classifier, top_layer, with_sobel=False):
+        super(DeepClusteringNet, self).__init__()
 
         self.with_sobel = with_sobel
 
