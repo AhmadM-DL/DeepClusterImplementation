@@ -4,7 +4,7 @@ from deep_clustering_models import *
 
 
 class DeepClusteringModelsTests(unittest.TestCase):
-    def test_alexnet_imagenet(self):
+    def test_alexnet_imagenet_static(self):
         model = AlexNet_ImageNet(sobel=True, batch_normalization=True)
 
         assert model.top_layer == None
@@ -27,8 +27,15 @@ class DeepClusteringModelsTests(unittest.TestCase):
                              for child in model.classifier.named_children()]
         assert expected_classifier_layers == classifier_layers
 
-        _train_step(model,
-                    loss_fn= torch.nn)
+    def test_alexnet_imagenet_dynamic(self):
+        top_layer_output_size = 1000 
+        model = AlexNet_ImageNet(sobel=True, batch_normalization=True)
+        model.top_layer = torch.nn.Linear(model.output_size((1,2,244,244))[0], top_layer_output_size)
+        do_train_step(model, 
+                    loss_fn= torch.nn.CrossEntropyLoss(),
+                    optim= torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()),lr=0.01),
+                    batch= (torch.rand(10,3,244,244), torch.rand(10,top_layer_output_size)),
+                    device= torch.device("cpu"))
 
 if __name__ == "__main__":
     unittest.main()

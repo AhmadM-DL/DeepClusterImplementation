@@ -21,9 +21,7 @@ class DeepClusteringNet(torch.nn.Module):
     def __init__(self, features, classifier, top_layer, with_sobel=False):
         super(DeepClusteringNet, self).__init__()
 
-        self.with_sobel = with_sobel
-
-        self.sobel = SobelFilter()
+        self.sobel = SobelFilter() if with_sobel else None
         self.features = features
         self.classifier = classifier
         self.top_layer = top_layer
@@ -76,7 +74,7 @@ class DeepClusteringNet(torch.nn.Module):
         if self.top_layer:
             x = torch.nn.ReLU(x)
             x = self.top_layer(x)
-        return x.size()[1:]
+        return tuple(x.size()[1:])
 
     def freeze_features(self):
         for param in self.features.parameters():

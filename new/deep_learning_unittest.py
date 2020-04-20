@@ -11,7 +11,7 @@ an optimization/training step or not.
 import torch
 
 
-def _train_step(model, loss_fn, optim, batch, device):
+def do_train_step(model, loss_fn, optim, batch, device):
     """Run a training step on model for a given batch of data
     Parameters of the model accumulate gradients and the optimizer performs
     a gradient update on the parameters
@@ -49,7 +49,7 @@ def _train_step(model, loss_fn, optim, batch, device):
     optim.step()
 
 
-def _forward_step(model, batch, device):
+def do_forward_step(model, batch, device):
     """Run a forward step of model for a given batch of data
     Parameters
     ----------
@@ -76,7 +76,7 @@ def _forward_step(model, batch, device):
         return model(inputs)
 
 
-def _param_change_helper(vars_change, model, loss_fn, optim, batch, device, params=None):
+def test_param_change(vars_change, model, loss_fn, optim, batch, device, params=None):
     """Check if given variables (params) change or not during training
     If parameters (params) aren't provided, check all parameters.
     Parameters
