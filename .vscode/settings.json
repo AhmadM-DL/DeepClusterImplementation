@@ -24,7 +24,10 @@
     "cSpell.words": [
         "cfg",
         "features",
-        "lenet"
+        "le",
+        "lenet",
+        "mnist",
+        "net"
     ],
 
 }

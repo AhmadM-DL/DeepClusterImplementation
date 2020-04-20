@@ -1,11 +1,11 @@
 import unittest
-import deep_learning_unittest 
+from deep_learning_unittest import *
 from deep_clustering_models import *
 
 
 class DeepClusteringModelsTests(unittest.TestCase):
-    def test_alexnet(self):
-        model = AlexNet(sobel=True, batch_normalization=True)
+    def test_alexnet_imagenet(self):
+        model = AlexNet_ImageNet(sobel=True, batch_normalization=True)
 
         assert model.top_layer == None
         assert model.sobel
@@ -24,9 +24,11 @@ class DeepClusteringModelsTests(unittest.TestCase):
         expected_classifier_layers = [
             'drop_out_1', 'linear_1', 'relu_1', 'drop_out_2', 'linear_2']
         classifier_layers = [child[0]
-                           for child in model.classifier.named_children()]
+                             for child in model.classifier.named_children()]
         assert expected_classifier_layers == classifier_layers
-        
+
+        _train_step(model,
+                    loss_fn= torch.nn)
 
 if __name__ == "__main__":
     unittest.main()

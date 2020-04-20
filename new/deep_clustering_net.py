@@ -15,6 +15,7 @@ from custom_layers import SobelFilter
 
 from sklearn.metrics import normalized_mutual_info_score
 
+
 class DeepClusteringNet(torch.nn.Module):
 
     def __init__(self, features, classifier, top_layer, with_sobel=False):
@@ -23,15 +24,15 @@ class DeepClusteringNet(torch.nn.Module):
         self.with_sobel = with_sobel
 
         self.sobel = SobelFilter()
-        self.features= features  
+        self.features = features
         self.classifier = classifier
-        self.top_layer = top_layer  
+        self.top_layer = top_layer
 
         self._initialize_weights()
 
         return
 
-    def forward(self,x):
+    def forward(self, x):
         if self.sobel:
             x = self.sobel(x)
         x = self.features(x)
@@ -56,7 +57,27 @@ class DeepClusteringNet(torch.nn.Module):
             elif isinstance(m, torch.nn.Linear):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
-    
+
+    def output_size(self, single_input_size):
+        """
+        A method that computes model output size by feeding forward
+        a dummy single input. This method doesn't consider the batch size
+        :param single_input_size: tuple
+            a tuple that includes the input size in the form of (#Channels, Width, Height)
+        :return: tuple
+            a tuple that includes the output size
+        """
+        x = torch.rand(size=(1, *single_input_size))
+        if self.sobel:
+            x = self.sobel(x)            
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        if self.top_layer:
+            x = torch.nn.ReLU(x)
+            x = self.top_layer(x)
+        return x.size()[1:]
+
     def freeze_features(self):
         for param in self.features.parameters():
             param.requires_grad = False
@@ -64,7 +85,7 @@ class DeepClusteringNet(torch.nn.Module):
     def unfreeze_features(self):
         for param in self.features.parameters():
             param.requires_grad = True
-    
+
     def freeze_classifier(self):
         for param in self.classifier.parameters():
             param.requires_grad = False
@@ -72,7 +93,7 @@ class DeepClusteringNet(torch.nn.Module):
     def unfreeze_classifier(self):
         for param in self.classifier.parameters():
             param.requires_grad = True
-    
+
 
 # def alexnet_cifar(sobel=False, bn=True, out=10):
 #     input_n_channels = 2 + int(not sobel)
