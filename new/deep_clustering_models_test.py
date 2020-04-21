@@ -28,14 +28,30 @@ class DeepClusteringModelsTests(unittest.TestCase):
         assert expected_classifier_layers == classifier_layers
 
     def test_alexnet_imagenet_dynamic(self):
-        top_layer_output_size = 1000 
         model = AlexNet_ImageNet(sobel=True, batch_normalization=True)
-        model.top_layer = torch.nn.Linear(model.output_size((1,2,244,244))[0], top_layer_output_size)
-        do_train_step(model, 
-                    loss_fn= torch.nn.CrossEntropyLoss(),
-                    optim= torch.optim.SGD(filter(lambda x: x.requires_grad, model.parameters()),lr=0.01),
-                    batch= (torch.rand(10,3,244,244), torch.rand(10,top_layer_output_size)),
-                    device= torch.device("cpu"))
+        output_size = 1000
+        batch_size = 10
+        model.add_top_layer(output_size=output_size)
+
+        dummy_batch = (torch.rand(batch_size, 3, 244, 244), torch.empty(
+            batch_size, dtype=torch.long).random_(output_size))
+        device = torch.device("cpu")
+        do_train_step(model,
+                      loss_fn=torch.nn.CrossEntropyLoss(),
+                      optim=torch.optim.SGD(
+                          filter(lambda x: x.requires_grad, model.parameters()), lr=0.01),
+                      batch=dummy_batch,
+                      device=device)
+
+        do_forward_step(model, batch=dummy_batch, device=device)
+
+        test_param_change(vars_change=True, model=model,
+                          loss_fn=torch.nn.CrossEntropyLoss(),
+                          optim=torch.optim.SGD(
+                              filter(lambda x: x.requires_grad, model.parameters()), lr=0.01),
+                          batch=dummy_batch,
+                          device=device)
+
 
 if __name__ == "__main__":
     unittest.main()

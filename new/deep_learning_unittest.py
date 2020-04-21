@@ -108,7 +108,7 @@ def test_param_change(vars_change, model, loss_fn, optim, batch, device, params=
     initial_params = [(name, p.clone()) for (name, p) in params]
 
     # run a training step
-    _train_step(model, loss_fn, optim, batch, device)
+    do_train_step(model, loss_fn, optim, batch, device)
 
     # check if variables have changed
     for (_, p0), (name, p1) in zip(initial_params, params):

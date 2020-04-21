@@ -37,7 +37,7 @@ class DeepClusteringNet(torch.nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         if self.top_layer:
-            x = torch.nn.ReLU(x)
+            x = torch.nn.functional.relu(x)
             x = self.top_layer(x)
         return x
 
@@ -66,15 +66,13 @@ class DeepClusteringNet(torch.nn.Module):
             a tuple that includes the output size
         """
         x = torch.rand(size=(1, *single_input_size))
-        if self.sobel:
-            x = self.sobel(x)            
-        x = self.features(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-        if self.top_layer:
-            x = torch.nn.ReLU(x)
-            x = self.top_layer(x)
+        x = self.forward(x)
         return tuple(x.size()[1:])
+
+    def add_top_layer(self, output_size):
+        self.top_layer = torch.nn.Linear(self.output_size((3,244,244))[0], output_size)
+        self.top_layer.weight.data.normal_(0, 0.01)
+        self.top_layer.bias.data.zero_()
 
     def freeze_features(self):
         for param in self.features.parameters():
