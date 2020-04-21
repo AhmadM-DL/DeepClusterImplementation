@@ -1,4 +1,4 @@
-from new.layers_stacker import *
+from layers_stacker import *
 import unittest
 import torch
 

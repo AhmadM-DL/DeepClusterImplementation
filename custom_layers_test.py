@@ -1,4 +1,4 @@
-from new.custom_layers import *
+from custom_layers import *
 import unittest
 import torch
 #import matplotlib.pyplot as plt

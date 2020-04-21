@@ -36,6 +36,8 @@ class DeepClusteringModelsTests(unittest.TestCase):
         dummy_batch = (torch.rand(batch_size, 3, 244, 244), torch.empty(
             batch_size, dtype=torch.long).random_(output_size))
         device = torch.device("cpu")
+
+        # Run a training cycle
         do_train_step(model,
                       loss_fn=torch.nn.CrossEntropyLoss(),
                       optim=torch.optim.SGD(
@@ -43,8 +45,10 @@ class DeepClusteringModelsTests(unittest.TestCase):
                       batch=dummy_batch,
                       device=device)
 
+        # Run a fead forward step
         do_forward_step(model, batch=dummy_batch, device=device)
 
+        # Run a training cycle and assure that paramters are being updated
         test_param_change(vars_change=True, model=model,
                           loss_fn=torch.nn.CrossEntropyLoss(),
                           optim=torch.optim.SGD(
