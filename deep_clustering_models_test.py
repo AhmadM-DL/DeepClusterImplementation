@@ -1,11 +1,13 @@
 import unittest
+import torch
 from deep_learning_unittest import *
 from deep_clustering_models import *
 
 
 class DeepClusteringModelsTests(unittest.TestCase):
     def test_alexnet_imagenet_static(self):
-        model = AlexNet_ImageNet(sobel=True, batch_normalization=True)
+
+        model = AlexNet_ImageNet(sobel=True, batch_normalization=True, device= torch.device("cpu"))
 
         assert model.top_layer == None
         assert model.sobel
@@ -28,14 +30,15 @@ class DeepClusteringModelsTests(unittest.TestCase):
         assert expected_classifier_layers == classifier_layers
 
     def test_alexnet_imagenet_dynamic(self):
-        model = AlexNet_ImageNet(sobel=True, batch_normalization=True)
+        
+        device = torch.device("cpu")
+        model = AlexNet_ImageNet(sobel=True, batch_normalization=True, device=device)
         output_size = 1000
         batch_size = 10
         model.add_top_layer(output_size=output_size)
 
         dummy_batch = (torch.rand(batch_size, 3, 244, 244), torch.empty(
             batch_size, dtype=torch.long).random_(output_size))
-        device = torch.device("cpu")
 
         # Run a training cycle
         do_train_step(model,
@@ -55,7 +58,22 @@ class DeepClusteringModelsTests(unittest.TestCase):
                               filter(lambda x: x.requires_grad, model.parameters()), lr=0.01),
                           batch=dummy_batch,
                           device=device)
+    
+    def test_full_feed_forward(self):
+
+        device = torch.device("cpu")
+
+        model = AlexNet_ImageNet(sobel=True, batch_normalization=True, device=device)
+        output_size = 1000
+        batch_size = 10
+        model.add_top_layer(output_size=output_size)
+
+        dataset = RandomDataset((3,244,244), 100, output_size)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
 
 
-if __name__ == "__main__":
-    unittest.main()
+        model.full_feed_forward(dataloader=dataloader)
+        
+
+# if __name__ == "__main__":
+#     unittest.main()

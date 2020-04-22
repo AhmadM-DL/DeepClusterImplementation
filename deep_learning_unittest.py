@@ -9,7 +9,21 @@ an optimization/training step or not.
 """
 
 import torch
+from torch.utils.data import Dataset
 
+class RandomDataset(Dataset):
+
+    def __init__(self, input_size, data_length, n_classes):
+        self.len = data_length
+        self.data = torch.randn(data_length, *input_size)
+        self.targets = torch.empty(data_length, dtype=torch.long).random_(n_classes)        
+        device = torch.device("cpu")
+
+    def __getitem__(self, index):
+        return (self.data[index], self.targets[index])
+
+    def __len__(self):
+        return self.len
 
 def do_train_step(model, loss_fn, optim, batch, device):
     """Run a training step on model for a given batch of data

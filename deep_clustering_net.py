@@ -18,7 +18,7 @@ from sklearn.metrics import normalized_mutual_info_score
 
 class DeepClusteringNet(torch.nn.Module):
 
-    def __init__(self, features, classifier, top_layer, with_sobel=False):
+    def __init__(self, features, classifier, top_layer, device, with_sobel=False):
         super(DeepClusteringNet, self).__init__()
 
         self.sobel = SobelFilter() if with_sobel else None
@@ -27,6 +27,8 @@ class DeepClusteringNet(torch.nn.Module):
         self.top_layer = top_layer
 
         self._initialize_weights()
+        self.device = device
+        self.to(self.device)
 
         return
 
@@ -70,7 +72,8 @@ class DeepClusteringNet(torch.nn.Module):
         return tuple(x.size()[1:])
 
     def add_top_layer(self, output_size):
-        self.top_layer = torch.nn.Linear(self.output_size((3,244,244))[0], output_size)
+        self.top_layer = torch.nn.Linear(
+            self.output_size((3, 244, 244))[0], output_size)
         self.top_layer.weight.data.normal_(0, 0.01)
         self.top_layer.bias.data.zero_()
 
@@ -89,6 +92,74 @@ class DeepClusteringNet(torch.nn.Module):
     def unfreeze_classifier(self):
         for param in self.classifier.parameters():
             param.requires_grad = True
+    
+    def deep_cluster_train(self, dataloader, optimizer, loss_fn, verbose=False):
+
+        if verbose:
+            print('Training Model')
+
+        self.train()
+        end = time.time()
+
+        # create an optimizer for the last fc layer
+        optimizer_tl = torch.optim.SGD(
+        self.top_layer.parameters(),
+        lr=optimizer.lr,
+        weight_decay=10**optimizer.wd,
+        )
+
+        for i, (input_, target) in enumerate(dataloader):
+
+            input_ = input_.to(self.device)
+            target = target.to(self.device)
+            output = self(input_)
+
+            loss = loss_fn(output, target)
+            
+            # compute gradient and do SGD step
+            optimizer.zero_grad()
+            optimizer_tl.zero_grad()
+            loss.backward()
+            optimizer.step()
+            optimizer_tl.step()
+
+            if verbose and (i % (len(dataloader)//10) ) == 0:
+                print('{0} / {1}\tTime: {2:.3f}'.format(i, len(dataloader), time.time() - end))
+            
+            end = time.time()
+
+
+    def full_feed_forward(self, dataloader, verbose=False):
+
+        if verbose:
+            print('Computing Model Output')
+
+        self.eval()
+        end = time.time()
+
+        for i, (input_, _) in enumerate(dataloader):
+
+            input_ = input_.to(self.device)
+            output = self(input_).data.cpu().numpy()
+
+            if i == 0:
+                batch_size = input_.shape[0]
+                outputs = np.zeros(
+                    shape=(len(dataloader.dataset), output.shape[1]), dtype=np.float32)
+
+            if i < len(dataloader) - 1:
+                outputs[i * batch_size: (i + 1) *
+                        batch_size] = output.astype('float32')
+            else:
+                # special treatment for final batch
+                outputs[i * batch_size:] = output.astype('float32')
+
+            if verbose and (i % (len(dataloader)//10) ) == 0:
+                print('{0} / {1}\tTime: {2:.3f}'.format(i, len(dataloader), time.time() - end))
+            
+            end = time.time()
+
+        return outputs
 
 
 # def alexnet_cifar(sobel=False, bn=True, out=10):

@@ -21,7 +21,7 @@ from sklearn.metrics import normalized_mutual_info_score
 
 from  layers_stacker import stack_convolutional_layers, stack_linear_layers
 
-def AlexNet_ImageNet(sobel, batch_normalization):
+def AlexNet_ImageNet(sobel, batch_normalization, device):
     """
     Implementation of AlexNet
     """
@@ -110,10 +110,11 @@ def AlexNet_ImageNet(sobel, batch_normalization):
     model = DeepClusteringNet(features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
                               classifier= stack_linear_layers(input_features= 256 * 6 * 6, cfg= classifier_cfg),
                               top_layer = None,
-                              with_sobel=sobel)
+                              with_sobel=sobel,
+                              device=device)
     return model
 
-def LeNet_MNIST(sobel, batch_normalization):
+def LeNet_MNIST(sobel, batch_normalization, device):
     """
     Implementation of LeNet
     """
@@ -146,7 +147,8 @@ def LeNet_MNIST(sobel, batch_normalization):
     model = DeepClusteringNet(features= stack_convolutional_layers(input_channels=3, cfg=lenet_features_cfg, batch_normalization=batch_normalization),
                        classifier= stack_linear_layers(input_features=16*5*5, cfg= classifier_cfg),
                        top_layer= None,
-                       with_sobel=False)
+                       with_sobel=False,
+                       device=device)
 
     return model
 
