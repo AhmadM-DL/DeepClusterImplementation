@@ -10,20 +10,47 @@ an optimization/training step or not.
 
 import torch
 from torch.utils.data import Dataset
+from torchvision.datasets import VisionDataset
+
+class RandomVisionDataset(VisionDataset):
+    def __init__(self, input_size, data_length, n_classes, transform=None):
+      self.len = data_length
+      self.data = torch.randn(data_length, *input_size)
+      self.targets = torch.empty(data_length, dtype=torch.long).random_(n_classes)
+      self.imgs =  [ ("dummy/path/class/img%d.png"%i, self.targets[i]) for i in range(self.len)]  
+      self.transform = transform   
+      device = torch.device("cpu")
+
+    def __getitem__(self, index):
+      """
+      Args:
+          index (int): Index
+
+      Returns:
+          tuple: (sample, target) where target is class_index of the target class.
+      """
+      path, target = self.imgs[index]
+      sample = self.data(index)
+      if self.transform is not None:
+          sample = self.transform(sample)
+      return sample, target
+
+    def __len__(self):
+      return self.len
 
 class RandomDataset(Dataset):
 
     def __init__(self, input_size, data_length, n_classes):
-        self.len = data_length
-        self.data = torch.randn(data_length, *input_size)
-        self.targets = torch.empty(data_length, dtype=torch.long).random_(n_classes)        
-        device = torch.device("cpu")
+      self.len = data_length
+      self.data = torch.randn(data_length, *input_size)
+      self.targets = torch.empty(data_length, dtype=torch.long).random_(n_classes)        
+      device = torch.device("cpu")
 
     def __getitem__(self, index):
-        return (self.data[index], self.targets[index])
+      return (self.data[index], self.targets[index])
 
     def __len__(self):
-        return self.len
+      return self.len
 
 def do_train_step(model, loss_fn, optim, batch, device):
     """Run a training step on model for a given batch of data
