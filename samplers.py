@@ -12,9 +12,9 @@ class UnifAverageLabelSampler(Sampler):
         self.indexes = self._generate_indexes_epoch()
 
     def _group_indices_by_target(self):
-        n_targets = np.unique([ target for (_,target) in self.imgs])
+        n_targets = np.unique([ target for (_, target) in self.imgs])
         grouped_indices = [[] for i in range(n_targets)]
-        for i, (path,target) in enumerate(self.imgs):
+        for i, (path, target) in enumerate(self.imgs):
             grouped_indices[target].append(i)
         return grouped_indices
 
