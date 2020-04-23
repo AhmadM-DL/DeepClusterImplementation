@@ -15,9 +15,13 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset,  n_cl
 
     for i in n_cycles:
 
-        # remove top layer
+        # remove top layer 
         if model.top_layer:
             model.top_layer == None
+
+        # remove top_layer parameters from optimizer
+        if len(optimizer.param_groups)>1:
+            del optimizer.param_groups[1]
 
         # full feedforward
         features = model.full_feed_forward(
@@ -39,6 +43,13 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset,  n_cl
 
         # add top layer
         model.add_top_layer(n_clusters)
+
+        # add top layer parameters to optimizer
+        lr = optimizer.defaults["lr"]
+        weight_decay = optimizer.defaults["weight_decay"]
+        optimizer.add_param_group({"params": model.top_layer.parameters(),
+                                   "lr": lr,
+                                   "weight_decay": weight_decay})
         
         # train network
         loss = model.train(dataloader=dataloader, optimizer=optimizer, loss_fn= loss_fn, verbose=verbose)

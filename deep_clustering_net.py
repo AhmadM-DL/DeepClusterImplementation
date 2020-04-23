@@ -92,8 +92,8 @@ class DeepClusteringNet(torch.nn.Module):
     def unfreeze_classifier(self):
         for param in self.classifier.parameters():
             param.requires_grad = True
-    
-    def deep_cluster_train(self, dataloader, optimizer, loss_fn, verbose=False):
+
+    def deep_cluster_train(self, dataloader, optimizer: torch.optim.Optimizer, loss_fn, verbose=False):
 
         if verbose:
             print('Training Model')
@@ -101,12 +101,7 @@ class DeepClusteringNet(torch.nn.Module):
         self.train()
         end = time.time()
 
-        # create an optimizer for the last fc layer
-        optimizer_tl = torch.optim.SGD(
-        self.top_layer.parameters(),
-        lr=optimizer.lr,
-        weight_decay=10**optimizer.wd,
-        )
+
 
         for i, (input_, target) in enumerate(dataloader):
 
@@ -115,18 +110,18 @@ class DeepClusteringNet(torch.nn.Module):
             output = self(input_)
 
             loss = loss_fn(output, target)
-            
+
             # compute gradient and do SGD step
             optimizer.zero_grad()
-            optimizer_tl.zero_grad()
             loss.backward()
             optimizer.step()
-            optimizer_tl.step()
 
-            if verbose and (i % (len(dataloader)//10) ) == 0:
-                print('{0} / {1}\tTime: {2:.3f}'.format(i, len(dataloader), time.time() - end))
-            
+            if verbose and (i % (len(dataloader)//10)) == 0:
+                print('{0} / {1}\tTime: {2:.3f}'.format(i,
+                                                        len(dataloader), time.time() - end))
+
             end = time.time()
+
 
 
     def full_feed_forward(self, dataloader, verbose=False):
@@ -154,9 +149,10 @@ class DeepClusteringNet(torch.nn.Module):
                 # special treatment for final batch
                 outputs[i * batch_size:] = output.astype('float32')
 
-            if verbose and (i % (len(dataloader)//10) ) == 0:
-                print('{0} / {1}\tTime: {2:.3f}'.format(i, len(dataloader), time.time() - end))
-            
+            if verbose and (i % (len(dataloader)//10)) == 0:
+                print('{0} / {1}\tTime: {2:.3f}'.format(i,
+                                                        len(dataloader), time.time() - end))
+
             end = time.time()
 
         return outputs
