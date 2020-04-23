@@ -27,11 +27,11 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         kwargs: Other relevent arguments that lesser used. i.e. n_components for PCA before clustering, ...
     """
 
-    for i in n_cycles:
+    for i in range(n_cycles):
 
         # remove top layer
         if model.top_layer:
-            model.top_layer == None
+            model.top_layer = None
 
         # remove top_layer parameters from optimizer
         if len(optimizer.param_groups) > 1:
@@ -79,5 +79,5 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                    "weight_decay": weight_decay})
 
         # train network
-        loss = model.train(dataloader=train_dataloader,
+        loss = model.deep_cluster_train(dataloader=train_dataloader,
                            optimizer=optimizer, loss_fn=loss_fn, verbose=verbose)

@@ -27,201 +27,201 @@ def sklearn_kmeans(npdata, n_clusters, random_state=0, verbose=False, **kwargs):
 
     return Kmeans.labels_
 
-def pil_loader(path):
-    """Loads an image.
-    Args:
-        path (string): path to image file
-    Returns:
-        Image
-    """
-    with open(path, 'rb') as f:
-        img = Image.open(f)
-        return img.convert('RGB')
+# def pil_loader(path):
+#     """Loads an image.
+#     Args:
+#         path (string): path to image file
+#     Returns:
+#         Image
+#     """
+#     with open(path, 'rb') as f:
+#         img = Image.open(f)
+#         return img.convert('RGB')
 
 
-class ReassignedDataset(data.Dataset):
-    """A dataset where the new images labels are given in argument.
-    Args:
-        image_indexes (list): list of data indexes
-        pseudolabels (list): list of labels for each data
-        dataset (list): list of tuples with paths to images
-        transform (callable, optional): a function/transform that takes in
-                                        an PIL image and returns a
-                                        transformed version
-    """
+# class ReassignedDataset(data.Dataset):
+#     """A dataset where the new images labels are given in argument.
+#     Args:
+#         image_indexes (list): list of data indexes
+#         pseudolabels (list): list of labels for each data
+#         dataset (list): list of tuples with paths to images
+#         transform (callable, optional): a function/transform that takes in
+#                                         an PIL image and returns a
+#                                         transformed version
+#     """
 
-    def __init__(self, dataset, image_indexes, pseudolabels, dataset, transform=None):
-        self.imgs = self.make_dataset(image_indexes, pseudolabels, dataset)
-        self.transform = transform
+#     def __init__(self, dataset, image_indexes, pseudolabels, dataset, transform=None):
+#         self.imgs = self.make_dataset(image_indexes, pseudolabels, dataset)
+#         self.transform = transform
 
-    def make_dataset(self, image_indexes, pseudolabels, dataset):
-        label_to_idx = {label: idx for idx, label in enumerate(set(pseudolabels))}
-        images = []
-        for j, idx in enumerate(image_indexes):
-            path = dataset[idx][0]
-            pseudolabel = label_to_idx[pseudolabels[j]]
-            images.append((path, pseudolabel))
-        return images
+#     def make_dataset(self, image_indexes, pseudolabels, dataset):
+#         label_to_idx = {label: idx for idx, label in enumerate(set(pseudolabels))}
+#         images = []
+#         for j, idx in enumerate(image_indexes):
+#             path = dataset[idx][0]
+#             pseudolabel = label_to_idx[pseudolabels[j]]
+#             images.append((path, pseudolabel))
+#         return images
 
-    def __getitem__(self, index):
-        """
-        Args:
-            index (int): index of data
-        Returns:
-            tuple: (image, pseudolabel) where pseudolabel is the cluster of index datapoint
-        """
-        path, pseudolabel = self.imgs[index]
-        img = pil_loader(path)
-        if self.transform is not None:
-            img = self.transform(img)
-        return img, pseudolabel
+#     def __getitem__(self, index):
+#         """
+#         Args:
+#             index (int): index of data
+#         Returns:
+#             tuple: (image, pseudolabel) where pseudolabel is the cluster of index datapoint
+#         """
+#         path, pseudolabel = self.imgs[index]
+#         img = pil_loader(path)
+#         if self.transform is not None:
+#             img = self.transform(img)
+#         return img, pseudolabel
 
-    def __len__(self):
-        return len(self.imgs)
-
-
-def preprocess_features(npdata, pca=256):
-    """Preprocess an array of features.
-    Args:
-        npdata (np.array N * ndim): features to preprocess
-        pca (int): dim of output
-    Returns:
-        np.array of dim N * pca: data PCA-reduced, whitened and L2-normalized
-    """
-    _, ndim = npdata.shape
-    npdata =  npdata.astype('float32')
-
-    # Apply PCA-whitening with sklearn
-    pca = PCA(n_components=pca, whiten=True, random_state=0)
-    npdata = pca.fit_transform(npdata)
-
-    # L2 normalization
-    row_sums = np.linalg.norm(npdata, axis=1)
-    npdata = npdata / row_sums[:, np.newaxis]
-
-    return npdata
+#     def __len__(self):
+#         return len(self.imgs)
 
 
-def make_graph(xb, nnn):
-    """Builds a graph of nearest neighbors.
-    Args:
-        xb (np.array): data
-        nnn (int): number of nearest neighbors
-    Returns:
-        list: for each data the list of ids to its nnn nearest neighbors
-        list: for each data the list of distances to its nnn NN
-    """
-    N, dim = xb.shape
+# def preprocess_features(npdata, pca=256):
+#     """Preprocess an array of features.
+#     Args:
+#         npdata (np.array N * ndim): features to preprocess
+#         pca (int): dim of output
+#     Returns:
+#         np.array of dim N * pca: data PCA-reduced, whitened and L2-normalized
+#     """
+#     _, ndim = npdata.shape
+#     npdata =  npdata.astype('float32')
 
-    # we need only a StandardGpuResources per GPU
-    res = faiss.StandardGpuResources()
+#     # Apply PCA-whitening with sklearn
+#     pca = PCA(n_components=pca, whiten=True, random_state=0)
+#     npdata = pca.fit_transform(npdata)
 
-    # L2
-    flat_config = faiss.GpuIndexFlatConfig()
-    flat_config.device = int(torch.cuda.device_count()) - 1
-    index = faiss.GpuIndexFlatL2(res, dim, flat_config)
-    index.add(xb)
-    D, I = index.search(xb, nnn + 1)
-    return I, D
+#     # L2 normalization
+#     row_sums = np.linalg.norm(npdata, axis=1)
+#     npdata = npdata / row_sums[:, np.newaxis]
 
-
-def cluster_assign(images_lists, dataset):
-    """Creates a dataset from clustering, with clusters as labels.
-    Args:
-        images_lists (list of list): for each cluster, the list of image indexes
-                                    belonging to this cluster
-        dataset (list): initial dataset
-    Returns:
-        ReassignedDataset(torch.utils.data.Dataset): a dataset with clusters as
-                                                     labels
-    """
-    assert images_lists is not None
-    pseudolabels = []
-    image_indexes = []
-    for cluster, images in enumerate(images_lists):
-        image_indexes.extend(images)
-        pseudolabels.extend([cluster] * len(images))
-
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-    t = transforms.Compose([transforms.RandomResizedCrop(224),
-                            transforms.RandomHorizontalFlip(),
-                            transforms.ToTensor(),
-                            normalize])
-
-    return ReassignedDataset(image_indexes, pseudolabels, dataset, t)
+#     return npdata
 
 
-def run_kmeans(x, nmb_clusters, verbose=False):
-    """Runs kmeans on 1 GPU.
-    Args:
-        x: data
-        nmb_clusters (int): number of clusters
-    Returns:
-        list: ids of data in each cluster
-    """
-    n_data, d = x.shape
+# def make_graph(xb, nnn):
+#     """Builds a graph of nearest neighbors.
+#     Args:
+#         xb (np.array): data
+#         nnn (int): number of nearest neighbors
+#     Returns:
+#         list: for each data the list of ids to its nnn nearest neighbors
+#         list: for each data the list of distances to its nnn NN
+#     """
+#     N, dim = xb.shape
 
-    # faiss implementation of k-means
-    clus = faiss.Clustering(d, nmb_clusters)
+#     # we need only a StandardGpuResources per GPU
+#     res = faiss.StandardGpuResources()
 
-    # Change faiss seed at each k-means so that the randomly picked
-    # initialization centroids do not correspond to the same feature ids
-    # from an epoch to another.
-    clus.seed = np.random.randint(1234)
-
-    clus.niter = 20
-    clus.max_points_per_centroid = 10000000
-    res = faiss.StandardGpuResources()
-    flat_config = faiss.GpuIndexFlatConfig()
-    flat_config.useFloat16 = False
-    flat_config.device = 0
-    index = faiss.GpuIndexFlatL2(res, d, flat_config)
-
-    # perform the training
-    clus.train(x, index)
-    _, I = index.search(x, 1)
-    losses = faiss.vector_to_array(clus.obj)
-    if verbose:
-        print('k-means loss evolution: {0}'.format(losses))
-
-    return [int(n[0]) for n in I], losses[-1]
+#     # L2
+#     flat_config = faiss.GpuIndexFlatConfig()
+#     flat_config.device = int(torch.cuda.device_count()) - 1
+#     index = faiss.GpuIndexFlatL2(res, dim, flat_config)
+#     index.add(xb)
+#     D, I = index.search(xb, nnn + 1)
+#     return I, D
 
 
-def arrange_clustering(images_lists):
-    pseudolabels = []
-    image_indexes = []
-    for cluster, images in enumerate(images_lists):
-        image_indexes.extend(images)
-        pseudolabels.extend([cluster] * len(images))
-    indexes = np.argsort(image_indexes)
-    return np.asarray(pseudolabels)[indexes]
+# def cluster_assign(images_lists, dataset):
+#     """Creates a dataset from clustering, with clusters as labels.
+#     Args:
+#         images_lists (list of list): for each cluster, the list of image indexes
+#                                     belonging to this cluster
+#         dataset (list): initial dataset
+#     Returns:
+#         ReassignedDataset(torch.utils.data.Dataset): a dataset with clusters as
+#                                                      labels
+#     """
+#     assert images_lists is not None
+#     pseudolabels = []
+#     image_indexes = []
+#     for cluster, images in enumerate(images_lists):
+#         image_indexes.extend(images)
+#         pseudolabels.extend([cluster] * len(images))
+
+#     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+#                                      std=[0.229, 0.224, 0.225])
+#     t = transforms.Compose([transforms.RandomResizedCrop(224),
+#                             transforms.RandomHorizontalFlip(),
+#                             transforms.ToTensor(),
+#                             normalize])
+
+#     return ReassignedDataset(image_indexes, pseudolabels, dataset, t)
 
 
-class Kmeans(object):
-    def __init__(self, k):
-        self.k = k
+# def run_kmeans(x, nmb_clusters, verbose=False):
+#     """Runs kmeans on 1 GPU.
+#     Args:
+#         x: data
+#         nmb_clusters (int): number of clusters
+#     Returns:
+#         list: ids of data in each cluster
+#     """
+#     n_data, d = x.shape
 
-    def cluster(self, data, verbose=False):
-        """Performs k-means clustering.
-            Args:
-                x_data (np.array N * dim): data to cluster
-        """
-        end = time.time()
+#     # faiss implementation of k-means
+#     clus = faiss.Clustering(d, nmb_clusters)
 
-        # PCA-reducing, whitening and L2-normalization
-        xb = preprocess_features(data)
+#     # Change faiss seed at each k-means so that the randomly picked
+#     # initialization centroids do not correspond to the same feature ids
+#     # from an epoch to another.
+#     clus.seed = np.random.randint(1234)
 
-        # cluster the data
-        I, loss = run_kmeans(xb, self.k, verbose)
-        self.images_lists = [[] for i in range(self.k)]
-        for i in range(len(data)):
-            self.images_lists[I[i]].append(i)
+#     clus.niter = 20
+#     clus.max_points_per_centroid = 10000000
+#     res = faiss.StandardGpuResources()
+#     flat_config = faiss.GpuIndexFlatConfig()
+#     flat_config.useFloat16 = False
+#     flat_config.device = 0
+#     index = faiss.GpuIndexFlatL2(res, d, flat_config)
 
-        if verbose:
-            print('k-means time: {0:.0f} s'.format(time.time() - end))
+#     # perform the training
+#     clus.train(x, index)
+#     _, I = index.search(x, 1)
+#     losses = faiss.vector_to_array(clus.obj)
+#     if verbose:
+#         print('k-means loss evolution: {0}'.format(losses))
 
-        return loss
+#     return [int(n[0]) for n in I], losses[-1]
+
+
+# def arrange_clustering(images_lists):
+#     pseudolabels = []
+#     image_indexes = []
+#     for cluster, images in enumerate(images_lists):
+#         image_indexes.extend(images)
+#         pseudolabels.extend([cluster] * len(images))
+#     indexes = np.argsort(image_indexes)
+#     return np.asarray(pseudolabels)[indexes]
+
+
+# class Kmeans(object):
+#     def __init__(self, k):
+#         self.k = k
+
+#     def cluster(self, data, verbose=False):
+#         """Performs k-means clustering.
+#             Args:
+#                 x_data (np.array N * dim): data to cluster
+#         """
+#         end = time.time()
+
+#         # PCA-reducing, whitening and L2-normalization
+#         xb = preprocess_features(data)
+
+#         # cluster the data
+#         I, loss = run_kmeans(xb, self.k, verbose)
+#         self.images_lists = [[] for i in range(self.k)]
+#         for i in range(len(data)):
+#             self.images_lists[I[i]].append(i)
+
+#         if verbose:
+#             print('k-means time: {0:.0f} s'.format(time.time() - end))
+
+#         return loss
 
 
 # def make_adjacencyW(I, D, sigma):

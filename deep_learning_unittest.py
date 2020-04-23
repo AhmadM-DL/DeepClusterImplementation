@@ -30,13 +30,13 @@ class RandomVisionDataset(VisionDataset):
           tuple: (sample, target) where target is class_index of the target class.
       """
       path, target = self.imgs[index]
-      sample = self.data(index)
+      sample = self.data[index]
       if self.transform is not None:
           sample = self.transform(sample)
       return sample, target
 
     def __len__(self):
-      return self.len
+      return len(self.imgs)
 
 class RandomDataset(Dataset):
 

@@ -3,8 +3,9 @@ Created on Tuesday April 23 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
 """
 import numpy as np
+import torch
 
-class UnifAverageLabelSampler(Sampler):
+class UnifAverageLabelSampler(torch.utils.data.Sampler):
 
     def __init__(self, dataset, dataset_multiplier=1):
         self.imgs = dataset.imgs
@@ -12,7 +13,7 @@ class UnifAverageLabelSampler(Sampler):
         self.indexes = self._generate_indexes_epoch()
 
     def _group_indices_by_target(self):
-        n_targets = np.unique([ target for (_, target) in self.imgs])
+        n_targets = len(np.unique([ target for (_, target) in self.imgs]))
         grouped_indices = [[] for i in range(n_targets)]
         for i, (path, target) in enumerate(self.imgs):
             grouped_indices[target].append(i)
