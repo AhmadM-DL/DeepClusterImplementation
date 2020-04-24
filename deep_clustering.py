@@ -8,9 +8,12 @@ from clustering import sklearn_kmeans
 from samplers import UnifAverageLabelSampler
 from preprocessing import l2_normalization, kmeans_pca_whitening
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 
-def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles, random_state=0, verbose=0, **kwargs):
+
+def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles,
+                 random_state=0, verbose=0, writer:SummaryWriter=None,**kwargs):
     """ 
     The main method in this repo. it implements the DeepCluster pipeline
     introduced by caron et. al. in "Deep Clustering for Unsupervised Learning of Visual Features"  
@@ -80,4 +83,4 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
         # train network
         loss = model.deep_cluster_train(dataloader=train_dataloader,
-                           optimizer=optimizer, loss_fn=loss_fn, verbose=verbose)
+                           optimizer=optimizer, loss_fn=loss_fn, verbose=verbose, writer=writer)

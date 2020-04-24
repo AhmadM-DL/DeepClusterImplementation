@@ -4,16 +4,13 @@ Created on Tuesday April 14 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
 """
 import torch
-
 import math
 import time
 import os
-
 import numpy as np
-
 from custom_layers import SobelFilter
-
 from sklearn.metrics import normalized_mutual_info_score
+from torch.utils.tensorboard import SummaryWriter
 
 
 class DeepClusteringNet(torch.nn.Module):
@@ -93,14 +90,14 @@ class DeepClusteringNet(torch.nn.Module):
         for param in self.classifier.parameters():
             param.requires_grad = True
 
-    def deep_cluster_train(self, dataloader, optimizer: torch.optim.Optimizer, loss_fn, verbose=False):
+    def deep_cluster_train(self, dataloader, optimizer: torch.optim.Optimizer, loss_fn, verbose=False,
+     writer: SummaryWriter=None):
 
         if verbose:
             print('Training Model')
 
         self.train()
         end = time.time()
-
 
 
         for i, (input_, target) in enumerate(dataloader):
@@ -116,12 +113,14 @@ class DeepClusteringNet(torch.nn.Module):
             loss.backward()
             optimizer.step()
 
+            if writer:
+                writer.add_scalar("training_loss", loss)
+
             if verbose and (i % (len(dataloader)//10)) == 0:
                 print('{0} / {1}\tTime: {2:.3f}'.format(i,
                                                         len(dataloader), time.time() - end))
 
             end = time.time()
-
 
 
     def full_feed_forward(self, dataloader, verbose=False):
