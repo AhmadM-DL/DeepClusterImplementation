@@ -90,7 +90,7 @@ class DeepClusteringNet(torch.nn.Module):
         for param in self.classifier.parameters():
             param.requires_grad = True
 
-    def deep_cluster_train(self, dataloader, optimizer: torch.optim.Optimizer, loss_fn, verbose=False,
+    def deep_cluster_train(self, dataloader, epoch, optimizer: torch.optim.Optimizer, loss_fn, verbose=False,
      writer: SummaryWriter=None):
 
         if verbose:
@@ -114,13 +114,17 @@ class DeepClusteringNet(torch.nn.Module):
             optimizer.step()
 
             if writer:
-                writer.add_scalar("training_loss", loss)
 
-            if verbose and (i % (len(dataloader)//10)) == 0:
+                writer.add_scalar("training_loss",
+                                  scalar_value=loss.item(),
+                                  global_step=epoch * len(dataloader) + i)
+
+            if verbose and len(dataloader)>=10 and (i % (len(dataloader)//10)) == 0:
                 print('{0} / {1}\tTime: {2:.3f}'.format(i,
                                                         len(dataloader), time.time() - end))
 
             end = time.time()
+        
 
 
     def full_feed_forward(self, dataloader, verbose=False):
@@ -148,7 +152,7 @@ class DeepClusteringNet(torch.nn.Module):
                 # special treatment for final batch
                 outputs[i * batch_size:] = output.astype('float32')
 
-            if verbose and (i % (len(dataloader)//10)) == 0:
+            if verbose and len(dataloader)>=10 and (i % (len(dataloader)//10)) == 0:
                 print('{0} / {1}\tTime: {2:.3f}'.format(i,
                                                         len(dataloader), time.time() - end))
 

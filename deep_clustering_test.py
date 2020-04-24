@@ -63,11 +63,13 @@ class DeepClusteringTests(unittest.TestCase):
             lr=0.01,
             weight_decay=10**-5,
         )
-        writer = SummaryWriter('runs/test_deep_cluster_with_writer')
+        writer = SummaryWriter('runs/test_deep_cluster_with_writer1')
 
         deep_cluster(model=model, dataset=dataset, n_clusters=5, loss_fn=loss_fn,
-                     optimizer=optimizer, n_cycles=1, random_state=0, verbose=1,
+                     optimizer=optimizer, n_cycles=5, random_state=0, verbose=1,
                      loading_batch_size=8, training_batch_size=8, n_components=20, writer=writer)
+
+        writer.close()
 
 
 if __name__ == "__main__":

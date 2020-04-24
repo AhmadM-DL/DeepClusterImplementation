@@ -8,12 +8,15 @@ from clustering import sklearn_kmeans
 from samplers import UnifAverageLabelSampler
 from preprocessing import l2_normalization, kmeans_pca_whitening
 import torch
+from sklearn.metrics import normalized_mutual_info_score as NMI
 from torch.utils.tensorboard import SummaryWriter
+from scipy.stats import entropy
+import numpy as np
 
 
 
 def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles,
-                 random_state=0, verbose=0, writer:SummaryWriter=None,**kwargs):
+                 random_state=0, verbose=0, writer: SummaryWriter = None, **kwargs):
     """ 
     The main method in this repo. it implements the DeepCluster pipeline
     introduced by caron et. al. in "Deep Clustering for Unsupervised Learning of Visual Features"  
@@ -29,8 +32,12 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         verbose(int): verbose level
         kwargs: Other relevent arguments that lesser used. i.e. n_components for PCA before clustering, ...
     """
+    if writer:
+        dummy_input = torch.rand((1,3,244,244))
+        # I am not really sure why I have to add an input for add_graph
+        writer.add_graph(model, dummy_input)
 
-    for i in range(n_cycles):
+    for cycle in range(n_cycles):
 
         # remove top layer
         if model.top_layer:
@@ -43,7 +50,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # full feedforward
         features = model.full_feed_forward(
             dataloader=torch.utils.data.DataLoader(dataset,
-                                                   batch_size=kwargs.get("loading_batch_size", 256), pin_memory=True), verbose=verbose)
+                                                   batch_size=kwargs.get("loading_batch_size", 256),
+                                                   pin_memory=True), verbose=verbose)
 
         # pre-processing pca-whitening
         features = kmeans_pca_whitening(features, n_components=kwargs.get(
@@ -56,8 +64,25 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         assignments = sklearn_kmeans(
             features, n_clusters=n_clusters, random_state=random_state, verbose=verbose)
 
+        if writer:
+            # write NMI between consecutive pseudolabels
+            if cycle>0:
+                writer.add_scalar("NMI/pt_vs_pt-1", NMI(assignments, dataset.get_pseudolabels()), cycle)
+            # write NMI between lables and pseudolabels
+            writer.add_scalar("NMI/pt_vs_labels", NMI(assignments, dataset.get_targets()), cycle) 
+ 
+        
         # re assign labels
         dataset.set_pseudolabels(assignments)
+
+        if writer:
+           # write original labels entropy distribution in pseudoclasses
+            pseudoclasses = dataset.group_indices_by_labels()
+            pseudoclasses_labels = [ [ dataset.get_targets()[index] for index in pseudoclass] for pseudoclass in pseudoclasses ]
+            pseudoclasses_labels_counts = [ np.unique(pseudoclass_labels, return_counts=True)[1]  for pseudoclass_labels in pseudoclasses_labels] 
+            entropies = [ entropy(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
+            writer.add_histogram("pseudoclasses_entropies", np.array(entropies), cycle)
+
 
         # initialize uniform sample
         sampler = UnifAverageLabelSampler(dataset,
@@ -82,5 +107,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                    "weight_decay": weight_decay})
 
         # train network
-        loss = model.deep_cluster_train(dataloader=train_dataloader,
-                           optimizer=optimizer, loss_fn=loss_fn, verbose=verbose, writer=writer)
+        n_epochs = kwargs.get("n_epochs", 1)
+        for epoch in range(n_epochs):
+            loss = model.deep_cluster_train(dataloader=train_dataloader,
+                                            optimizer=optimizer, epoch=cycle*n_epochs+epoch, loss_fn=loss_fn, verbose=verbose, writer=writer)
