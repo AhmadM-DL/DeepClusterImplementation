@@ -9,20 +9,18 @@ import torch
 import numpy as np
 
 class DeepClusteringDataset(Dataset):
-    """A dataset where the new images labels are given in argument.
+    """ A Datset Decorator that adds changing labels to pseudolabels
+    functionality.
     Args:
-        image_indexes (list): list of data indexes
-        pseudolabels (list): list of labels for each data
-        dataset (list): list of tuples with paths to images
+        original_dataset (list): Pytorch Dataset
         transform (callable, optional): a function/transform that takes in
                                         an PIL image and returns a
                                         transformed version
     """
 
     def __init__(self, original_dataset, transform=None):
-        self.original_imgs = original_dataset.imgs
         self.original_dataset = original_dataset
-        self.imgs = self.original_imgs
+        self.imgs = self.original_dataset.imgs.copy()
         self.transform = original_dataset.transform
             
     def __len__(self):
@@ -32,7 +30,7 @@ class DeepClusteringDataset(Dataset):
         return self.original_dataset.__getitem__(index)
 
     def get_targets(self):
-        return [target for (path,target) in self.original_dataset.imgs]
+        return [target for (path ,target) in self.original_dataset.imgs]
     
     def set_pseudolabels(self, pseudolabels):
         for i, pseudolabel in enumerate(pseudolabels):
@@ -42,7 +40,7 @@ class DeepClusteringDataset(Dataset):
         return [pseudolabel.item() for (path, pseudolabel) in self.imgs]
     
     def unset_pseudolabels(self):
-        self.imgs= self.original_imgs
+        self.imgs= self.original_dataset.imgs
 
     def group_indices_by_labels(self):
         n_labels = len(np.unique([ label for (_, label) in self.imgs]))

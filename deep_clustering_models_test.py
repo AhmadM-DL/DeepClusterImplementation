@@ -5,6 +5,11 @@ from deep_clustering_models import *
 
 
 class DeepClusteringModelsTests(unittest.TestCase):
+
+    def test_alexnet_cifar_static(self):
+        model = AlexNet_CIFAR(sobel=True, batch_normalization=True, device=torch.device("cpu"))
+        return
+
     def test_alexnet_imagenet_static(self):
 
         model = AlexNet_ImageNet(

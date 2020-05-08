@@ -1,5 +1,6 @@
 {
     "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
+    "python.jediEnabled": false,
     "python.linting.pylintArgs": [
         "--errors-only",
         "--generated-members=numpy.* ,torch.* ,cv2.* , cv.*"
@@ -24,5 +25,10 @@
     "cSpell.ignoreWords": [
         "astype",
         "npdata"
+    ],
+    "cSpell.words": [
+        "le",
+        "mnist",
+        "net"
     ],
 }
