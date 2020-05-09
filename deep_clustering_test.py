@@ -12,7 +12,6 @@ from torchvision import transforms
 from torch.utils.tensorboard import SummaryWriter
 import torch
 
-
 class DeepClusteringTests(unittest.TestCase):
 
     def test_deep_cluster_1(self):
