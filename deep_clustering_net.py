@@ -64,7 +64,7 @@ class DeepClusteringNet(torch.nn.Module):
         :return: tuple
             a tuple that includes the output size
         """
-        x = torch.rand(size=(1, *single_input_size)).to(self.device)
+        x = torch.rand(size=(1, *single_input_size), device=self.device)
         x = self.forward(x)
         return tuple(x.size()[1:])
 
