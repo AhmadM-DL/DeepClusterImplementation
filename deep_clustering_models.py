@@ -35,22 +35,22 @@ def AlexNet_CIFAR(sobel, batch_normalization, device):
                 {
                 "type": "convolution",
                 "out_channels":64,
-                "kernel_size":3,
-                "stride":1,
+                "kernel_size":11,
+                "stride":4,
                 "padding":2,
                 "activation":"ReLU",
                 },
 
                 {
                 "type":"max_pool",
-                "kernel_size":2,
-                "stride":1,
+                "kernel_size":3,
+                "stride":2,
                 },
 
                 {
                 "type": "convolution",
                 "out_channels":192,
-                "kernel_size":3,
+                "kernel_size":5,
                 "stride":1,
                 "padding":2,
                 "activation":"ReLU",
@@ -58,8 +58,8 @@ def AlexNet_CIFAR(sobel, batch_normalization, device):
 
                 {
                 "type":"max_pool",
-                "kernel_size":2,
-                "stride":1,
+                "kernel_size":3,
+                "stride":2,
                 },
 
                 {
