@@ -25,7 +25,7 @@ class DeepClusteringDataset(Dataset):
         if isinstance(self.original_dataset, ImageFolder):
             self.imgs = self.original_dataset.imgs.copy()
 
-        elif isinstance(self.original_dataset_type, VisionDataset):
+        elif isinstance(self.original_dataset, VisionDataset):
             self.data = original_dataset.data
             self.targets = original_dataset.target
         else:
@@ -43,7 +43,7 @@ class DeepClusteringDataset(Dataset):
         if isinstance(self.original_dataset, ImageFolder):
             return [target for (path ,target) in self.original_dataset.imgs]
 
-        elif isinstance(self.original_dataset_type, VisionDataset):
+        elif isinstance(self.original_dataset, VisionDataset):
             return self.targets
 
         else:
@@ -55,7 +55,7 @@ class DeepClusteringDataset(Dataset):
             for i, pseudolabel in enumerate(pseudolabels):
                 self.imgs[i] = (self.imgs[i][0], torch.tensor(pseudolabel, dtype=torch.long))
 
-        elif isinstance(self.original_dataset_type, VisionDataset):
+        elif isinstance(self.original_dataset, VisionDataset):
              self.targets = pseudolabels
 
         else:
@@ -65,7 +65,7 @@ class DeepClusteringDataset(Dataset):
         if isinstance(self.original_dataset, ImageFolder):
             return [pseudolabel.item() for (path, pseudolabel) in self.imgs]
 
-        elif isinstance(self.original_dataset_type, VisionDataset):
+        elif isinstance(self.original_dataset, VisionDataset):
              return self.targets
 
         else:
@@ -75,7 +75,7 @@ class DeepClusteringDataset(Dataset):
         if isinstance(self.original_dataset, ImageFolder):
             self.imgs= self.original_dataset.imgs
 
-        elif isinstance(self.original_dataset_type, VisionDataset):
+        elif isinstance(self.original_dataset, VisionDataset):
              self.targets = self.original_dataset.targets
 
         else:
@@ -90,13 +90,13 @@ class DeepClusteringDataset(Dataset):
                 grouped_indices[label].append(i)
             return grouped_indices
 
-        elif isinstance(self.original_dataset_type, VisionDataset):
+        elif isinstance(self.original_dataset, VisionDataset):
             n_labels = len(np.unique(self.targets))
             grouped_indices = [[] for i in range(n_labels)]
             for i, label in enumerate(self.targets):
                 grouped_indices[label].append(i)
             return grouped_indices
-            
+
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
              
