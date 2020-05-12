@@ -27,7 +27,7 @@ class DeepClusteringDataset(Dataset):
 
         elif isinstance(self.original_dataset, VisionDataset):
             self.data = original_dataset.data
-            self.targets = original_dataset.target
+            self.targets = original_dataset.targets
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
 
