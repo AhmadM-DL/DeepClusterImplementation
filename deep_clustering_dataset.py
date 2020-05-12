@@ -18,7 +18,7 @@ class DeepClusteringDataset(Dataset):
                                         transformed version
     """
 
-    def __init__(self, original_dataset, transform=None):
+    def __init__(self, original_dataset):
         self.original_dataset = original_dataset
         self.imgs = self.original_dataset.imgs.copy()
         self.transform = original_dataset.transform
