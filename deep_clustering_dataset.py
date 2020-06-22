@@ -7,6 +7,7 @@ from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
 from torchvision.datasets import VisionDataset
 import torch
+import copy
 import numpy as np
 
 class DeepClusteringDataset(Dataset):
@@ -19,63 +20,67 @@ class DeepClusteringDataset(Dataset):
                                         transformed version
     """
 
-    def __init__(self, original_dataset):
+    def __init__(self, original_dataset, transform=None):
+        self.dataset = copy.deepcopy(original_dataset)
         self.original_dataset = original_dataset
 
         if isinstance(self.original_dataset, ImageFolder):
-            self.imgs = self.original_dataset.imgs.copy()
+            self.imgs = self.dataset.imgs
 
         elif isinstance(self.original_dataset, VisionDataset):
-            self.data = original_dataset.data
-            self.targets = original_dataset.targets
+            self.data = self.dataset.data
+            self.targets = self.dataset.targets
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
 
-        self.transform = original_dataset.transform
+        if transform:
+            self.transfrom = transform
+        else:
+            self.transform = original_dataset.transform
             
     def __len__(self):
-        return self.original_dataset.__len__()
+        return self.dataset.__len__()
     
     def __getitem__(self, index):
-        return self.original_dataset.__getitem__(index)
+        return self.dataset.__getitem__(index)
 
     def get_targets(self):
         if isinstance(self.original_dataset, ImageFolder):
             return [target for (path ,target) in self.original_dataset.imgs]
 
         elif isinstance(self.original_dataset, VisionDataset):
-            return self.targets
+            return self.original_dataset.targets
 
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
     
     def set_pseudolabels(self, pseudolabels):
 
-        if isinstance(self.original_dataset, ImageFolder):
+        if isinstance(self.dataset, ImageFolder):
             for i, pseudolabel in enumerate(pseudolabels):
                 self.imgs[i] = (self.imgs[i][0], torch.tensor(pseudolabel, dtype=torch.long))
 
-        elif isinstance(self.original_dataset, VisionDataset):
+        elif isinstance(self.dataset, VisionDataset):
              self.targets = pseudolabels
 
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
     
     def get_pseudolabels(self):
-        if isinstance(self.original_dataset, ImageFolder):
+        if isinstance(self.dataset, ImageFolder):
             return [pseudolabel.item() for (path, pseudolabel) in self.imgs]
 
-        elif isinstance(self.original_dataset, VisionDataset):
+        elif isinstance(self.dataset, VisionDataset):
              return self.targets
 
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
         
     def unset_pseudolabels(self):
-        if isinstance(self.original_dataset, ImageFolder):
+        if isinstance(self.dataset, ImageFolder):
             self.imgs= self.original_dataset.imgs
 
-        elif isinstance(self.original_dataset, VisionDataset):
+        elif isinstance(self.dataset, VisionDataset):
              self.targets = self.original_dataset.targets
 
         else:
@@ -83,14 +88,14 @@ class DeepClusteringDataset(Dataset):
                 
 
     def group_indices_by_labels(self):
-        if isinstance(self.original_dataset, ImageFolder):
+        if isinstance(self.dataset, ImageFolder):
             n_labels = len(np.unique([ label for (_, label) in self.imgs]))
             grouped_indices = [[] for i in range(n_labels)]
             for i, (path, label) in enumerate(self.imgs):
                 grouped_indices[label].append(i)
             return grouped_indices
 
-        elif isinstance(self.original_dataset, VisionDataset):
+        elif isinstance(self.dataset, VisionDataset):
             n_labels = len(np.unique(self.targets))
             grouped_indices = [[] for i in range(n_labels)]
             for i, label in enumerate(self.targets):

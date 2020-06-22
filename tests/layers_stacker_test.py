@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../")
+
 from layers_stacker import *
 import unittest
 import torch

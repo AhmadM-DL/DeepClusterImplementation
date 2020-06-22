@@ -3,6 +3,10 @@ Created on Tuesday April 14 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
 """
 
+import sys
+sys.path.append("../")
+
+
 import unittest
 from deep_clustering import deep_cluster
 from deep_clustering_models import AlexNet_ImageNet

@@ -1,6 +1,9 @@
+import sys
+sys.path.append("../")
+
 import unittest
 import torch
-from deep_learning_unittest import *
+from deep_learning_unittest import do_train_step, do_forward_step, test_param_change, RandomDataset
 from deep_clustering_models import *
 
 
@@ -100,7 +103,7 @@ class DeepClusteringModelsTests(unittest.TestCase):
         dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size)
 
-        model.deep_cluster_train(dataloader=dataloader, optimizer=optimizer, loss_fn=loss_fn)
+        model.deep_cluster_train(dataloader=dataloader, epoch=0, optimizer=optimizer, loss_fn=loss_fn)
 
 if __name__ == "__main__":
     unittest.main()

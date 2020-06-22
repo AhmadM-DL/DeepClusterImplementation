@@ -1,3 +1,6 @@
+import sys
+sys.path.append("../")
+
 from custom_layers import *
 import unittest
 import torch

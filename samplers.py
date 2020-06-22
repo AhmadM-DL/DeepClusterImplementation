@@ -3,24 +3,18 @@ Created on Tuesday April 23 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
 """
 import numpy as np
+from deep_clustering_dataset import DeepClusteringDataset
 import torch
 
 class UnifAverageLabelSampler(torch.utils.data.Sampler):
 
-    def __init__(self, dataset, dataset_multiplier=1):
-        self.imgs = dataset.imgs
+    def __init__(self, dataset: DeepClusteringDataset, dataset_multiplier=1):
+        self.dataset = dataset
         self.dataset_multiplier = dataset_multiplier
         self.indexes = self._generate_indexes_epoch()
 
-    def _group_indices_by_target(self):
-        n_targets = len(np.unique([ target for (_, target) in self.imgs]))
-        grouped_indices = [[] for i in range(n_targets)]
-        for i, (path, target) in enumerate(self.imgs):
-            grouped_indices[target].append(i)
-        return grouped_indices
-
     def _generate_indexes_epoch(self):
-        grouped_indices = self._group_indices_by_target()
+        grouped_indices = self.dataset.group_indices_by_labels()
 
         target_sizes = [len(target_group) for target_group in grouped_indices]
         avg_target_size = int(np.average(target_sizes)) + 1

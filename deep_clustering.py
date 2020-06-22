@@ -54,6 +54,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                                    pin_memory=True), verbose=verbose)
 
         # pre-processing pca-whitening
+        #TODO change kmeans_pca_whitening name
         features = kmeans_pca_whitening(features, n_components=kwargs.get(
             "n_components", 256), random_state=random_state)
 
