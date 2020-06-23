@@ -34,9 +34,11 @@ class DeepClusteringDataset(Dataset):
             raise Exception("The passed original dataset is of unsupported dataset instance")
 
         if transform:
-            self.transfrom = transform
+            self.dataset.transform = transform
         else:
-            self.transform = original_dataset.transform
+            self.dataset.transform = original_dataset
+
+        self.transform = self.dataset.transform
             
     def __len__(self):
         return self.dataset.__len__()

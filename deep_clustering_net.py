@@ -73,6 +73,7 @@ class DeepClusteringNet(torch.nn.Module):
             self.output_size((3, 244, 244))[0], output_size)
         self.top_layer.weight.data.normal_(0, 0.01)
         self.top_layer.bias.data.zero_()
+        self.top_layer.to(self.device)
 
     def freeze_features(self):
         for param in self.features.parameters():
