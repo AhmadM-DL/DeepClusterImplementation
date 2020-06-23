@@ -29,7 +29,7 @@ def faiss_pca_whitening(npdata, n_components):
     npdata = mat.apply_py(npdata)
     return
 
-def kmeans_pca_whitening(npdata, n_components, random_state=0):
+def sklearn_pca_whitening(npdata, n_components, random_state=0):
     npdata =  npdata.astype('float32')
     pca = PCA(n_components=n_components, whiten=True, random_state=random_state)
     npdata = pca.fit_transform(npdata)
