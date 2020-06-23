@@ -36,7 +36,7 @@ class DeepClusteringDataset(Dataset):
         if transform:
             self.dataset.transform = transform
         else:
-            self.dataset.transform = original_dataset
+            self.dataset.transform = original_dataset.transform
 
         self.transform = self.dataset.transform
             
