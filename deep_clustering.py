@@ -35,7 +35,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
     if writer:
         dummy_input = torch.rand((1,3,244,244))
         # I am not really sure why I have to add an input for add_graph
-        writer.add_graph(model, dummy_input)
+        # also move dummy input to models device
+        writer.add_graph(model, dummy_input.to(model.device))
 
     for cycle in range(n_cycles):
 
