@@ -110,7 +110,8 @@ def AlexNet_CIFAR(sobel, batch_normalization, device):
                       "out_features":2048}
         ]
 
-    model = DeepClusteringNet(features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
+    model = DeepClusteringNet(input_size=(n_input_channels,224,224),
+                              features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
                               classifier= stack_linear_layers(input_features= 256 * 6 * 6, cfg= classifier_cfg),
                               top_layer = None,
                               with_sobel=sobel,
@@ -207,14 +208,15 @@ def AlexNet_ImageNet(sobel, batch_normalization, device):
                       "out_features":4096}
         ]
 
-    model = DeepClusteringNet(features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
+    model = DeepClusteringNet(input_size=(n_input_channels,224,224),
+                              features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
                               classifier= stack_linear_layers(input_features= 256 * 6 * 6, cfg= classifier_cfg),
                               top_layer = None,
                               with_sobel=sobel,
                               device=device)
     return model
 
-def LeNet_MNIST(sobel, batch_normalization, device):
+def LeNet_MNIST(batch_normalization, device):
     """
     Implementation of LeNet
     """
@@ -241,10 +243,12 @@ def LeNet_MNIST(sobel, batch_normalization, device):
                             "stride": 2,
                             }]
 
-    classifier_cfg = [{"type":"linear", "out_features":"120", "activation":"ReLU"},
-                      {"type":"linear", "out_features":"84"}]
+    classifier_cfg = [{"type":"linear", "out_features": 120, "activation":"ReLU"},
+                      {"type":"linear", "out_features": 84 }]
 
-    model = DeepClusteringNet(features= stack_convolutional_layers(input_channels=3, cfg=lenet_features_cfg, batch_normalization=batch_normalization),
+    model = DeepClusteringNet(
+                       input_size=(1,32,32),
+                       features= stack_convolutional_layers(input_channels=1, cfg=lenet_features_cfg, batch_normalization=batch_normalization),
                        classifier= stack_linear_layers(input_features=16*5*5, cfg= classifier_cfg),
                        top_layer= None,
                        with_sobel=False,

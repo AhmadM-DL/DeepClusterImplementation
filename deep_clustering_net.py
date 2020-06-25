@@ -15,13 +15,14 @@ from torch.utils.tensorboard import SummaryWriter
 
 class DeepClusteringNet(torch.nn.Module):
 
-    def __init__(self, features, classifier, top_layer, device, with_sobel=False):
+    def __init__(self, input_size, features, classifier, top_layer, device, with_sobel=False):
         super(DeepClusteringNet, self).__init__()
-
         self.sobel = SobelFilter() if with_sobel else None
         self.features = features
         self.classifier = classifier
         self.top_layer = top_layer
+        self.input_size = input_size
+
 
         self._initialize_weights()
         self.device = device
@@ -69,8 +70,9 @@ class DeepClusteringNet(torch.nn.Module):
         return tuple(x.size()[1:])
 
     def add_top_layer(self, output_size):
-        self.top_layer = torch.nn.Linear(
-            self.output_size((3, 244, 244))[0], output_size)
+        # get model output size
+        model_output_size = self.output_size(self.input_size)[0]
+        self.top_layer = torch.nn.Linear(model_output_size, output_size)
         self.top_layer.weight.data.normal_(0, 0.01)
         self.top_layer.bias.data.zero_()
         self.top_layer.to(self.device)

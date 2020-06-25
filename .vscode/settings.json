@@ -1,6 +1,6 @@
 {
     "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
-    "python.jediEnabled": false,
+    "python.jediEnabled": true,
     "python.linting.pylintArgs": [
         "--errors-only",
         "--generated-members=numpy.* ,torch.* ,cv2.* , cv.*"
@@ -32,5 +32,5 @@
         "mnist",
         "net"
     ],
-    "python.languageServer": "Microsoft",
+    "python.languageServer": "Jedi",
 }

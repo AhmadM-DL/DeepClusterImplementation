@@ -35,11 +35,17 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         random_state(int): Random State argument for reproducing results
         verbose(int): verbose level
         checkpoint: A path to model checkpoint to resume training from / save model to
-        kwargs: Other relevent arguments that lesser used. i.e. n_components for PCA before clustering, ...
+        kwargs: Other relevent arguments that lesser used 
+                - "pca_components" for PCA before clustering default= None
+                - "loading_batch_size" default=256
+                - "training_batch_size" default=256
+                - "dataset_multiplier" default=1
+                - "n_epochs" default=1
+                - ...
     """
     if writer:
         # TODO dummy input should be based on dataset
-        dummy_input = torch.rand((1,3,244,244))
+        dummy_input = torch.rand( (1,) + model.input_size)
         # I am not really sure why I have to add an input for add_graph
         # also move dummy input to models device
         writer.add_graph(model, dummy_input.to(model.device))
@@ -83,10 +89,13 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                                    pin_memory=True), verbose=verbose)
 
         # pre-processing pca-whitening
-        if verbose:
-            print(" - Features PCA + Whitening")
-        features = sklearn_pca_whitening(features, n_components=kwargs.get(
-            "n_components", 256), random_state=random_state)
+        if kwargs.get("pca_components", None) == None:
+            pass
+        else:
+            if verbose:
+                print(" - Features PCA + Whitening")
+            features = sklearn_pca_whitening(features, n_components=kwargs.get(
+                "pca_components"), random_state=random_state)
 
         # pre-processing l2-normalization
         if verbose:
