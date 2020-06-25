@@ -16,7 +16,7 @@ import numpy as np
 
 
 def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles,
-                 random_state=0, verbose=0, writer: SummaryWriter = None, **kwargs):
+                 loading_transform=None, training_transform=None, random_state=0, verbose=0, writer: SummaryWriter = None, **kwargs):
     """ 
     The main method in this repo. it implements the DeepCluster pipeline
     introduced by caron et. al. in "Deep Clustering for Unsupervised Learning of Visual Features"  
@@ -55,10 +55,14 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             del optimizer.param_groups[1]
             if verbose:
                 print(" - Remove Top_layer Params from Optimizer")
+        
+        # Set Loading Transform else consider the dataset transform
+        if loading_transform:
+            dataset.transform = loading_transform
 
         # full feedforward
         features = model.full_feed_forward(
-            dataloader=torch.utils.data.DataLoader(dataset,
+            dataloader=torch.utils.data.DataLoader(dataset, 
                                                    batch_size=kwargs.get("loading_batch_size", 256),
                                                    pin_memory=True), verbose=verbose)
 
@@ -105,6 +109,10 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         sampler = UnifAverageLabelSampler(dataset,
                                           dataset_multiplier=kwargs.get("dataset_multiplier", 1))
 
+        # set training transform else consider dataset transform
+        if training_transform:
+            dataset.transform = training_transform
+            
         # initialize training data loader
         train_dataloader = torch.utils.data.DataLoader(
             dataset,
