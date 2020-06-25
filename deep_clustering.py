@@ -66,7 +66,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         if model.top_layer:
             model.top_layer = None
             if verbose:
-                print(" - Remove Top Layer"%(cycle))
+                print(" - Remove Top Layer")
 
         # remove top_layer parameters from optimizer
         if len(optimizer.param_groups) > 1:
