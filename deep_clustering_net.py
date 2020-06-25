@@ -92,14 +92,13 @@ class DeepClusteringNet(torch.nn.Module):
             param.requires_grad = True
 
     def deep_cluster_train(self, dataloader, epoch, optimizer: torch.optim.Optimizer, loss_fn, verbose=False,
-     writer: SummaryWriter=None):
+                           writer: SummaryWriter = None):
 
         if verbose:
             print('Training Model')
 
         self.train()
         end = time.time()
-
 
         for i, (input_, target) in enumerate(dataloader):
 
@@ -120,13 +119,11 @@ class DeepClusteringNet(torch.nn.Module):
                                   scalar_value=loss.item(),
                                   global_step=epoch * len(dataloader) + i)
 
-            if verbose and len(dataloader)>=10 and (i % (len(dataloader)//10)) == 0:
+            if verbose and len(dataloader) >= 10 and (i % (len(dataloader)//10)) == 0:
                 print('{0} / {1}\tTime: {2:.3f}'.format(i,
                                                         len(dataloader), time.time() - end))
 
             end = time.time()
-        
-
 
     def full_feed_forward(self, dataloader, verbose=False):
 
@@ -153,13 +150,40 @@ class DeepClusteringNet(torch.nn.Module):
                 # special treatment for final batch
                 outputs[i * batch_size:] = output.astype('float32')
 
-            if verbose and len(dataloader)>=10 and (i % (len(dataloader)//10)) == 0:
+            if verbose and len(dataloader) >= 10 and (i % (len(dataloader)//10)) == 0:
                 print('{0} / {1}\tTime: {2:.3f}'.format(i,
                                                         len(dataloader), time.time() - end))
 
             end = time.time()
 
         return outputs
+
+    def load_model_parameters(self, model_parameters_path, optimizer=None):
+        if os.path.isfile(model_parameters_path):
+            print("=> loading checkpoint '{}'".format(model_parameters_path))
+            checkpoint = torch.load(model_parameters_path)
+            start_epoch = checkpoint['epoch']
+            self.load_state_dict(checkpoint['state_dict'])
+            if optimizer:
+                optimizer.load_state_dict(checkpoint['optimizer'])
+
+            print("=> loaded checkpoint '{}' (epoch {})".format(
+                model_parameters_path, checkpoint['epoch']))
+
+            return start_epoch
+        else:
+            print("=> no checkpoint found at '{}'".format(model_parameters_path))
+            raise Exception("No checkpoint found at %s" %(model_parameters_path))
+
+    def save_model_parameters(self, model_parameters_path, epoch, optimizer=None):
+        model_dict = {'epoch': epoch,
+                      'state_dict': self.state_dict()}
+        if optimizer:
+            model_dict['optimizer'] = optimizer.state_dict()
+
+        torch.save(model_dict, model_parameters_path)
+
+        return
 
 
 # def alexnet_cifar(sobel=False, bn=True, out=10):

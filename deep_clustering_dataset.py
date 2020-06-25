@@ -11,7 +11,7 @@ import copy
 import numpy as np
 
 class DeepClusteringDataset(Dataset):
-    """ A Datset Decorator that adds changing labels to pseudolabels
+    """ A Datset **Decorator** that adds changing labels to pseudolabels
     functionality.
     Args:
         original_dataset (list): Pytorch Dataset
@@ -39,7 +39,11 @@ class DeepClusteringDataset(Dataset):
             self.dataset.transform = original_dataset.transform
 
         self.transform = self.dataset.transform
-            
+    
+    def set_transform(self, transform):
+        self.dataset.transform = transform
+        self.transform = self.dataset.transform
+
     def __len__(self):
         return self.dataset.__len__()
     

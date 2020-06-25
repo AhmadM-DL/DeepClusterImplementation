@@ -12,11 +12,15 @@ from sklearn.metrics import normalized_mutual_info_score as NMI
 from torch.utils.tensorboard import SummaryWriter
 from scipy.stats import entropy
 import numpy as np
+import os
 
 
 
 def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles,
-                 loading_transform=None, training_transform=None, random_state=0, verbose=0, writer: SummaryWriter = None, **kwargs):
+                 loading_transform=None, training_transform=None,
+                 random_state=0, verbose=0, writer: SummaryWriter = None,
+                 checkpoint= None,
+                 **kwargs):
     """ 
     The main method in this repo. it implements the DeepCluster pipeline
     introduced by caron et. al. in "Deep Clustering for Unsupervised Learning of Visual Features"  
@@ -30,6 +34,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                        step and a network training step
         random_state(int): Random State argument for reproducing results
         verbose(int): verbose level
+        checkpoint: A path to model checkpoint to resume training from / save model to
         kwargs: Other relevent arguments that lesser used. i.e. n_components for PCA before clustering, ...
     """
     if writer:
@@ -38,8 +43,15 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # I am not really sure why I have to add an input for add_graph
         # also move dummy input to models device
         writer.add_graph(model, dummy_input.to(model.device))
+    
+    start_cycle = 0
 
-    for cycle in range(n_cycles):
+    if checkpoint:
+        # if checkpoint exist load model from
+        if os.path.isfile(checkpoint):
+            start_cycle = model.load_model_parameters(checkpoint, optimizer= optimizer)
+            
+    for cycle in range(start_cycle, n_cycles):
 
         if verbose:
             print("Cycle %d:"%(cycle))
@@ -55,10 +67,14 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             del optimizer.param_groups[1]
             if verbose:
                 print(" - Remove Top_layer Params from Optimizer")
-        
+
+        if checkpoint:
+            # save model
+            model.save_model_parameters(checkpoint, optimizer= optimizer)
+            
         # Set Loading Transform else consider the dataset transform
         if loading_transform:
-            dataset.transform = loading_transform
+            dataset.set_transform(loading_transform)
 
         # full feedforward
         features = model.full_feed_forward(
@@ -111,7 +127,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
         # set training transform else consider dataset transform
         if training_transform:
-            dataset.transform = training_transform
+            dataset.set_transform(training_transform)
             
         # initialize training data loader
         train_dataloader = torch.utils.data.DataLoader(
