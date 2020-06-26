@@ -76,7 +76,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
         if checkpoint:
             # save model
-            model.save_model_parameters(checkpoint, optimizer= optimizer)
+            model.save_model_parameters(checkpoint, optimizer= optimizer, epoch= cycle)
             
         # Set Loading Transform else consider the dataset transform
         if loading_transform:
