@@ -2,15 +2,20 @@
 Created on Tuesday April 15 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
 """
+
+import torch
+from torch.utils.tensorboard import SummaryWriter
+
 from deep_clustering_net import DeepClusteringNet
 from deep_clustering_dataset import DeepClusteringDataset
-from clustering import sklearn_kmeans
-from samplers import UnifAverageLabelSampler
 from preprocessing import l2_normalization, sklearn_pca_whitening
-import torch
+from samplers import UnifAverageLabelSampler
+
+from clustering import sklearn_kmeans
 from sklearn.metrics import normalized_mutual_info_score as NMI
-from torch.utils.tensorboard import SummaryWriter
 from scipy.stats import entropy
+from sklearn.manifold import TSNE
+
 import numpy as np
 import os
 
@@ -41,6 +46,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                 - "training_batch_size" default=256
                 - "dataset_multiplier" default=1
                 - "n_epochs" default=1
+                - "embeddings_sample_size" used for writer to write embeddings default 500
+                - "embeddings_checkpoint" the percent of cycles to be performed between written embeddings default 20
                 - ...
     """
     if writer:
@@ -77,7 +84,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         if checkpoint:
             # save model
             model.save_model_parameters(checkpoint, optimizer= optimizer, epoch= cycle)
-            
+
         # Set Loading Transform else consider the dataset transform
         if loading_transform:
             dataset.set_transform(loading_transform)
@@ -87,6 +94,19 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             dataloader=torch.utils.data.DataLoader(dataset, 
                                                    batch_size=kwargs.get("loading_batch_size", 256),
                                                    pin_memory=True), verbose=verbose)
+
+        
+        # if writer and we completed a 20% of all cycles: add embeddings
+        if writer and cycle%(int(n_cycles*(kwargs.get("embeddings_checkpoint",20)/100)))==0:
+
+            embeddings_sample_size = kwargs.get("embeddings_sample_size",500)
+            to_embed = features[0:embeddings_sample_size]
+
+            images_labels = [dataset.__getitem__(i) for i in range(0,embeddings_sample_size)]
+            images = torch.stack([tuple[0] for tuple in images_labels])
+            labels = torch.tensor([tuple[1] for tuple in images_labels])
+
+            writer.add_embedding(mat= to_embed, metadata=labels, label_img=images, global_step=cycle)
 
         # pre-processing pca-whitening
         if kwargs.get("pca_components", None) == None:
