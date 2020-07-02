@@ -16,7 +16,7 @@ from torch.utils.tensorboard import SummaryWriter
 class DeepClusteringNet(torch.nn.Module):
 
     def __init__(self, input_size, features, classifier, top_layer, device, with_sobel=False):
-        super(DeepClusteringNet, self).__init__()
+        super().__init__()
         self.sobel = SobelFilter() if with_sobel else None
         self.features = features
         self.classifier = classifier
