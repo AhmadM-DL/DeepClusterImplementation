@@ -59,6 +59,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
     
     start_cycle = 0
 
+    loss_fn.to(model.device)
+
     if checkpoint:
         # if checkpoint exist load model from
         if os.path.isfile(checkpoint):
