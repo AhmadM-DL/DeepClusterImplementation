@@ -40,6 +40,16 @@ class DeepClusteringNet(torch.nn.Module):
             x = torch.nn.functional.relu(x)
             x = self.top_layer(x)
         return x
+    
+    def extract_features(self, x, target_layer):
+        if self.sobel:
+        x = self.sobel(x)
+    for module_name, module in self.features.named_children():
+        x = module(x)
+        if module_name == target_layer:
+            break
+    x = x.view(x.size(0), -1)
+    return x
 
     def _initialize_weights(self):
         for y, m in enumerate(self.modules()):
@@ -126,17 +136,6 @@ class DeepClusteringNet(torch.nn.Module):
                                                         len(dataloader), time.time() - end))
 
             end = time.time()
-
-    
-    def extract_features(self, x, target_layer):
-        if self.sobel:
-            x = self.sobel(x)
-        for module_name, module in self.features.named_children():
-            x = module(x)
-            if module_name == target_layer:
-                break
-        x = x.view(x.size(0), -1)
-        return x
 
     def full_feed_forward(self, dataloader, verbose=False):
 
