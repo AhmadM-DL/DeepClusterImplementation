@@ -128,10 +128,9 @@ class DeepClusteringNet(torch.nn.Module):
             end = time.time()
 
     
-    def features_extractor(self, x, target_layer):
+    def extract_features(self, x, target_layer):
         if self.sobel:
             x = self.sobel(x)
-
         for module_name, module in self.features.named_children():
             x = module(x)
             if module_name == target_layer:
