@@ -343,6 +343,7 @@ def train(train_loader, model, reglog, criterion, optimizer, epoch):
         output = forward(input_var, model, reglog.conv)
         output = reglog(output)
         loss = criterion(output, target_var)
+
         # measure accuracy and record loss
         prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
         losses.update(loss.data[0], input.size(0))
@@ -367,7 +368,7 @@ def train(train_loader, model, reglog, criterion, optimizer, epoch):
                   'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'
                   .format(epoch, i, len(train_loader), batch_time=batch_time,
                           data_time=data_time, loss=losses, top1=top1, top5=top5))
-
+        
 
 def validate(val_loader, model, reglog, criterion):
     batch_time = AverageMeter()

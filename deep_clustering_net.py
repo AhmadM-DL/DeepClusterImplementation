@@ -41,7 +41,7 @@ class DeepClusteringNet(torch.nn.Module):
             x = self.top_layer(x)
         return x
     
-    def extract_features(self, x, target_layer):
+    def extract_features(self, x, target_layer, flatten=True):
         if self.sobel:
             x = self.sobel(x)
         
@@ -49,9 +49,9 @@ class DeepClusteringNet(torch.nn.Module):
             x = module(x)
             if module_name == target_layer:
                 break
-        
-        x = x.view(x.size(0), -1)
-        
+        if flatten:
+            x = x.view(x.size(0), -1)
+            
         return x
 
     def _initialize_weights(self):
