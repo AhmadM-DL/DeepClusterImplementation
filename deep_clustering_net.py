@@ -128,17 +128,15 @@ class DeepClusteringNet(torch.nn.Module):
             end = time.time()
 
     
-    def partial_features_forward(self, x, forward_to_layer):
+    def features_extractor(self, x, target_layer):
         if self.sobel:
             x = self.sobel(x)
-        
-        x = self.features(x)
-        
+
+        for module_name, module in self.features.named_children():
+            x = module(x)
+            if module_name == target_layer:
+                break
         x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-        if self.top_layer:
-            x = torch.nn.functional.relu(x)
-            x = self.top_layer(x)
         return x
 
     def full_feed_forward(self, dataloader, verbose=False):
