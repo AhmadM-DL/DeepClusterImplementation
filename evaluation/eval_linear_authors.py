@@ -151,7 +151,7 @@ def eval_linear(model: DeepClusteringNet, conv_layer, train_dataset, val_dataset
     optimizer = torch.optim.SGD(
         filter(lambda x: x.requires_grad, reglog.parameters()),
         lr=kwargs.get("learning_rate", 0.001),
-        momentum=kwargs.get("momentum", 0.9)
+        momentum=kwargs.get("momentum", 0.9),
         weight_decay=kwargs.get("weight_decay", 10^-4)
     )
 

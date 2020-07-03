@@ -1,21 +1,25 @@
 """
+Created on 3-7-2020
 
 """
 
+from deep_clustering_net import DeepClusteringNet
+from deep_clustering_dataset import DeepClusteringDataset
 import torch.nn as nn
 import torch
 from utils import set_seed
 import numpy as np
+from torch.utils.data import DataLoader
 
 import sys
 sys.path.append("../")
-from deep_clustering_dataset import DeepClusteringDataset
-from deep_clustering_net import DeepClusteringNet
+
 
 def learning_rate_decay(optimizer, t, lr_0):
     for param_group in optimizer.param_groups:
         lr = lr_0 / np.sqrt(1 + lr_0 * param_group['weight_decay'] * t)
         param_group['lr'] = lr
+
 
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
@@ -32,10 +36,11 @@ def accuracy(output, target, topk=(1,)):
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
+
 class LinearProbe(nn.Module):
     """Creates logistic regression on top of frozen features"""
 
-    def __init__(self, model:DeepClusteringNet, num_labels, downsample, target_layer):
+    def __init__(self, model: DeepClusteringNet, features_size, num_labels, avg_pool, target_layer):
         """ The init function of the logistic Regression Module
 
         Args:
@@ -43,36 +48,42 @@ class LinearProbe(nn.Module):
             downsample (tuple): A tuple contianing the downsample args [kernel_size, stride, padding, downsample output size]
         """
         super(LinearProbe, self).__init__()
-        self.model= model
-        self.avg_pool = nn.AvgPool2d(kernel_size= downsample[0], stride= downsample[1], padding=downsample[2])
-        self.linear = nn.Linear(downsample[3], num_labels)
+        self.model = model
+        if avg_pool:
+            self.avg_pool = nn.AvgPool2d(
+                kernel_size=avg_pool["kernel_size"], stride=avg_pool["stride"], padding=avg_pool["padding"])
+        else:
+            self.avg_pool = None
+        self.linear = nn.Linear(features_size, num_labels)
         self.device = model.device
         self.target_layer = target_layer
 
     def forward(self, x):
         x = self.model.extract_features(x, self.target_layer, flatten=False)
-        x = self.av_pool(x)
+        if self.avg_pool:
+            x = self.av_pool(x)
         x = x.view(x.size(0), x.size(1) * x.size(2) * x.size(3))
-        return self.linear(x) 
+        return self.linear(x)
 
     def train_(self, epoch, trainloader, optimizer, loss_fn, verbose=True):
 
         self.train()
+        self.model.eval()
 
         for i, (input_, target) in enumerate(trainloader):
-            
+
             # adjust learning rate
-            learning_rate_decay(optimizer, len(trainloader) * epoch + i, optimizer.lr)
+            learning_rate_decay(optimizer, len(trainloader)
+                                * epoch + i, optimizer.defaults["lr"])
 
             input_ = input_.to(self.device)
 
             target = target.to(self.device)
-            output = self.model(input_)
-            output = self(output).data.cpu().numpy()
-            
+            output = self(input_)
+
             # compute output
             loss = loss_fn(output, target)
-            
+
             # measure accuracy and record loss
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
 
@@ -83,15 +94,15 @@ class LinearProbe(nn.Module):
 
             if verbose and i % 100 == 0:
                 print('Epoch: [{0}][{1}/{2}]\t'
-                    'Loss {loss:.4f} \t'
-                    'Prec@1 {acc1:.3f}\t'
-                    'Prec@5 {acc5:.3f}'
-                    .format(epoch, i, len(trainloader), loss=loss, acc1=acc1, acc5=acc5))
-        
+                      'Loss {loss:.4f} \t'
+                      'Prec@1 {acc1:.3f}\t'
+                      'Prec@5 {acc5:.3f}'
+                      .format(epoch, i, len(trainloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
+
         return loss
-    
-    def validate(self, epoch, validloader, optimizer, loss_fn, verbose=True, tencrops=False):
-        
+
+    def validate(self, validloader, loss_fn, verbose=True, tencrops=False):
+
         # switch to evaluate mode
         self.model.eval()
 
@@ -109,9 +120,11 @@ class LinearProbe(nn.Module):
             output = self(input_)
 
             if tencrops:
-                output_central = output.view(batch_size, n_crops, -1)[:, n_crops / 2 - 1, :]
+                output_central = output.view(
+                    batch_size, n_crops, -1)[:, n_crops / 2 - 1, :]
                 output = softmax(output)
-                output = torch.squeeze(output.view(batch_size, n_crops, -1).mean(1))
+                output = torch.squeeze(output.view(
+                    batch_size, n_crops, -1).mean(1))
             else:
                 output_central = output
 
@@ -120,21 +133,48 @@ class LinearProbe(nn.Module):
 
             if verbose and i % 100 == 0:
                 print('Validation: [{0}/{1}]\t'
-                    'Loss {loss:.4f} \t'
-                    'Prec@1 {acc1:.3f}\t'
-                    'Prec@5 {acc5.val:.3f}'
-                    .format(i, len(validloader), loss=loss, acc1=acc1, acc5=acc5))
+                      'Loss {loss:.4f} \t'
+                      'Prec@1 {acc1:.3f}\t'
+                      'Prec@5 {acc5.val:.3f}'
+                      .format(i, len(validloader), loss=loss, acc1=acc1, acc5=acc5))
 
         return loss
-        
 
-def eval_linear(model: DeepClusteringNet, conv_layer, **kwargs):
 
-    # set seed
-    set_seed(kwargs.get("random_state",0))
+def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
+                target_layer, n_labels, features_size, avg_pool=None,
+                random_state=0, writer=None, verbose=True, **kwargs):
 
-    # Freeze features
+    # set random seed
+    set_seed(random_state)
+
+    # feeze features
     model.freeze_features()
 
-    # 
+    # define loaders
+    traindataloader = DataLoader(
+        dataset=traindataset, batch_size=kwargs.get("batch_size", 256))
+    
+    if validdataset:
+        validdataloader = DataLoader(
+        dataset=validdataset, batch_size=kwargs.get("batch_size", 256))
 
+    # define loss_fn
+    loss_fn = nn.CrossEntropyLoss()
+
+    # define logistic regression on top of target layer
+    linear_probe = LinearProbe(model, features_size, n_labels, avg_pool, target_layer)
+    
+    # define optimizer
+    optimizer = torch.optim.SGD(
+        filter(lambda x: x.require_grad, linear_probe.parameters()),
+        lr = kwargs.get("learning_rate", 0.001),
+        momentum= kwargs.get("momentum", None),
+        weight_decay= kwargs.get("wight_decay", 10**(-4))
+    )
+
+    for epoch in range(0, n_epochs):
+        linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose, writer=writer)
+        if validdataset:
+            linear_probe.validate(validdataloader , loss_fn, verbose=verbose, tencrops=False, writer=writer)
+    return
