@@ -113,8 +113,8 @@ lp_loss_fn = torch.nn.CrossEntropyLoss()
 
 # %%
 
-n_epochs = 5
-for epoch in range(0, n_epochs):
+n_epochs = 10
+for epoch in range(5, n_epochs):
 
     lp.train_(epoch= epoch, trainloader= traindataloader,
     optimizer = lp_optimizer, loss_fn= lp_loss_fn)

@@ -183,7 +183,7 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
             writer.add_scalar("linear_probe_train/acc2", acc2.item(), global_step=epoch)
 
         if validdataset:
-            linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
+            loss, acc1, acc2 = linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
             if writer:
                 writer.add_scalar("linear_probe_valid/loss", loss.item(), global_step=epoch)
                 writer.add_scalar("linear_probe_valid/acc1", acc1.item(), global_step=epoch)
