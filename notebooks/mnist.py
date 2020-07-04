@@ -8,7 +8,6 @@ import importlib
 sys.path.append("../")
 sys.path.append("../evaluation")
 
-
 # %%
 import torch
 from torchvision import transforms
@@ -21,7 +20,6 @@ from deep_clustering import deep_cluster
 from deep_clustering_models import LeNet_MNIST
 from deep_clustering_dataset import DeepClusteringDataset
 from linear_probe import LinearProbe, eval_linear
-
 
 # %%
 mnist = MNIST("../datasets/", download=True)

@@ -67,7 +67,7 @@ class LinearProbe(nn.Module):
         x = x.view(x.size(0), x.size(1) * x.size(2) * x.size(3))
         return self.linear(x)
 
-    def train_(self, epoch, trainloader, optimizer, loss_fn, verbose=True):
+    def train_(self, epoch, trainloader, optimizer, loss_fn, verbose=True, lr_decay=False):
 
         self.train()
         self.model.eval()
@@ -75,7 +75,8 @@ class LinearProbe(nn.Module):
         for i, (input_, target) in enumerate(trainloader):
 
             # adjust learning rate
-            learning_rate_decay(optimizer, len(trainloader)
+            if lr_decay:
+                learning_rate_decay(optimizer, len(trainloader)
                                 * epoch + i, optimizer.defaults["lr"])
 
             input_ = input_.to(self.device)
@@ -107,6 +108,7 @@ class LinearProbe(nn.Module):
 
         # switch to evaluate mode
         self.model.eval()
+        self.eval()
 
         softmax = nn.Softmax(dim=1).to(self.device)
 
@@ -170,8 +172,8 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     # define optimizer
     optimizer = torch.optim.SGD(
         filter(lambda x: x.requires_grad, linear_probe.parameters()),
-        lr = kwargs.get("learning_rate", 0.001),
-        momentum= kwargs.get("momentum", 0),
+        lr = kwargs.get("learning_rate", 0.01),
+        momentum= kwargs.get("momentum", 0.9),
         weight_decay= kwargs.get("wight_decay", 10**(-4))
     )
 
