@@ -155,7 +155,7 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
 
     # define loaders
     traindataloader = DataLoader(
-        dataset=traindataset, batch_size=kwargs.get("batch_size", 256))
+        dataset=traindataset, batch_size=kwargs.get("batch_size", 256), shuffle= True)
     
     if validdataset:
         validdataloader = DataLoader(
