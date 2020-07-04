@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from deep_clustering import deep_cluster
 from deep_clustering_models import LeNet_MNIST
 from deep_clustering_dataset import DeepClusteringDataset
-from linear_probe import LinearProbe
+from linear_probe import LinearProbe, eval_linear
 
 
 # %%
@@ -52,7 +52,7 @@ optimizer = torch.optim.SGD(
 loss_function = torch.nn.CrossEntropyLoss()
 
 # %%
-writer = SummaryWriter('runs/mnist_batchnorm_lr0.01_moment0.9_decay10^-5_ncluster10_ncycles50_rnd0')
+writer = SummaryWriter('runs/mnist')
 
 # %%
 deep_cluster(model= model, 
@@ -75,19 +75,7 @@ mnist_test = MNIST("../datasets/", train=False, download=True)
 traindataset = mnist
 validdataset = mnist_test
 
-traindataloader = DataLoader(dataset= traindataset, batch_size= 256)
-validdataloader = DataLoader(dataset= validdataset, batch_size= 256)
-tencrops = False
-
-if tencrops:
-    transformations_val = [
-        transforms.Resize(44),
-        transforms.TenCrop(32),
-        transforms.Lambda(lambda crops: torch.stack(
-            [normalize(transforms.ToTensor()(crop)) for crop in crops])),
-    ]
-else:
-    transformations_val = [transforms.Resize(44),
+transformations_val = [transforms.Resize(44),
                             transforms.CenterCrop(32),
                             transforms.ToTensor(),
                             normalize]
@@ -101,6 +89,13 @@ transformations_train = [transforms.Resize(44),
 
 mnist.transform = transforms.Compose(transformations_train)
 mnist_test.transform = transforms.Compose(transformations_val)
+
+
+eval_linear(model=model, n_epochs= 2, traindataset=traindataset,
+            validdataset= validdataset, target_layer="conv_2", n_labels=10,
+            features_size= 1600, avg_pool= None, random_state=0, writer= writer,
+            verbose= True)
+
 
 # %%
 target_layer = "conv_2"

@@ -5,14 +5,16 @@ Created on 3-7-2020
 
 from deep_clustering_net import DeepClusteringNet
 from deep_clustering_dataset import DeepClusteringDataset
+
 import torch.nn as nn
 import torch
 from utils import set_seed
 import numpy as np
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
-import sys
-sys.path.append("../")
+# import sys
+# sys.path.append("../")
 
 
 def learning_rate_decay(optimizer, t, lr_0):
@@ -95,11 +97,11 @@ class LinearProbe(nn.Module):
             if verbose and i % 100 == 0:
                 print('Epoch: [{0}][{1}/{2}]\t'
                       'Loss {loss:.4f} \t'
-                      'Prec@1 {acc1:.3f}\t'
-                      'Prec@5 {acc5:.3f}'
+                      'ACC1 {acc1:.3f}\t'
+                      'ACC5 {acc5:.3f}'
                       .format(epoch, i, len(trainloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
 
-        return loss
+        return loss, acc1, acc5
 
     def validate(self, validloader, loss_fn, verbose=True, tencrops=False):
 
@@ -134,16 +136,16 @@ class LinearProbe(nn.Module):
             if verbose and i % 100 == 0:
                 print('Validation: [{0}/{1}]\t'
                       'Loss {loss:.4f} \t'
-                      'Prec@1 {acc1:.3f}\t'
-                      'Prec@5 {acc5.val:.3f}'
-                      .format(i, len(validloader), loss=loss, acc1=acc1, acc5=acc5))
+                      'ACC1 {acc1:.3f}\t'
+                      'ACC5 {acc5:.3f}'
+                      .format(i, len(validloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
 
-        return loss
+        return loss, acc1, acc5
 
 
 def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
                 target_layer, n_labels, features_size, avg_pool=None,
-                random_state=0, writer=None, verbose=True, **kwargs):
+                random_state=0, writer: SummaryWriter=None, verbose=True, **kwargs):
 
     # set random seed
     set_seed(random_state)
@@ -167,14 +169,24 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     
     # define optimizer
     optimizer = torch.optim.SGD(
-        filter(lambda x: x.require_grad, linear_probe.parameters()),
+        filter(lambda x: x.requires_grad, linear_probe.parameters()),
         lr = kwargs.get("learning_rate", 0.001),
-        momentum= kwargs.get("momentum", None),
+        momentum= kwargs.get("momentum", 0),
         weight_decay= kwargs.get("wight_decay", 10**(-4))
     )
 
     for epoch in range(0, n_epochs):
-        linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose, writer=writer)
+        loss, acc1, acc2 = linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose)
+        if writer:
+            writer.add_scalar("linear_probe_train/loss", loss.item(), global_step=epoch)
+            writer.add_scalar("linear_probe_train/acc1", acc1.item(), global_step=epoch)
+            writer.add_scalar("linear_probe_train/acc2", acc2.item(), global_step=epoch)
+
         if validdataset:
-            linear_probe.validate(validdataloader , loss_fn, verbose=verbose, tencrops=False, writer=writer)
+            linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
+            if writer:
+                writer.add_scalar("linear_probe_valid/loss", loss.item(), global_step=epoch)
+                writer.add_scalar("linear_probe_valid/acc1", acc1.item(), global_step=epoch)
+                writer.add_scalar("linear_probe_valid/acc2", acc2.item(), global_step=epoch)
+
     return
