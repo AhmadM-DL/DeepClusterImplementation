@@ -171,11 +171,11 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
 
     # define loaders
     traindataloader = DataLoader(
-        dataset=traindataset, batch_size=kwargs.get("batch_size", 256), shuffle= True)
+        dataset=traindataset, batch_size=kwargs.get("batch_size", 256), shuffle= kwargs.get("shuffle_train", True))
     
     if validdataset:
         validdataloader = DataLoader(
-        dataset=validdataset, batch_size=kwargs.get("batch_size", 256))
+        dataset=validdataset, batch_size=kwargs.get("batch_size", 256), shuffle= kwargs.get("shuffle_valid", True))
 
     # define loss_fn
     loss_fn = nn.CrossEntropyLoss()
