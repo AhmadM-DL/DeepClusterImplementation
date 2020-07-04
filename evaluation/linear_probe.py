@@ -71,6 +71,9 @@ class LinearProbe(nn.Module):
 
         self.train()
         self.model.eval()
+        losses = []
+        accuracies_1 = []
+        accuracies_5 = []
 
         for i, (input_, target) in enumerate(trainloader):
 
@@ -90,6 +93,10 @@ class LinearProbe(nn.Module):
             # measure accuracy and record loss
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
 
+            losses.append(loss.item())
+            accuracies_1.append(acc1.item())
+            accuracies_5.append(acc5.item())
+
             # compute gradient and do SGD step
             optimizer.zero_grad()
             loss.backward()
@@ -102,13 +109,17 @@ class LinearProbe(nn.Module):
                       'ACC5 {acc5:.3f}'
                       .format(epoch, i, len(trainloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
 
-        return loss, acc1, acc5
+        return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
 
     def validate(self, validloader, loss_fn, verbose=True, tencrops=False):
 
         # switch to evaluate mode
         self.model.eval()
         self.eval()
+
+        losses = []
+        accuracies_1 = []
+        accuracies_5 = []
 
         softmax = nn.Softmax(dim=1).to(self.device)
 
@@ -132,8 +143,12 @@ class LinearProbe(nn.Module):
             else:
                 output_central = output
 
-            acc1, acc5 = accuracy(output, target, topk=(1, 5))
             loss = loss_fn(output_central, target)
+            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+
+            losses.append(loss.item())
+            accuracies_1.append(acc1.item())
+            accuracies_5.append(acc5.item())
 
             if verbose and i % 100 == 0:
                 print('Validation: [{0}/{1}]\t'
@@ -141,9 +156,8 @@ class LinearProbe(nn.Module):
                       'ACC1 {acc1:.3f}\t'
                       'ACC5 {acc5:.3f}'
                       .format(i, len(validloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
-
-        return loss, acc1, acc5
-
+        
+        return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
 
 def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
                 target_layer, n_labels, features_size, avg_pool=None,
@@ -180,15 +194,15 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     for epoch in range(0, n_epochs):
         loss, acc1, acc2 = linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose)
         if writer:
-            writer.add_scalar("linear_probe_train/loss", loss.item(), global_step=epoch)
-            writer.add_scalar("linear_probe_train/acc1", acc1.item(), global_step=epoch)
-            writer.add_scalar("linear_probe_train/acc2", acc2.item(), global_step=epoch)
+            writer.add_scalar("linear_probe_train/loss", loss, global_step=epoch)
+            writer.add_scalar("linear_probe_train/acc1", acc1, global_step=epoch)
+            writer.add_scalar("linear_probe_train/acc2", acc2, global_step=epoch)
 
         if validdataset:
             loss, acc1, acc2 = linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
             if writer:
-                writer.add_scalar("linear_probe_valid/loss", loss.item(), global_step=epoch)
-                writer.add_scalar("linear_probe_valid/acc1", acc1.item(), global_step=epoch)
-                writer.add_scalar("linear_probe_valid/acc2", acc2.item(), global_step=epoch)
+                writer.add_scalar("linear_probe_valid/loss", loss, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/acc1", acc1, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/acc2", acc2, global_step=epoch)
 
     return
