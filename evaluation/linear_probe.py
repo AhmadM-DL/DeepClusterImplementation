@@ -166,8 +166,9 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     # set random seed
     set_seed(random_state)
 
-    # feeze features
+    # feeze model wights
     model.freeze_features()
+    model.freeze_classifier()
 
     # define loaders
     traindataloader = DataLoader(
@@ -204,5 +205,9 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
                 writer.add_scalar("linear_probe_valid/loss", loss, global_step=epoch)
                 writer.add_scalar("linear_probe_valid/acc1", acc1, global_step=epoch)
                 writer.add_scalar("linear_probe_valid/acc2", acc2, global_step=epoch)
+
+    # unfreeze model wights
+    model.unfreeze_classifier()
+    model.unfreeze_features()
 
     return

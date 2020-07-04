@@ -89,32 +89,7 @@ mnist.transform = transforms.Compose(transformations_train)
 mnist_test.transform = transforms.Compose(transformations_val)
 
 
-eval_linear(model=model, n_epochs= 2, traindataset=traindataset,
+eval_linear(model=model, n_epochs= 5, traindataset=traindataset,
             validdataset= validdataset, target_layer="conv_2", n_labels=10,
             features_size= 1600, avg_pool= None, random_state=0, writer= writer,
             verbose= True)
-
-
-# %%
-target_layer = "conv_2"
-lp = LinearProbe(model, 1600, 10,  None, target_layer)
-
-lp_optimizer = torch.optim.SGD(
-    filter(lambda x: x.requires_grad, lp.parameters()),
-    lr = 0.001,
-    momentum= 0.9,
-    weight_decay= 0.00001
-)
-
-lp_loss_fn = torch.nn.CrossEntropyLoss()
-
-
-# %%
-
-n_epochs = 10
-for epoch in range(5, n_epochs):
-
-    lp.train_(epoch= epoch, trainloader= traindataloader,
-    optimizer = lp_optimizer, loss_fn= lp_loss_fn)
-
-# %%
