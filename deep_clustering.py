@@ -44,6 +44,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                 - "pca_components" for PCA before clustering default= None
                 - "loading_batch_size" default=256
                 - "training_batch_size" default=256
+                - "taining_shuffle" default= False
+                - "loading_shuffle" default= False
                 - "dataset_multiplier" default=1
                 - "n_epochs" default=1
                 - "embeddings_sample_size" used for writer to write embeddings default 500
@@ -95,6 +97,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         features = model.full_feed_forward(
             dataloader=torch.utils.data.DataLoader(dataset, 
                                                    batch_size=kwargs.get("loading_batch_size", 256),
+                                                   shuffle = kwargs.get("loading_shuffle", False),
                                                    pin_memory=True), verbose=verbose)
 
         
@@ -164,6 +167,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         train_dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=kwargs.get("training_batch_size", 256),
+            shuffle = kwargs.get("training_shuffle", False),
             sampler=sampler,
             pin_memory=True,
         )
