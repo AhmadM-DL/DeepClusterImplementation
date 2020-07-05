@@ -20,11 +20,10 @@ import numpy as np
 import os
 
 
-
 def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles,
                  loading_transform=None, training_transform=None,
                  random_state=0, verbose=0, writer: SummaryWriter = None,
-                 checkpoint= None,
+                 checkpoint=None,
                  **kwargs):
     """ 
     The main method in this repo. it implements the DeepCluster pipeline
@@ -54,11 +53,11 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
     """
     if writer:
         # TODO dummy input should be based on dataset
-        dummy_input = torch.rand( (1,) + model.input_size)
+        dummy_input = torch.rand((1,) + model.input_size)
         # I am not really sure why I have to add an input for add_graph
         # also move dummy input to models device
         writer.add_graph(model, dummy_input.to(model.device))
-    
+
     start_cycle = 0
 
     loss_fn.to(model.device)
@@ -66,12 +65,13 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
     if checkpoint:
         # if checkpoint exist load model from
         if os.path.isfile(checkpoint):
-            start_cycle = model.load_model_parameters(checkpoint, optimizer= optimizer)
-            
+            start_cycle = model.load_model_parameters(
+                checkpoint, optimizer=optimizer)
+
     for cycle in range(start_cycle, n_cycles):
 
         if verbose:
-            print("Cycle %d:"%(cycle))
+            print("Cycle %d:" % (cycle))
 
         # remove top layer
         if model.top_layer:
@@ -87,7 +87,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
         if checkpoint:
             # save model
-            model.save_model_parameters(checkpoint, optimizer= optimizer, epoch= cycle)
+            model.save_model_parameters(
+                checkpoint, optimizer=optimizer, epoch=cycle)
 
         # Set Loading Transform else consider the dataset transform
         if loading_transform:
@@ -95,23 +96,26 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
         # full feedforward
         features = model.full_feed_forward(
-            dataloader=torch.utils.data.DataLoader(dataset, 
-                                                   batch_size=kwargs.get("loading_batch_size", 256),
-                                                   shuffle = kwargs.get("loading_shuffle", False),
+            dataloader=torch.utils.data.DataLoader(dataset,
+                                                   batch_size=kwargs.get(
+                                                       "loading_batch_size", 256),
+                                                   shuffle=kwargs.get(
+                                                       "loading_shuffle", False),
                                                    pin_memory=True), verbose=verbose)
 
-        
         # if writer and we completed a 20% of all cycles: add embeddings
-        if writer and cycle%(int(n_cycles*(kwargs.get("embeddings_checkpoint",20)/100)))==0:
+        if writer and cycle % (int(n_cycles*(kwargs.get("embeddings_checkpoint", 20)/100))) == 0:
 
-            embeddings_sample_size = kwargs.get("embeddings_sample_size",500)
+            embeddings_sample_size = kwargs.get("embeddings_sample_size", 500)
             to_embed = features[0:embeddings_sample_size]
 
-            images_labels = [dataset.__getitem__(i) for i in range(0,embeddings_sample_size)]
+            images_labels = [dataset.__getitem__(
+                i) for i in range(0, embeddings_sample_size)]
             images = torch.stack([tuple[0] for tuple in images_labels])
             labels = torch.tensor([tuple[1] for tuple in images_labels])
 
-            writer.add_embedding(mat= to_embed, metadata=labels, label_img=images, global_step=cycle)
+            writer.add_embedding(mat=to_embed, metadata=labels,
+                                 label_img=images, global_step=cycle)
 
         # pre-processing pca-whitening
         if kwargs.get("pca_components", None) == None:
@@ -135,12 +139,13 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
         if writer:
             # write NMI between consecutive pseudolabels
-            if cycle>0:
-                writer.add_scalar("NMI/pt_vs_pt-1", NMI(assignments, dataset.get_pseudolabels()), cycle)
+            if cycle > 0:
+                writer.add_scalar(
+                    "NMI/pt_vs_pt-1", NMI(assignments, dataset.get_pseudolabels()), cycle)
             # write NMI between lables and pseudolabels
-            writer.add_scalar("NMI/pt_vs_labels", NMI(assignments, dataset.get_targets()), cycle) 
- 
-        
+            writer.add_scalar("NMI/pt_vs_labels",
+                              NMI(assignments, dataset.get_targets()), cycle)
+
         # re assign labels
         if verbose:
             print(" - Reassign pseudo_labels")
@@ -149,25 +154,31 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         if writer:
            # write original labels entropy distribution in pseudoclasses
             pseudoclasses = dataset.group_indices_by_labels()
-            pseudoclasses_labels = [ [ dataset.get_targets()[index] for index in pseudoclass] for pseudoclass in pseudoclasses ]
-            pseudoclasses_labels_counts = [ np.unique(pseudoclass_labels, return_counts=True)[1]  for pseudoclass_labels in pseudoclasses_labels] 
-            entropies = [ entropy(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
-            writer.add_histogram("pseudoclasses_entropies", np.array(entropies), cycle)
-
+            pseudoclasses_labels = [[dataset.get_targets(
+            )[index] for index in pseudoclass] for pseudoclass in pseudoclasses]
+            pseudoclasses_labels_counts = [np.unique(pseudoclass_labels, return_counts=True)[
+                1] for pseudoclass_labels in pseudoclasses_labels]
+            entropies = [entropy(pseudoclass_labels_counts)
+                         for pseudoclass_labels_counts in pseudoclasses_labels_counts]
+            writer.add_histogram("pseudoclasses_entropies",
+                                 np.array(entropies), cycle)
 
         # initialize uniform sample
         sampler = UnifAverageLabelSampler(dataset,
-                                          dataset_multiplier=kwargs.get("dataset_multiplier", 1))
+                                          dataset_multiplier=kwargs.get(
+                                              "dataset_multiplier", 1),
+                                          shuffle=kwargs.get(
+                                              "training_shuffle", True),
+                                          )
 
         # set training transform else consider dataset transform
         if training_transform:
             dataset.set_transform(training_transform)
-            
+
         # initialize training data loader
         train_dataloader = torch.utils.data.DataLoader(
             dataset,
             batch_size=kwargs.get("training_batch_size", 256),
-            shuffle = kwargs.get("training_shuffle", False),
             sampler=sampler,
             pin_memory=True,
         )
@@ -185,7 +196,6 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         optimizer.add_param_group({"params": model.top_layer.parameters(),
                                    "lr": lr,
                                    "weight_decay": weight_decay})
-
 
         # train network
         n_epochs = kwargs.get("n_epochs", 1)
