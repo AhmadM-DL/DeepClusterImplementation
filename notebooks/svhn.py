@@ -14,8 +14,10 @@ from torch.utils.tensorboard import SummaryWriter
 from deep_clustering_models import AlexNet_Small
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering import deep_cluster
+from utils import set_seed
  
-
+#%%
+set_seed(0)
 
 #%%
 
@@ -58,3 +60,34 @@ loading_transform = transforms.Compose([
 # std /= len(loader.dataset) # 0.1201, 0.1231, 0.1052
 
 # %%
+device = torch.device("cpu")
+model = AlexNet_Small(sobel= True, batch_normalization=True, device=device)
+
+loss_fn = torch.nn.CrossEntropyLoss()
+
+optimizer = torch.optim.SGD(
+    filter(lambda x: x.requires_grad, model.parameters()),
+    lr= 0.01,
+    momentum=0.9,
+    weight_decay=0.00005,
+)
+
+
+# %%
+writer = SummaryWriter(log_dir="./runs/svhn")
+
+# %%
+
+deep_cluster(
+    model= model,
+    dataset= dataset,
+    n_clusters= 10,
+    loss_fn= loss_fn,
+    optimizer= optimizer,
+    n_cycles= 30,
+    loading_transform= loading_transform,
+    training_transform=training_transform,
+    random_state=0,
+    verbose=True,
+    writer= writer
+)
