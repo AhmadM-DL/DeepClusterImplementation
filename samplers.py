@@ -11,8 +11,8 @@ class UnifAverageLabelSampler(torch.utils.data.Sampler):
     def __init__(self, dataset: DeepClusteringDataset, dataset_multiplier=1, shuffle= True):
         self.dataset = dataset
         self.dataset_multiplier = dataset_multiplier
-        self.indexes = self._generate_indexes_epoch()
         self.shuffle = shuffle
+        self.indexes = self._generate_indexes_epoch()
 
     def _generate_indexes_epoch(self):
         grouped_indices = self.dataset.group_indices_by_labels()
