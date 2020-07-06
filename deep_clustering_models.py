@@ -216,7 +216,7 @@ def AlexNet_ImageNet(sobel, batch_normalization, device):
                               device=device)
     return model
 
-def LeNet_MNIST(batch_normalization, device):
+def LeNet(batch_normalization, device):
     """
     Implementation of LeNet
     """
