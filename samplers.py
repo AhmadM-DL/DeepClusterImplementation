@@ -31,7 +31,7 @@ class UnifAverageLabelSampler(torch.utils.data.Sampler):
             )
             res[i * avg_target_size: (i + 1) * avg_target_size] = indexes
 
-        if self.shuffle:
+        if self.shufle:
             np.random.shuffle(res)
 
         return res.astype('int')
