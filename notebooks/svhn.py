@@ -8,6 +8,13 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision.datasets import SVHN
 from torchvision import transforms
+from torch.utils.tensorboard import SummaryWriter
+
+# %%
+from deep_clustering_models import LeNet
+from deep_clustering_dataset import DeepClusteringDataset
+from deep_clustering import deep_cluster
+ 
 
 
 #%%

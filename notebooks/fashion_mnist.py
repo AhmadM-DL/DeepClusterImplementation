@@ -13,7 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 #%%
 from deep_clustering_dataset import DeepClusteringDataset
-from deep_clustering_models import LeNet_MNIST
+from deep_clustering_models import LeNet
 from deep_clustering import deep_cluster
 from linear_probe import eval_linear
 
@@ -57,7 +57,7 @@ training_transform = transforms.Compose([
 
 # %%
 device= torch.device("cpu")
-model = LeNet_MNIST(batch_normalization=True, device=device)
+model = LeNet(batch_normalization=True, device=device)
 
 loss_fn = torch.nn.CrossEntropyLoss()
 

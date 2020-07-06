@@ -17,7 +17,7 @@ from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from torch.utils.data import DataLoader
 
 from deep_clustering import deep_cluster
-from deep_clustering_models import LeNet_MNIST
+from deep_clustering_models import LeNet
 from deep_clustering_dataset import DeepClusteringDataset
 from linear_probe import LinearProbe, eval_linear
 
@@ -40,7 +40,7 @@ loading_transform = transforms.Compose([
 
 # %%
 device = torch.device("cpu")
-model = LeNet_MNIST(batch_normalization=True, device=device)
+model = LeNet(batch_normalization=True, device=device)
 optimizer = torch.optim.SGD(
     filter(lambda x: x.requires_grad, model.parameters() ) ,
     lr=0.01,
