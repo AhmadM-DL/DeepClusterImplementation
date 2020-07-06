@@ -16,7 +16,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 
 from deep_clustering import deep_cluster
-from deep_clustering_models import AlexNet_CIFAR
+from deep_clustering_models import AlexNet_Small
 from deep_clustering_dataset import DeepClusteringDataset
 
 
@@ -29,7 +29,7 @@ device = torch.device("cpu")
 
 
 # %%
-model = AlexNet_CIFAR(sobel=True, batch_normalization=True, device=device)
+model = AlexNet_Small(sobel=True, batch_normalization=True, device=device)
 
 
 # %%

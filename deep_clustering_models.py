@@ -21,7 +21,7 @@ from sklearn.metrics import normalized_mutual_info_score
 
 from  layers_stacker import stack_convolutional_layers, stack_linear_layers
 
-def AlexNet_CIFAR(sobel, batch_normalization, device):
+def AlexNet_Small(sobel, batch_normalization, device):
     """Implementation of AlexNet for CIFAR dataset
 
     Arguments:

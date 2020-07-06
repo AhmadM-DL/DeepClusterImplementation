@@ -11,7 +11,7 @@ from torchvision import transforms
 from torch.utils.tensorboard import SummaryWriter
 
 # %%
-from deep_clustering_models import LeNet
+from deep_clustering_models import AlexNet_Small
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering import deep_cluster
  
@@ -20,6 +20,24 @@ from deep_clustering import deep_cluster
 #%%
 
 svhn = SVHN("../datasets", download= True)
+
+dataset = DeepClusteringDataset(svhn)
+
+normalize = transforms.Normalize(mean= [0.4377, 0.4438, 0.4728],
+                                 std= [0.1201, 0.1231, 0.1052])
+
+training_transform = transforms.Compose([
+                            transforms.RandomResizedCrop(224),
+                            transforms.RandomHorizontalFlip(),
+                            transforms.ToTensor(),
+                            normalize])
+
+loading_transform = transforms.Compose([
+                            transforms.Resize(256),
+                            transforms.CenterCrop(224),
+                            transforms.ToTensor(),
+                            normalize])
+
 
 # %%
 # svhn.transform = transforms.Compose([transforms.ToTensor()])
