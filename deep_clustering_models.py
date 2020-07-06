@@ -208,7 +208,7 @@ def AlexNet_ImageNet(sobel, batch_normalization, device):
                       "out_features":4096}
         ]
 
-    model = DeepClusteringNet(input_size=(n_input_channels,224,224),
+    model = DeepClusteringNet(input_size=(3,224,224),
                               features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
                               classifier= stack_linear_layers(input_features= 256 * 6 * 6, cfg= classifier_cfg),
                               top_layer = None,
