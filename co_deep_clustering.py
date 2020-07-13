@@ -194,7 +194,7 @@ def deep_cluster(modelA: DeepClusteringNet,
         crossed_clusters = crossed_clusters[:n_clusters]
 
         instance_wise_weights = [kwargs.get("weak_instance_weight",0.6)]*dataset.__len__()
-        for cluster in cross_clusters:
+        for cluster in crossed_clusters:
             for index in cluster:
                 instance_wise_weights[index] = kwargs.get("strong_instance_weight",1.2)
 
