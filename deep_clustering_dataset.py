@@ -89,7 +89,7 @@ class DeepClusteringDataset(Dataset):
             raise Exception("The passed original dataset is of unsupported dataset instance")
     
     # TODO - remove if unused
-    def set_instance_wise_wights(self, weights):
+    def set_instance_wise_weights(self, weights):
         self.instance_wise_weights = weights
         return
 
