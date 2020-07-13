@@ -55,7 +55,7 @@ class DeepClusteringDataset(Dataset):
     
     def __getitem__(self, index):
         if self.instance_wise_weights:
-            return self.dataset.__getitem__(index)+ (self.instance_wise_weights(i),)
+            return self.dataset.__getitem__(index)+ (self.instance_wise_weights(index),)
         else:
             return self.dataset.__getitem__(index)
 
