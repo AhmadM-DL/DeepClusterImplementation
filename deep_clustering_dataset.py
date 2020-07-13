@@ -61,11 +61,11 @@ class DeepClusteringDataset(Dataset):
 
         elif isinstance(self.original_dataset, VisionDataset):
             
-            if hasattr(self.dataset, "targets"):
-                self.targets = self.dataset.targets
+            if hasattr(self.original_dataset, "targets"):
+                return self.original_dataset.targets
             
-            elif hasattr(self.dataset, "labels"):
-                self.targets = self.dataset.labels
+            elif hasattr(self.original_dataset, "labels"):
+                return self.original_dataset.labels
             
             else: 
                 raise Exception("The entered dataset is not supported - no labels/targets variables")
