@@ -44,6 +44,7 @@ class DeepClusteringDataset(Dataset):
             self.dataset.transform = original_dataset.transform
 
         self.transform = self.dataset.transform
+        self.instance_wise_weights= None
     
     def set_transform(self, transform):
         self.dataset.transform = transform
@@ -53,7 +54,10 @@ class DeepClusteringDataset(Dataset):
         return self.dataset.__len__()
     
     def __getitem__(self, index):
-        return self.dataset.__getitem__(index)
+        if self.instance_wise_weights:
+            return self.dataset.__getitem__(index)+ (self.instance_wise_weights(i),)
+        else:
+            return self.dataset.__getitem__(index)
 
     def get_targets(self):
         if isinstance(self.original_dataset, ImageFolder):
@@ -84,6 +88,11 @@ class DeepClusteringDataset(Dataset):
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
     
+    # TODO - remove if unused
+    def set_instance_wise_wights(self, weights):
+        self.instance_wise_weights = weights
+        return
+
     def get_pseudolabels(self):
         if isinstance(self.dataset, ImageFolder):
             return [pseudolabel.item() for (path, pseudolabel) in self.imgs]
