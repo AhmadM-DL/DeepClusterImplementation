@@ -154,7 +154,7 @@ class DeepClusteringNet(torch.nn.Module):
         self.train()
         end = time.time()
 
-        dataloader.dataset.set_instance_wise_Weights(instance_wise_weights)
+        dataloader.dataset.set_instance_wise_weights(instance_wise_weights)
 
         for i, (input_, target, instance_wise_weight) in enumerate(dataloader):
 
