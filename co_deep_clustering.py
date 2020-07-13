@@ -284,7 +284,7 @@ def deep_cluster(modelA: DeepClusteringNet,
                                               optimizer=optimizerA,
                                               epoch=cycle*n_epochs+epoch,
                                               loss_fn=loss_fn,
-                                              instance_wise_weights=,
+                                              instance_wise_weights=instance_wise_weights,
                                               verbose=verbose,
                                               writer=writer)
             
@@ -292,7 +292,7 @@ def deep_cluster(modelA: DeepClusteringNet,
                                               optimizer=optimizerB,
                                               epoch=cycle*n_epochs+epoch, 
                                               loss_fn=loss_fn,
-                                              instance_wise_weights=,
+                                              instance_wise_weights=instance_wise_weights,
                                               verbose=verbose, 
                                               writer=writer)
 
