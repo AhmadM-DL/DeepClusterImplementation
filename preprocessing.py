@@ -10,6 +10,7 @@ import sys
 from sklearn.decomposition import PCA
 
 def l2_normalization(npdata):
+    npdata = np.asarray(npdata, dtype=np.float64)
     row_sums = np.linalg.norm(npdata, axis=1)
     npdata = npdata / row_sums[:, np.newaxis]
     return npdata

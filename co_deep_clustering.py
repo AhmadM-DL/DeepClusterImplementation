@@ -127,7 +127,7 @@ def deep_cluster(modelA: DeepClusteringNet,
                                                    shuffle=kwargs.get(
                                                        "loading_shuffle", False),
                                                    pin_memory=True), verbose=verbose)
-        featuresB = modelA.full_feed_forward(
+        featuresB = modelB.full_feed_forward(
             dataloader=torch.utils.data.DataLoader(dataset,
                                                    batch_size=kwargs.get(
                                                        "loading_batch_size", 256),

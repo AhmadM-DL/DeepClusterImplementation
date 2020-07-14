@@ -143,7 +143,7 @@ class DeepClusteringNet(torch.nn.Module):
     def deep_cluster_train_with_weights(self, dataloader,
                            epoch, optimizer: torch.optim.Optimizer,
                            loss_fn, 
-                           instance_wise_weights,
+                           instance_wise_weights:torch.tensor,
                            verbose=False,
                            writer: SummaryWriter = None,
                            ):
@@ -160,15 +160,17 @@ class DeepClusteringNet(torch.nn.Module):
 
             input_ = input_.to(self.device)
             target = target.to(self.device)
+            instance_wise_weight = instance_wise_weight.to(self.device)
+            
             output = self(input_)
 
             loss = loss_fn(output, target)
-
+            loss = torch.as_tensor(loss, dtype=torch.float64)
             if (loss.dim() == 0):
                 raise Exception("Error This function expects a loss criterion that doesn't apply reduction\n")
             
             loss = loss * instance_wise_weight
-            loss = torch.average(loss)
+            loss = loss.mean()
 
             # compute gradient and do SGD step
             optimizer.zero_grad()
@@ -186,6 +188,9 @@ class DeepClusteringNet(torch.nn.Module):
                                                         len(dataloader), time.time() - end))
 
             end = time.time()
+        
+        dataloader.dataset.unset_instance_wise_weights()
+
 
     def full_feed_forward(self, dataloader, verbose=False):
 

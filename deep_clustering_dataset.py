@@ -93,6 +93,10 @@ class DeepClusteringDataset(Dataset):
         self.instance_wise_weights = weights
         return
 
+    def unset_instance_wise_weights(self):
+        self.instance_wise_weights = None
+        return
+
     def get_pseudolabels(self):
         if isinstance(self.dataset, ImageFolder):
             return [pseudolabel.item() for (path, pseudolabel) in self.imgs]
@@ -102,7 +106,7 @@ class DeepClusteringDataset(Dataset):
 
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
-        
+
     def unset_pseudolabels(self):
         if isinstance(self.dataset, ImageFolder):
             self.imgs= self.original_dataset.imgs
