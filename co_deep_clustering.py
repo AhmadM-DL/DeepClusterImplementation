@@ -20,9 +20,6 @@ import random
 import numpy as np
 import os
 
-def cross_clusters(clustersA, clustersB):
-    return
-
 def deep_cluster(modelA: DeepClusteringNet,
                  modelB: DeepClusteringNet,
                  dataset: DeepClusteringDataset,

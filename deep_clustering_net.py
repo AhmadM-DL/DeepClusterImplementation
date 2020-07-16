@@ -161,7 +161,8 @@ class DeepClusteringNet(torch.nn.Module):
             input_ = input_.to(self.device)
             target = target.to(self.device)
             instance_wise_weight = instance_wise_weight.to(self.device)
-            
+            instance_wise_weight = torch.as_tensor(instance_wise_weight, dtype=torch.float64)
+
             output = self(input_)
 
             loss = loss_fn(output, target)

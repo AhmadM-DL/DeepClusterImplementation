@@ -76,7 +76,7 @@ optimizerB = torch.optim.SGD(
 )
 
 # %%
-writer = SummaryWriter(log_dir="runs/fashion_mnist_co")
+writer = SummaryWriter(log_dir="runs/fashion_mnist_co_strong1weak0.01")
 
 # %%
 
@@ -89,6 +89,8 @@ deep_cluster(
     optimizerA= optimizerA,
     optimizerB= optimizerB,
     n_cycles= 20,
+    strong_instance_weight= 1,
+    weak_instance_weight= 0.01,
     loading_transform= loading_transform,
     training_transform= training_transform,
     random_state=0,
