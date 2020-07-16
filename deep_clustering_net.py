@@ -146,6 +146,7 @@ class DeepClusteringNet(torch.nn.Module):
                            instance_wise_weights:torch.tensor,
                            verbose=False,
                            writer: SummaryWriter = None,
+                           writer_tag= None
                            ):
 
         if verbose:
@@ -180,7 +181,12 @@ class DeepClusteringNet(torch.nn.Module):
 
             if writer:
 
-                writer.add_scalar("training_loss",
+                if not writer_tag:
+                    writer_tag= ""
+                else:
+                    writer_tag= "/"+writer_tag
+
+                writer.add_scalar("training_loss"+writer_tag,
                                   scalar_value=loss.item(),
                                   global_step=epoch * len(dataloader) + i)
 
