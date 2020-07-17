@@ -155,6 +155,11 @@ class DeepClusteringNet(torch.nn.Module):
         self.train()
         end = time.time()
 
+        if not writer_tag:
+            writer_tag= ""
+        else:
+            writer_tag= "/"+writer_tag
+
         dataloader.dataset.set_instance_wise_weights(instance_wise_weights)
 
         for i, (input_, target, instance_wise_weight) in enumerate(dataloader):
@@ -180,12 +185,7 @@ class DeepClusteringNet(torch.nn.Module):
             optimizer.step()
 
             if writer:
-
-                if not writer_tag:
-                    writer_tag= ""
-                else:
-                    writer_tag= "/"+writer_tag
-
+                
                 writer.add_scalar("training_loss"+writer_tag,
                                   scalar_value=loss.item(),
                                   global_step=epoch * len(dataloader) + i)

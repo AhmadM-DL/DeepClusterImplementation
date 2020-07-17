@@ -283,7 +283,8 @@ def deep_cluster(modelA: DeepClusteringNet,
                                               loss_fn=loss_fn,
                                               instance_wise_weights=instance_wise_weights,
                                               verbose=verbose,
-                                              writer=writer)
+                                              writer=writer,
+                                              writer_tag="A")
             
             lossB = modelB.deep_cluster_train_with_weights(dataloader=train_dataloader,
                                               optimizer=optimizerB,
@@ -291,7 +292,8 @@ def deep_cluster(modelA: DeepClusteringNet,
                                               loss_fn=loss_fn,
                                               instance_wise_weights=instance_wise_weights,
                                               verbose=verbose, 
-                                              writer=writer)
+                                              writer=writer,
+                                              writer_tag="B")
 
 def group_indices_by_labels(labels):
     """ Group the indices of a list of labels by labels.
