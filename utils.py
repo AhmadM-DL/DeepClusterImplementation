@@ -2,6 +2,15 @@
 Created on Tuesday April 24 2020
 @author: Ahmad Mustapha (amm90@mail.aub.edu)
 """
+
+from deep_clustering_net import DeepClusteringNet
+from deep_clustering_dataset import DeepClusteringDataset
+from preprocessing import l2_normalization, sklearn_pca_whitening
+from torch.utils.data import DataLoader
+from sklearn.cluster import KMeans
+from torch.utils.tensorboard import SummaryWriter
+from scipy.stats import entropy
+
 import torch 
 import numpy as np
 import random 
@@ -15,3 +24,55 @@ def set_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
+
+def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset, k_list: list, writer:SummaryWriter, verbose=True, random_state=0,**kwargs):
+
+    # full feedforward
+    features = model.full_feed_forward(
+        dataloader=torch.utils.data.DataLoader(dataset,
+                                                batch_size=256,
+                                                shuffle=False,
+                                                pin_memory=True), verbose=True)
+    # pre-processing pca-whitening
+    if kwargs.get("pca_components", None) == None:
+        pass
+    else:
+        if verbose:
+            print(" - Features PCA + Whitening")
+        features = sklearn_pca_whitening(features, n_components=kwargs.get("pca_components"), random_state=random_state)
+    
+    # pre-processing l2-normalization
+    if verbose:
+        print(" - Features L2 Normalization")
+    features = l2_normalization(features)
+
+    # cluster
+    if verbose:
+        print(" - Clustering")
+    
+    KMs = [ KMeans(n_clusters = k, random_state=random_state) for k in k_list ]
+    k_assignments = [ KM.fit_predict(features) for KM in KMs ]
+    k_grouped_assignments_indices = [ group_by_index(assignments) for assignments in k_assignments]
+    k_entropies = [[] for i in range(len(k_list))]
+
+    for i, grouped_assignments_indices in enumerate(k_grouped_assignments_indices):
+        grouped_original_labels = [[dataset.get_targets()[index] for index in group] for group in grouped_assignments_indices]
+        grouped_counts = [np.unique(group, return_counts=True)[1] for group in grouped_original_labels]
+        entropies = [entropy(group) for group in grouped_counts]
+        k_entropies[i] = entropies
+    
+    k_avg_entropies = [np.average(entropies) for entropies in k_entropies ]
+    k_min_entropies = [np.min(entropies) for entropies in k_entropies ]
+    k_max_entropies = [np.max(entropies) for entropies in k_entropies ]
+
+def group_by_index(labels):
+    n_labels = len(np.unique(labels))
+    grouped_indices = [[] for i in range(n_labels)]
+    for i, label in enumerate(labels):
+        grouped_indices[label].append(i)
+    return grouped_indices
+
+
+
+
+
