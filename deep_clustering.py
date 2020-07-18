@@ -57,7 +57,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # I am not really sure why I have to add an input for add_graph
         # also move dummy input to models device
         writer.add_graph(model, dummy_input.to(model.device))
-
+        
     start_cycle = 0
 
     loss_fn.to(model.device)

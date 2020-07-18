@@ -18,6 +18,21 @@ from co_deep_clustering import deep_cluster
 from linear_probe import eval_linear
 
 # %%
+
+hparams= {
+    'lr': 0.01,
+    'momentum': 0.9,
+    "weight_decay": 0.00001,
+    "n_clusters": 10,
+    "n_cycles": 20,
+    "strong_instance_weight":1,
+    "weak_instance_weight":0.1,
+    "random_state":0,
+    "batch_norm":True,
+}
+
+
+# %%
 fashion_mnist = FashionMNIST("../datasets", download=True)
 dataset = DeepClusteringDataset(fashion_mnist)
 
@@ -57,26 +72,31 @@ training_transform = transforms.Compose([
 
 # %%
 device= torch.device("cpu")
-modelA = LeNet(batch_normalization=True, device=device)
-modelB = LeNet(batch_normalization=True, device=device)
+modelA = LeNet(batch_normalization=hparams["batch_norm"], device=device)
+modelB = LeNet(batch_normalization=hparams["batch_norm"], device=device)
 
 loss_fn = torch.nn.CrossEntropyLoss(reduction='none')
 
 optimizerA = torch.optim.SGD(
     filter(lambda x: x.requires_grad, modelA.parameters()),
-    lr = 0.01,
-    momentum= 0.9,
-    weight_decay= 0.00001,
+    lr = hparams["lr"],
+    momentum= hparams["momentum"],
+    weight_decay= hparams["weight_decay"],
 )
 optimizerB = torch.optim.SGD(
     filter(lambda x: x.requires_grad, modelB.parameters()),
-    lr = 0.01,
-    momentum= 0.9,
-    weight_decay= 0.00001,
+    lr = hparams["lr"],
+    momentum= hparams["momentum"],
+    weight_decay= hparams["weight_decay"],
 )
 
 # %%
-writer = SummaryWriter(log_dir="runs/fashion_mnist_co_strong1weak0.01")
+writer = SummaryWriter(log_dir="runs/fashion_mnist_co_strong1weak0.1_2")
+
+# %%
+
+# write hyper parameters
+writer.add_hparams(hparams)
 
 # %%
 
@@ -84,19 +104,24 @@ deep_cluster(
     modelA= modelA,
     modelB= modelB,
     dataset= dataset,
-    n_clusters= 10,
+    n_clusters= hparams["n_clusters"],
     loss_fn= loss_fn,
     optimizerA= optimizerA,
     optimizerB= optimizerB,
-    n_cycles= 20,
-    strong_instance_weight= 1,
-    weak_instance_weight= 0.01,
+    n_cycles= hparams["n_cycles"],
+    strong_instance_weight= hparams["strong_instance_weight"],
+    weak_instance_weight= hparams["weak_instance_weight"],
     loading_transform= loading_transform,
     training_transform= training_transform,
-    random_state=0,
+    random_state=hparams,
     verbose=True,
     writer= writer
 )
+
+# %%
+
+writer.flush()
+writer.close()
 
 # %%
 
