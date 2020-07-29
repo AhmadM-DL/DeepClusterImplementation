@@ -8,8 +8,11 @@ from deep_clustering_dataset import DeepClusteringDataset
 from preprocessing import l2_normalization, sklearn_pca_whitening
 from torch.utils.data import DataLoader
 from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
+
 from torch.utils.tensorboard import SummaryWriter
 from scipy.stats import entropy
+import matplotlib.pyplot as plt
 
 import torch 
 import numpy as np
@@ -25,7 +28,12 @@ def set_seed(seed):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
 
-def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset, k_list: list, writer:SummaryWriter, verbose=True, random_state=0,**kwargs):
+def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
+                 k_list: list, writer:SummaryWriter,
+                 verbose=True, random_state=0,**kwargs):
+
+    # clustering algorithm:
+    clustering_algorithm = kwargs.get("clustering_algorithm", "kmeans")
 
     # full feedforward
     features = model.full_feed_forward(
@@ -49,9 +57,15 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset, k_li
     # cluster
     if verbose:
         print(" - Clustering")
-    
-    KMs = [ KMeans(n_clusters = k, random_state=random_state) for k in k_list ]
-    k_assignments = [ KM.fit_predict(features) for KM in KMs ]
+
+    if clustering_algorithm=="kmeans":
+        CMs = [ KMeans(n_clusters = k, random_state=random_state) for k in k_list ]
+    elif clustering_algorithm== "gmm":
+        CMs = [ GaussianMixture(n_components = k, random_state=random_state) for k in k_list ]
+    else:
+        raise Exception("Error an unsupported clustering algorithm was provided")
+
+    k_assignments = [ CM.fit_predict(features) for CM in CMs ]
     k_grouped_assignments_indices = [ group_by_index(assignments) for assignments in k_assignments]
     k_entropies = [[] for i in range(len(k_list))]
 
@@ -64,6 +78,22 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset, k_li
     k_avg_entropies = [np.average(entropies) for entropies in k_entropies ]
     k_min_entropies = [np.min(entropies) for entropies in k_entropies ]
     k_max_entropies = [np.max(entropies) for entropies in k_entropies ]
+
+
+    for i,k in enumerate(k_list):
+        writer.add_histogram(clustering_algorithm+"/Space Quality k=%d"%k, np.array(k_entropies[i]), global_step=0)
+    
+    avg_entropies_vs_k = plt.figure()
+    plt.plot(k_list, k_avg_entropies,"-*", label="Avg")
+    plt.plot(k_list, k_min_entropies,"-+", label="Min")
+    plt.plot(k_list, k_max_entropies,"-o", label="Max")
+    plt.title("Space Quality")
+    plt.xlabel("Number of clusters")
+    plt.ylabel(" Cluster Entropy")
+    plt.legend()
+
+    writer.add_figure(clustering_algorithm+"/Space Quality Stat.", avg_entropies_vs_k, global_step=0)
+
 
 def group_by_index(labels):
     n_labels = len(np.unique(labels))

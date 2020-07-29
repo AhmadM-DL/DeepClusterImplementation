@@ -15,6 +15,19 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
+
+def sklearn_GMM(npdata, n_components, random_state=0, verbose=False, **kwargs):
+    gmm = GaussianMixture(n_components=n_components,
+                         max_iter=kwargs.get("max_iter", 100),
+                         n_init=kwargs.get("n_init",1),
+                         verbose=verbose,
+                         random_state=random_state
+                         )
+
+    labels = gmm.fit_predict(npdata)
+
+    return labels
 
 def sklearn_kmeans(npdata, n_clusters, random_state=0, verbose=False, **kwargs):
     Kmeans = KMeans(n_clusters = n_clusters,
