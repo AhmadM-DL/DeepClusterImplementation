@@ -16,9 +16,9 @@ from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import LeNet
 from co_deep_clustering import deep_cluster
 from linear_probe import eval_linear
+from utils import qualify_space, set_seed
 
 # %%
-
 hparams= {
     'lr': 0.01,
     'momentum': 0.9,
@@ -30,7 +30,6 @@ hparams= {
     "random_state":0,
     "batch_norm":True,
 }
-
 
 # %%
 fashion_mnist = FashionMNIST("../datasets", download=True)
@@ -91,10 +90,13 @@ optimizerB = torch.optim.SGD(
 )
 
 # %%
-writer = SummaryWriter(log_dir="runs/fashion_mnist_co_strong1weak0.1_2")
+writer = SummaryWriter(log_dir="runs/fashion_mnist_co_strong1weak0.1_3")
 
 # %%
+dataset.set_transform(loading_transform)
+qualify_space(modelA, dataset, [5,10,12,20,50], writer, clustering_algorithm="gmm")
 
+# %%
 # write hyper parameters
 writer.add_hparams(hparams)
 

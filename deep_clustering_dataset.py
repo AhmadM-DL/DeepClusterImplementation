@@ -83,8 +83,16 @@ class DeepClusteringDataset(Dataset):
                 self.imgs[i] = (self.imgs[i][0], torch.tensor(pseudolabel, dtype=torch.long))
 
         elif isinstance(self.dataset, VisionDataset):
-             self.targets = pseudolabels
 
+            if hasattr(self.original_dataset, "targets"):
+                self.dataset.targets = pseudolabels
+                self.targets = self.dataset.targets
+            
+            elif hasattr(self.original_dataset, "labels"):
+                self.dataset.labels = pseudolabels
+                self.targets = self.dataset.labels            
+            else: 
+                raise Exception("The entered dataset is not supported - no labels/targets variables")
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
     
