@@ -8,4 +8,4 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user= amm90@mail.ub.edu.edu
 
-python mnist.py "./hyper.json"
+python mnist.py 
