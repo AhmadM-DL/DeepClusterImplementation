@@ -23,7 +23,7 @@ import os
 def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles,
                  loading_transform=None, training_transform=None,
                  random_state=0, verbose=0, writer: SummaryWriter = None,
-                 checkpoint=None,
+                 checkpoints=None, resume=None,
                  **kwargs):
     """ 
     The main method in this repo. it implements the DeepCluster pipeline
@@ -38,8 +38,9 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                        step and a network training step
         random_state(int): Random State argument for reproducing results
         verbose(int): verbose level
-        checkpoint: A path to model checkpoint to resume training from / save model to
+        checkpoint: A path to checkpoint dir to resume training from / save model to
         kwargs: Other relevent arguments that lesser used 
+                - checkpoints_interval default 10
                 - "pca_components" for PCA before clustering default= None
                 - "loading_batch_size" default=256
                 - "training_batch_size" default=256
@@ -62,12 +63,14 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
     loss_fn.to(model.device)
 
-    if checkpoint:
-        # if checkpoint exist load model from
-        if os.path.isfile(checkpoint):
-            start_cycle = model.load_model_parameters(
-                checkpoint, optimizer=optimizer)
+    if not os.path.isdir(checkpoints):
+        os.makedirs(checkpoints)
 
+    if resume:
+        # if resume exist load model from
+        if os.path.isfile(resume):
+            start_cycle = model.load_model_parameters(resume, optimizer=optimizer)
+    
     for cycle in range(start_cycle, n_cycles):
 
         if verbose:
@@ -85,10 +88,10 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             if verbose:
                 print(" - Remove Top_layer Params from Optimizer")
 
-        if checkpoint:
+        if checkpoints and cycle%kwargs.get("checkpoints_interval",10)==0:
             # save model
             model.save_model_parameters(
-                checkpoint, optimizer=optimizer, epoch=cycle)
+                os.path.join(checkpoints, "model_%d.pth"%cycle), optimizer=optimizer, epoch=cycle)
 
         # Set Loading Transform else consider the dataset transform
         if loading_transform:
