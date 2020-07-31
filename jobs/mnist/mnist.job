@@ -18,4 +18,6 @@ module load python/torch
 module load python/torchvision
 
 ## execute the python job
-python3 keras_classification.py
+nvidia-smi
+
+python3 mnist.py
