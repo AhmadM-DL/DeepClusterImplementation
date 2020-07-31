@@ -1,11 +1,21 @@
 #!/bin/bash
-#SBATCH --job-name=mnist.job
-#SBATCH --output=.out/mnist.out
-#SBATCH --error=.out/mnist.err
-#SBATCH --time=2-00:00
-#SBATCH --mem=12000
-#SBATCH --qos=normal
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user= amm90@mail.ub.edu.edu
 
-python mnist.py 
+#SBATCH --job-name= mnist
+#SBATCH --partition=gpu
+
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --gres=gpu
+#SBATCH --mem=12000
+#SBATCH --time=0-01:00:00
+
+## set the environment modules
+module purge
+module load cuda
+module load python/tensorflow
+module load python/torch
+module load python/torchvision
+
+## execute the python job
+python3 keras_classification.py
