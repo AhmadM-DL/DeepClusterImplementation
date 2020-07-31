@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH --job-name=jupyter-server
+#SBATCH --partition=normal
+
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=8000
+#SBATCH --time=0-01:00:00
+#SBATCH --account=foo_project
+
+source ~/.bashrc
+
+module purge
+module load python/3
+
+JUPYTER_PORT=$(random_unused_port)
+
+jupyter-lab  --no-browser --port=${JUPYTER_PORT} > jupyter-${SLURM_JOB_ID}.log 2>&1 &
+ssh -R localhost:${JUPYTER_PORT}:localhost:${JUPYTER_PORT} ohead1 -N
