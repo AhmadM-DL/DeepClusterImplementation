@@ -18,12 +18,16 @@ from deep_clustering_models import LeNet
 from deep_clustering_dataset import DeepClusteringDataset
 
 from evaluation.linear_probe import eval_linear
+from utils import set_seed
 
 
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, training_shuffle,
         random_state, ):
 
+    logging.info("Set Seed")
+    set_seed(random_state)
+    
     logging.info("Loading Dataset")
     mnist = MNIST("./datasets/", download=True)
 
@@ -89,6 +93,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  training_batch_size=training_batch_size,
                  training_shuffle=training_shuffle,
                  pca_components=pca,
+                 checkpoints= "checkpoints/"+writer_file,
                  writer=writer)
     
     mnist_test = MNIST("../datasets/", train=False, download=True)
