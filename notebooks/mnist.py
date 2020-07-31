@@ -50,7 +50,7 @@ optimizer = torch.optim.SGD(
 loss_function = torch.nn.CrossEntropyLoss()
 
 # %%
-writer = SummaryWriter('runs/mnist')
+writer = SummaryWriter('runs/mnist_training_rand_temp')
 
 # %%
 deep_cluster(model= model, 
@@ -79,8 +79,8 @@ transformations_val = [transforms.Resize(44),
                             normalize]
 
 transformations_train = [transforms.Resize(44),
-                            transforms.CenterCrop(44),
-                            transforms.RandomCrop(32),
+                            transforms.CenterCrop(32),
+                            #transforms.RandomCrop(32),
                             #transforms.RandomHorizontalFlip(),
                             transforms.ToTensor(),
                             normalize]
@@ -93,3 +93,5 @@ eval_linear(model=model, n_epochs= 5, traindataset=traindataset,
             validdataset= validdataset, target_layer="conv_2", n_labels=10,
             features_size= 1600, avg_pool= None, random_state=0, writer= writer,
             verbose= True)
+
+# %%

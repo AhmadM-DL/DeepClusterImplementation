@@ -38,6 +38,11 @@ def accuracy(output, target, topk=(1,)):
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
+def accuracy_top_1(output, target):
+    batch_size = target.size(0)
+    return
+
+
 
 class LinearProbe(nn.Module):
     """Creates logistic regression on top of frozen features"""
@@ -193,18 +198,18 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     )
 
     for epoch in range(0, n_epochs):
-        loss, acc1, acc2 = linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose)
+        t_loss, t_acc1, t_acc2 = linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose)
         if writer:
-            writer.add_scalar("linear_probe_train/loss", loss, global_step=epoch)
-            writer.add_scalar("linear_probe_train/acc1", acc1, global_step=epoch)
-            writer.add_scalar("linear_probe_train/acc2", acc2, global_step=epoch)
+            writer.add_scalar("linear_probe_train/loss", t_loss, global_step=epoch)
+            writer.add_scalar("linear_probe_train/acc1", t_acc1, global_step=epoch)
+            writer.add_scalar("linear_probe_train/acc2", t_acc2, global_step=epoch)
 
         if validdataset:
-            loss, acc1, acc2 = linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
+            v_loss, v_acc1, v_acc2 = linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
             if writer:
-                writer.add_scalar("linear_probe_valid/loss", loss, global_step=epoch)
-                writer.add_scalar("linear_probe_valid/acc1", acc1, global_step=epoch)
-                writer.add_scalar("linear_probe_valid/acc2", acc2, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/loss", v_loss, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/acc1", v_acc1, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/acc2", v_acc2, global_step=epoch)
 
     # unfreeze model wights
     model.unfreeze_classifier()
