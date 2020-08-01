@@ -11,11 +11,13 @@
 #SBATCH --time=0-01:00:00
 
 ## set the environment modules
-module load /python/base/miniconda3
+module load python/base/miniconda3
 source /apps/sw/miniconda/etc/profile.d/conda.sh
 conda activate myenv
 
+## add my modules
+export PYTHONPTH=$HOME/scratch/DeepClusterImplemention 
 ## execute the python job
-nvidia-smi
+## nvidia-smi
 
 python3 mnist.py
