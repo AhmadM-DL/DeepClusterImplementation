@@ -11,7 +11,8 @@
 #SBATCH --time=0-01:00:00
 
 ## set the environment modules
-module load miniconda3
+module load /python/base/miniconda3
+source /apps/sw/miniconda/etc/profile.d/conda.sh
 conda activate myenv
 
 ## execute the python job
