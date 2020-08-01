@@ -58,7 +58,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # I am not really sure why I have to add an input for add_graph
         # also move dummy input to models device
         writer.add_graph(model, dummy_input.to(model.device))
-        
+
     start_cycle = 0
 
     loss_fn.to(model.device)
@@ -69,8 +69,9 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
     if resume:
         # if resume exist load model from
         if os.path.isfile(resume):
-            start_cycle = model.load_model_parameters(resume, optimizer=optimizer)
-    
+            start_cycle = model.load_model_parameters(
+                resume, optimizer=optimizer)
+
     for cycle in range(start_cycle, n_cycles):
 
         if verbose:
@@ -88,10 +89,10 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             if verbose:
                 print(" - Remove Top_layer Params from Optimizer")
 
-        if checkpoints and cycle%kwargs.get("checkpoints_interval",10)==0:
+        if checkpoints and cycle % kwargs.get("checkpoints_interval", 10) == 0:
             # save model
             model.save_model_parameters(
-                os.path.join(checkpoints, "model_%d.pth"%cycle), optimizer=optimizer, epoch=cycle)
+                os.path.join(checkpoints, "model_%d.pth" % cycle), optimizer=optimizer, epoch=cycle)
 
         # Set Loading Transform else consider the dataset transform
         if loading_transform:
@@ -114,7 +115,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
             images_labels = [dataset.original_dataset.__getitem__(
                 i) for i in range(0, embeddings_sample_size)]
-            images = torch.stack([tuple[0] for tuple in images_labels])
+            images = torch.stack([torch.tensor(tuple[0]) for tuple in images_labels])
             labels = torch.tensor([tuple[1] for tuple in images_labels])
 
             writer.add_embedding(mat=to_embed, metadata=labels,
