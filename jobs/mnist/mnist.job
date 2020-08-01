@@ -16,7 +16,7 @@ source /apps/sw/miniconda/etc/profile.d/conda.sh
 conda activate myenv
 
 ## add my modules
-export PYTHONPTH=$HOME/scratch/DeepClusterImplemention 
+export PYTHONPATH=$HOME/scratch/DeepClusterImplementation 
 ## execute the python job
 ## nvidia-smi
 
