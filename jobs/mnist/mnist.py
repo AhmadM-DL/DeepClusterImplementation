@@ -23,13 +23,13 @@ from utils import set_seed
 
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, training_shuffle,
-        random_state, ):
+        random_state, dataset_path):
 
     logging.info("Set Seed")
     set_seed(random_state)
     
     logging.info("Loading Dataset")
-    mnist = MNIST("./datasets/", download=True)
+    mnist = MNIST(dataset_path, download=True)
 
     device = torch.device(device)
 
@@ -96,7 +96,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  checkpoints= "checkpoints/"+writer_file,
                  writer=writer)
     
-    mnist_test = MNIST("../datasets/", train=False, download=True)
+    mnist_test = MNIST(dataset_path, train=False, download=True)
 
     traindataset = mnist
     validdataset = mnist_test
@@ -131,7 +131,9 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='PyTorch Implementation of DeepCluster')
-    parser.add_argument('--hyperparam', default="C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation\\jobs\\mnist\\hyper.json", type=str, help='Path to hyperparam json file')
+    parser.add_argument('--hyperparam', default="./hyper.json", type=str, help='Path to hyperparam json file')
+    parser.add_argument('--dataset', default="./datasets", type=str, help="Path to datasets")
+    paarser.add_argument("--seed", default=666, type=int, help="Random Seed")
     args = parser.parse_args()
 
     logging.basicConfig(filename='app.log', filemode='w',
@@ -149,4 +151,4 @@ if __name__ == '__main__':
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
                                         run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
-                                        pca, training_batch_size, training_shuffle, random_state=0)
+                                        pca, training_batch_size, training_shuffle, random_state=args.seed, dataset_path=args.dataset)

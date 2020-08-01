@@ -11,11 +11,8 @@
 #SBATCH --time=0-01:00:00
 
 ## set the environment modules
-module purge
-module load cuda
-module load python/tensorflow
-module load python/torch
-module load python/torchvision
+module load miniconda3
+conda activate myenv
 
 ## execute the python job
 nvidia-smi
