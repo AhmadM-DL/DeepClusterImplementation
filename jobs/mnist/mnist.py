@@ -133,7 +133,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch Implementation of DeepCluster')
     parser.add_argument('--hyperparam', default="./hyper.json", type=str, help='Path to hyperparam json file')
     parser.add_argument('--dataset', default="./datasets", type=str, help="Path to datasets")
-    paarser.add_argument("--seed", default=666, type=int, help="Random Seed")
+    parser.add_argument("--seed", default=666, type=int, help="Random Seed")
     args = parser.parse_args()
 
     logging.basicConfig(filename='app.log', filemode='w',
@@ -151,4 +151,4 @@ if __name__ == '__main__':
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
                                         run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
-                                        pca, training_batch_size, training_shuffle, random_state=args.seed, dataset_path=args.dataset)
+                                        pca, training_batch_size, training_shuffle, random_state=args.seedamm, dataset_path=args.dataset)
