@@ -12,6 +12,7 @@
 
 ## set the environment modules
 module load python/base/miniconda3
+module load cuda
 source /apps/sw/miniconda/etc/profile.d/conda.sh
 conda activate myenv
 
@@ -20,4 +21,4 @@ export PYTHONPATH=$HOME/scratch/DeepClusterImplementation
 ## execute the python job
 ## nvidia-smi
 
-python3 mnist.py
+python3 mnist.py --device "cuda:0"

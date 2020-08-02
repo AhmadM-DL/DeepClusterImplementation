@@ -20,52 +20,60 @@ from deep_clustering import deep_cluster
 from deep_clustering_models import LeNet
 from deep_clustering_dataset import DeepClusteringDataset
 from linear_probe import LinearProbe, eval_linear
+from utils import set_seed
+from utils import qualify_space
 
 # %%
-mnist = MNIST("../datasets/", download=True)
-dataset = DeepClusteringDataset(mnist)
-normalize = transforms.Normalize(mean= (0.1307,) ,
-                                 std= (0.3081,))
 
-training_transform = transforms.Compose([
-                            transforms.RandomResizedCrop(32),
-                            transforms.ToTensor(),
-                            normalize])
+for i in range(0,10):
+    mnist = MNIST("../datasets/", download=True)
+    dataset = DeepClusteringDataset(mnist)
+    normalize = transforms.Normalize(mean= (0.1307,) ,
+                                    std= (0.3081,))
 
-loading_transform = transforms.Compose([
-                            transforms.Resize(44),
-                            transforms.CenterCrop(32),
-                            transforms.ToTensor(),
-                            normalize])
+    training_transform = transforms.Compose([
+                                transforms.RandomResizedCrop(32),
+                                transforms.ToTensor(),
+                                normalize])
 
-# %%
-device = torch.device("cpu")
-model = LeNet(batch_normalization=True, device=device)
-optimizer = torch.optim.SGD(
-    filter(lambda x: x.requires_grad, model.parameters() ) ,
-    lr=0.01,
-    momentum=0.9,
-    weight_decay=0.00005,
-)
-loss_function = torch.nn.CrossEntropyLoss()
+    loading_transform = transforms.Compose([
+                                transforms.Resize(44),
+                                transforms.CenterCrop(32),
+                                transforms.ToTensor(),
+                                normalize])
 
-# %%
-name= "mnist"
-writer = SummaryWriter('runs/'+name)
+# %#%
+    device = torch.device("cpu")
+    model = LeNet(batch_normalization=True, device=device)
+    optimizer = torch.optim.SGD(
+        filter(lambda x: x.requires_grad, model.parameters() ) ,
+        lr=0.01,
+        momentum=0.9,
+        weight_decay=0.00005,
+    )
+    loss_function = torch.nn.CrossEntropyLoss()
 
-# %%
-deep_cluster(model= model, 
-dataset = dataset,
-n_clusters=10,
-loss_fn = loss_function,
-optimizer= optimizer,
-n_cycles= 20,
-loading_transform= loading_transform,
-training_transform= training_transform,
-random_state= 0,
-verbose=1,
-checkpoints="checkpoints/"+name,
-writer=writer)
+# %#%
+    name= "mnist_%d"%i
+    writer = SummaryWriter('runs_space/'+name)
+    set_seed(31)
+
+    dataset.set_transform(loading_transform)
+    qualify_space(model, dataset, [5,10,12,20,50], writer, clustering_algorithm="kmeans")
+
+# %#%
+    deep_cluster(model= model, 
+    dataset = dataset,
+    n_clusters=10,
+    loss_fn = loss_function,
+    optimizer= optimizer,
+    n_cycles= 20,
+    loading_transform= loading_transform,
+    training_transform= training_transform,
+    random_state= 0,
+    verbose=1,
+    checkpoints="checkpoints/"+name,
+    writer=writer)
 
 
 # %%
