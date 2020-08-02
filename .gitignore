@@ -10,3 +10,4 @@ checkpoints/*
 datasets/*
 notebooks/runs/*
 dataset/*
+notebooks/checkpoints/*

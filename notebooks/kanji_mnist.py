@@ -67,7 +67,8 @@ optimizer = torch.optim.SGD(
 )
 
 # %%
-writer = SummaryWriter(log_dir="runs/kanji_mnist")
+name= "kanji_mnist"
+writer = SummaryWriter(log_dir="runs/"+name)
 
 # %%
 
@@ -82,6 +83,7 @@ deep_cluster(
     training_transform= training_transform,
     random_state=0,
     verbose=True,
+    checkpoints= "checkpoints/"+name,
     writer= writer
 )
 
