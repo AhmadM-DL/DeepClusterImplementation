@@ -50,7 +50,8 @@ optimizer = torch.optim.SGD(
 loss_function = torch.nn.CrossEntropyLoss()
 
 # %%
-writer = SummaryWriter('runs/mnist__')
+name= "mnist"
+writer = SummaryWriter('runs/'+name)
 
 # %%
 deep_cluster(model= model, 
@@ -63,7 +64,7 @@ loading_transform= loading_transform,
 training_transform= training_transform,
 random_state= 0,
 verbose=1,
-checkpoints="checkpoints/",
+checkpoints="checkpoints/"+name,
 writer=writer)
 
 

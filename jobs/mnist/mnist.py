@@ -6,7 +6,7 @@ import argparse
 import sys
 import importlib
 
-#sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
+sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
 
 from torchvision import transforms
@@ -15,6 +15,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from deep_clustering_models import LeNet
 from deep_clustering_dataset import DeepClusteringDataset
+from deep_clustering import deep_cluster
 
 from evaluation.linear_probe import eval_linear
 from utils import set_seed
@@ -130,15 +131,16 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='PyTorch Implementation of DeepCluster')
-    parser.add_argument('--hyperparam', default="./hyper.json", type=str, help='Path to hyperparam json file')
+    parser.add_argument('--hyperparam', default="jobs/mnist/hyper.json", type=str, help='Path to hyperparam json file')
     parser.add_argument('--dataset', default="./datasets", type=str, help="Path to datasets")
+    parser.add_argument('--device', default="cpu", type=str, help="Device to use")
     parser.add_argument("--seed", default=666, type=int, help="Random Seed")
     args = parser.parse_args()
 
     logging.basicConfig(filename='app.log', filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
     hparams = json.load(open(args.hyperparam, "r"))
-    device = torch.device("gpu")
+    device = torch.device(args.device)
 
     for lr in hparams['lr']:
         for wd in hparams['wd']:

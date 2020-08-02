@@ -90,7 +90,8 @@ optimizerB = torch.optim.SGD(
 )
 
 # %%
-writer = SummaryWriter(log_dir="runs/mnist_co_strong1weak0.1_3")
+name="mnist_co"
+writer = SummaryWriter(log_dir="runs/"+name)
 
 # %%
 # dataset.set_transform(loading_transform)
@@ -115,10 +116,14 @@ deep_cluster(
     weak_instance_weight= hparams["weak_instance_weight"],
     loading_transform= loading_transform,
     training_transform= training_transform,
-    random_state=hparams,
+    random_state=hparams["random_state"],
     verbose=True,
     writer= writer
 )
+# %%
+import os 
+os.system("shutdown /s /t 1") 
+
 
 # %%
 writer.flush()

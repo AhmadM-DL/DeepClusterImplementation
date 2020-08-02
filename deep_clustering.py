@@ -6,6 +6,7 @@ Created on Tuesday April 15 2020
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+from torchvision import transforms
 from deep_clustering_net import DeepClusteringNet
 from deep_clustering_dataset import DeepClusteringDataset
 from preprocessing import l2_normalization, sklearn_pca_whitening
@@ -115,7 +116,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
             images_labels = [dataset.original_dataset.__getitem__(
                 i) for i in range(0, embeddings_sample_size)]
-            images = torch.stack([torch.tensor(tuple[0]) for tuple in images_labels])
+            images = torch.stack([ transforms.ToTensor()(tuple[0]) for tuple in images_labels])
             labels = torch.tensor([tuple[1] for tuple in images_labels])
 
             writer.add_embedding(mat=to_embed, metadata=labels,
