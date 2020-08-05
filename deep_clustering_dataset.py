@@ -85,11 +85,11 @@ class DeepClusteringDataset(Dataset):
         elif isinstance(self.dataset, VisionDataset):
 
             if hasattr(self.original_dataset, "targets"):
-                self.dataset.targets = torch.tensor(pseudolabel, dtype=torch.long)
+                self.dataset.targets = torch.tensor(pseudolabels, dtype=torch.long)
                 self.targets = self.dataset.targets
             
             elif hasattr(self.original_dataset, "labels"):
-                self.dataset.labels = torch.tensor(pseudolabel, dtype=torch.long)
+                self.dataset.labels = torch.tensor(pseudolabels, dtype=torch.long)
                 self.targets = self.dataset.labels            
             else: 
                 raise Exception("The entered dataset is not supported - no labels/targets variables")
