@@ -69,7 +69,8 @@ optimizer = torch.optim.SGD(
 )
 
 # %%
-writer = SummaryWriter(log_dir="runs/fashion_mnist")
+name= "fashion_mnist"
+writer = SummaryWriter(log_dir="runs/"+name)
 
 # %%
 
@@ -82,6 +83,7 @@ deep_cluster(
     n_cycles= 20,
     loading_transform= loading_transform,
     training_transform= training_transform,
+    checkpoints= "checkpoints/"+name,
     random_state=0,
     verbose=True,
     writer= writer

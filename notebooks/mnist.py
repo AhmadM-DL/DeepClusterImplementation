@@ -73,6 +73,7 @@ for i in range(0,10):
     random_state= 0,
     verbose=1,
     checkpoints="checkpoints/"+name,
+    checkpoints_interval= 1,
     writer=writer)
 
 

@@ -25,8 +25,8 @@ hparams= {
     "weight_decay": 0.00001,
     "n_clusters": 10,
     "n_cycles": 20,
-    "strong_instance_weight":2,
-    "weak_instance_weight":0.01,
+    "strong_instance_weight":1.2,
+    "weak_instance_weight":0.001,
     "random_state":0,
     "batch_norm":True,
 }
@@ -90,7 +90,7 @@ optimizerB = torch.optim.SGD(
 )
 
 # %%
-name="mnist_co_s2_w0.01"
+name="mnist_co_s1.2_w0.001"
 writer = SummaryWriter(log_dir="runs/"+name)
 
 # %%

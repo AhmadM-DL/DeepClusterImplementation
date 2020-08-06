@@ -12,3 +12,4 @@ notebooks/runs/*
 dataset/*
 notebooks/checkpoints/*
 notebooks/runs_space/*
+.vscode/*
