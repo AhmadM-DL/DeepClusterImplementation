@@ -92,7 +92,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             param_ids = [ id(p) for p in optimizer.param_groups[0]["params"]]
             remove_ids = [ id for id in state_ids if id not in param_ids]
             for param_id in remove_ids:
-                param_index = state_ids.index(id)
+                param_index = state_ids.index(param_id)
                 key = list(optimizer.state.keys())[param_index]
                 del optimizer.state[key] 
             
