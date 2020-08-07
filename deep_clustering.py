@@ -88,10 +88,13 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         if len(optimizer.param_groups) > 1:
             del optimizer.param_groups[1]
             # The following is due a bug in PyTorch implementation
-            # state_ids= [id(k) for k,v in optimizer.state.items()]
-            # param_ids = [ id(p) for p in optimizer.param_groups[0]["params"]]
-            # [ id for id in state_ids if id not in param_ids]
-            # del 
+            state_ids= [id(k) for k,v in optimizer.state.items()]
+            param_ids = [ id(p) for p in optimizer.param_groups[0]["params"]]
+            remove_ids = [ id for id in state_ids if id not in param_ids]
+            for param_id in remove_ids:
+                param_index = state_ids.index(id)
+                key = list(optimizer.state.keys())[param_index]
+                del optimizer.state[key] 
             
             if verbose:
                 print(" - Remove Top_layer Params from Optimizer")
