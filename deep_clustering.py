@@ -90,10 +90,9 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             # The following is due a bug in PyTorch implementation
             state_ids= [id(k) for k,v in optimizer.state.items()]
             param_ids = [ id(p) for p in optimizer.param_groups[0]["params"]]
-            remove_ids = [ id for id in state_ids if id not in param_ids]
-            for param_id in remove_ids:
-                param_index = state_ids.index(param_id)
-                key = list(optimizer.state.keys())[param_index]
+            remove_ids = [ param_id for param_id in state_ids if param_id not in param_ids]
+            remove_keys = [ list(optimizer.state.keys())[state_ids.index(param_id)] for param_id in remove_ids]
+            for key in remove_keys:
                 del optimizer.state[key] 
             
             if verbose:
