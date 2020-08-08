@@ -68,7 +68,7 @@ class LinearProbe(nn.Module):
     def forward(self, x):
         x = self.model.extract_features(x, self.target_layer, flatten=False)
         if self.avg_pool:
-            x = self.av_pool(x)
+            x = self.avg_pool(x)
         x = x.view(x.size(0), x.size(1) * x.size(2) * x.size(3))
         return self.linear(x)
 
