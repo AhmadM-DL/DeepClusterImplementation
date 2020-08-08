@@ -64,6 +64,7 @@ class LinearProbe(nn.Module):
         self.linear = nn.Linear(features_size, num_labels)
         self.device = model.device
         self.target_layer = target_layer
+        self.to(self.device)
 
     def forward(self, x):
         x = self.model.extract_features(x, self.target_layer, flatten=False)
