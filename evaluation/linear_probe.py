@@ -201,16 +201,16 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     for epoch in range(0, n_epochs):
         t_loss, t_acc1, t_acc2 = linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose)
         if writer:
-            writer.add_scalar("linear_probe_train/loss", t_loss, global_step=epoch)
-            writer.add_scalar("linear_probe_train/acc1", t_acc1, global_step=epoch)
-            writer.add_scalar("linear_probe_train/acc2", t_acc2, global_step=epoch)
+            writer.add_scalar("linear_probe_train/%s/loss"%target_layer, t_loss, global_step=epoch)
+            writer.add_scalar("linear_probe_train/%s/acc1"%target_layer, t_acc1, global_step=epoch)
+            writer.add_scalar("linear_probe_train/%s/acc2"%target_layer, t_acc2, global_step=epoch)
 
         if validdataset:
             v_loss, v_acc1, v_acc2 = linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
             if writer:
-                writer.add_scalar("linear_probe_valid/loss", v_loss, global_step=epoch)
-                writer.add_scalar("linear_probe_valid/acc1", v_acc1, global_step=epoch)
-                writer.add_scalar("linear_probe_valid/acc2", v_acc2, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/loss"%target_layer, v_loss, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/acc1"%target_layer, v_acc1, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/acc2"%target_layer, v_acc2, global_step=epoch)
 
     # unfreeze model wights
     model.unfreeze_classifier()
