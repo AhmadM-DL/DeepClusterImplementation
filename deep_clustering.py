@@ -147,8 +147,13 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # cluster
         if verbose:
             print(" - Clustering")
+        
+        # Change random state at each k-means so that the randomly picked
+        # initialization centroids do not correspond to the same feature ids
+        # from an epoch to another.
+        
         assignments = sklearn_kmeans(
-            features, n_clusters=n_clusters, random_state=random_state, verbose=verbose-1)
+            features, n_clusters=n_clusters, random_state=np.random.randint(1234), verbose=verbose-1)
 
         if writer:
             # write NMI between consecutive pseudolabels
