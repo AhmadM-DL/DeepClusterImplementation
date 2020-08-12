@@ -213,11 +213,11 @@ class DeepClusteringNet(torch.nn.Module):
 
         for i, (input_, _) in enumerate(dataloader):
 
+            batch_size = input_.shape[0]
             input_ = input_.to(self.device)
             output = self(input_).data.cpu().numpy()
 
             if i == 0:
-                batch_size = input_.shape[0]
                 outputs = np.zeros(
                     shape=(len(dataloader.dataset), output.shape[1]), dtype=np.float32)
 
