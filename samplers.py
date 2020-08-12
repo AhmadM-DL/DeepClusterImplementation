@@ -14,9 +14,16 @@ class UnifAverageLabelSampler(torch.utils.data.Sampler):
         self.shuffle = shuffle
         self.indexes = self._generate_indexes_epoch()
 
+    # ToDo : re_implement size constraints
     def _generate_indexes_epoch(self):
+
         grouped_indices = self.dataset.group_indices_by_labels()
 
+        # nmb_non_empty_clusters = 0
+        # for i in range(len(self.images_lists)):
+        #     if len(self.images_lists[i]) != 0:
+        #         nmb_non_empty_clusters += 1
+                
         target_sizes = [len(target_group) for target_group in grouped_indices]
         avg_target_size = int(np.average(target_sizes)) + 1
         n = int(self.dataset_multiplier * avg_target_size * len(grouped_indices))
@@ -33,6 +40,11 @@ class UnifAverageLabelSampler(torch.utils.data.Sampler):
 
         if self.shuffle:
             np.random.shuffle(res)
+
+        # res = list(res.astype('int'))
+        # if len(res) >= self.N:
+        #     return res[:self.N]
+        # res += res[: (self.N - len(res))]
 
         return res.astype('int')
 

@@ -169,6 +169,10 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             print(" - Reassign pseudo_labels")
         dataset.set_pseudolabels(assignments)
 
+        # set training transform else consider dataset transform
+        if training_transform:
+            dataset.set_transform(training_transform)
+
         if writer:
            # write original labels entropy distribution in pseudoclasses
             pseudoclasses = dataset.group_indices_by_labels()
@@ -188,10 +192,6 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                           shuffle=kwargs.get(
                                               "training_shuffle", True),
                                           )
-
-        # set training transform else consider dataset transform
-        if training_transform:
-            dataset.set_transform(training_transform)
 
         # initialize training data loader
         train_dataloader = torch.utils.data.DataLoader(
