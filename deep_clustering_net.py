@@ -88,7 +88,7 @@ class DeepClusteringNet(torch.nn.Module):
         linear_layer = torch.nn.Linear(model_output_size, output_size)
         linear_layer.weight.data.normal_(0, 0.01)
         linear_layer.bias.data.zero_()
-        self.top_layer = torch.nn.Sequential([torch.nn.ReLU,linear_layer])
+        self.top_layer = torch.nn.Sequential(torch.nn.ReLU,linear_layer)
         self.top_layer.to(self.device)
     
     def remove_top_layer(self):
