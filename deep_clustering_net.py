@@ -85,10 +85,14 @@ class DeepClusteringNet(torch.nn.Module):
     def add_top_layer(self, output_size):
         # get model output size
         model_output_size = self.output_size(self.input_size)[0]
-        self.top_layer = torch.nn.Linear(model_output_size, output_size)
-        self.top_layer.weight.data.normal_(0, 0.01)
-        self.top_layer.bias.data.zero_()
+        linear_layer = torch.nn.Linear(model_output_size, output_size)
+        linear_layer.weight.data.normal_(0, 0.01)
+        linear_layer.bias.data.zero_()
+        self.top_layer = torch.nn.Sequential([torch.nn.ReLU,linear_layer])
         self.top_layer.to(self.device)
+    
+    def remove_top_layer(self):
+        self.top_layer == None
 
     def freeze_features(self):
         for param in self.features.parameters():
