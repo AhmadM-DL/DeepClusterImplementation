@@ -179,6 +179,7 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
 
     # define logistic regression on top of target layer
     reglog = LogisticRegression(features_size, n_labels, avg_pool)
+    reglog.to(model.device)
     
     # define optimizer
     optimizer = torch.optim.SGD(
