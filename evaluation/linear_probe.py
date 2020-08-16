@@ -143,8 +143,8 @@ def validate(reglog, model:DeepClusteringNet, target_layer,validloader, loss_fn,
         loss = loss_fn(output_central, target)
 
         losses.append(loss.item())
-        accuracies_1.append(acc1[0])
-        accuracies_5.append(acc5[0])
+        accuracies_1.append(acc1.item())
+        accuracies_5.append(acc5.item())
 
         if verbose and i % 100 == 0:
             print('Validation: [{0}/{1}]\t'
