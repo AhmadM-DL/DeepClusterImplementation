@@ -190,7 +190,7 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     )
 
     for epoch in range(0, n_epochs):
-        t_loss, t_acc1, t_acc2 = train(reglog, model, target_layer, epoch, traindataloader, optimizer, loss_fn, model.device, verbose=verbose)
+        t_loss, t_acc1, t_acc2 = train(reglog, model, target_layer, epoch, traindataloader, optimizer, loss_fn, model.device, verbose=verbose, lr_decay=kwargs.get("lr_decay", True))
         if writer:
             writer.add_scalar("linear_probe_train/%s/loss"%target_layer, t_loss, global_step=epoch)
             writer.add_scalar("linear_probe_train/%s/acc1"%target_layer, t_acc1, global_step=epoch)
