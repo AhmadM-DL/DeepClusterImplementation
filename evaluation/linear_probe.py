@@ -90,8 +90,8 @@ def train(reglog, model:DeepClusteringNet, target_layer, epoch, trainloader, opt
         acc1, acc5 = accuracy(output.data, target, topk=(1, 5))
 
         losses.append(loss.item())
-        accuracies_1.append(acc1[0])
-        accuracies_5.append(acc5[0])
+        accuracies_1.append(acc1.item())
+        accuracies_5.append(acc5.item())
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
