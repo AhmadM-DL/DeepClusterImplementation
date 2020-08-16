@@ -38,132 +38,122 @@ def accuracy(output, target, topk=(1,)):
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
-def accuracy_top_1(output, target):
-    batch_size = target.size(0)
-    return
-
-
-
-class LinearProbe(nn.Module):
+class LogisticRegression(nn.Module):
     """Creates logistic regression on top of frozen features"""
 
-    def __init__(self, model: DeepClusteringNet, features_size, num_labels, avg_pool, target_layer):
+    def __init__(self, features_size, num_labels, avg_pool):
         """ The init function of the logistic Regression Module
 
         Args:
             num_labels (int): Number of labels that the model is supposed to be trained on
             downsample (tuple): A tuple contianing the downsample args [kernel_size, stride, padding, downsample output size]
         """
-        super(LinearProbe, self).__init__()
-        self.model = model
+        super(LogisticRegression, self).__init__()
         if avg_pool:
             self.avg_pool = nn.AvgPool2d(
                 kernel_size=avg_pool["kernel_size"], stride=avg_pool["stride"], padding=avg_pool["padding"])
         else:
             self.avg_pool = None
         self.linear = nn.Linear(features_size, num_labels)
-        self.device = model.device
-        self.target_layer = target_layer
-        self.to(self.device)
 
     def forward(self, x):
-        x = self.model.extract_features(x, self.target_layer, flatten=False)
         if self.avg_pool:
             x = self.avg_pool(x)
         x = x.view(x.size(0), x.size(1) * x.size(2) * x.size(3))
         return self.linear(x)
 
-    def train_(self, epoch, trainloader, optimizer, loss_fn, verbose=True, lr_decay=False):
+def train(reglog, model:DeepClusteringNet, target_layer, epoch, trainloader, optimizer, loss_fn, device, verbose=True, lr_decay=False):
 
-        self.train()
-        self.model.eval()
-        losses = []
-        accuracies_1 = []
-        accuracies_5 = []
+    model.eval()
 
-        for i, (input_, target) in enumerate(trainloader):
+    losses = []
+    accuracies_1 = []
+    accuracies_5 = []
 
-            # adjust learning rate
-            if lr_decay:
-                learning_rate_decay(optimizer, len(trainloader)
-                                * epoch + i, optimizer.defaults["lr"])
+    for i, (input_, target) in enumerate(trainloader):
 
-            input_ = input_.to(self.device)
+        # adjust learning rate
+        if lr_decay:
+            learning_rate_decay(optimizer, len(trainloader)
+                            * epoch + i, optimizer.defaults["lr"])
 
-            target = target.to(self.device)
-            output = self(input_)
+        input_ = input_.to(device)
+        target = target.to(device)
 
-            # compute output
-            loss = loss_fn(output, target)
+        output = model.extract_features(input_, target_layer, flatten=False)
+        output = reglog(output)
 
-            # measure accuracy and record loss
-            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+        # compute output
+        loss = loss_fn(output, target)
 
-            losses.append(loss.item())
-            accuracies_1.append(acc1.item())
-            accuracies_5.append(acc5.item())
+        # measure accuracy and record loss
+        acc1, acc5 = accuracy(output.data, target, topk=(1, 5))
 
-            # compute gradient and do SGD step
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        losses.append(loss.item())
+        accuracies_1.append(acc1[0])
+        accuracies_5.append(acc5[0])
 
-            if verbose and i % 100 == 0:
-                print('Epoch: [{0}][{1}/{2}]\t'
-                      'Loss {loss:.4f} \t'
-                      'ACC1 {acc1:.3f}\t'
-                      'ACC5 {acc5:.3f}'
-                      .format(epoch, i, len(trainloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
+        # compute gradient and do SGD step
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-        return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
+        if verbose and i % 100 == 0:
+            print('Epoch: [{0}][{1}/{2}]\t'
+                    'Loss {loss:.4f} \t'
+                    'ACC1 {acc1:.3f}\t'
+                    'ACC5 {acc5:.3f}'
+                    .format(epoch, i, len(trainloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
 
-    def validate(self, validloader, loss_fn, verbose=True, tencrops=False):
+    return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
 
-        # switch to evaluate mode
-        self.model.eval()
-        self.eval()
+def validate(reglog, model:DeepClusteringNet, target_layer,validloader, loss_fn, device, verbose=True, tencrops=False):
 
-        losses = []
-        accuracies_1 = []
-        accuracies_5 = []
+    # switch to evaluate mode
+    model.eval()
 
-        softmax = nn.Softmax(dim=1).to(self.device)
+    losses = []
+    accuracies_1 = []
+    accuracies_5 = []
 
-        for i, (input_, target) in enumerate(validloader):
+    softmax = nn.Softmax(dim=1).to(device)
 
-            if tencrops:
-                batch_size, n_crops, channel, hight, width = input_.size()
-                input_ = input_.view(-1, channel, hight, width)
+    for i, (input_, target) in enumerate(validloader):
 
-            target = target.to(self.device)
-            input_ = input_.to(self.device)
+        if tencrops:
+            batch_size, n_crops, channel, hight, width = input_.size()
+            input_ = input_.view(-1, channel, hight, width)
 
-            output = self(input_)
+        target = target.to(device)
+        input_ = input_.to(device)
 
-            if tencrops:
-                output_central = output.view(
-                    batch_size, n_crops, -1)[:, n_crops / 2 - 1, :]
-                output = softmax(output)
-                output = torch.squeeze(output.view(
-                    batch_size, n_crops, -1).mean(1))
-            else:
-                output_central = output
+        output = reglog( model.extract_features(input_, target_layer, flatten=False) )
 
-            loss = loss_fn(output_central, target)
-            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+        if tencrops:
+            output_central = output.view(
+                batch_size, n_crops, -1)[:, n_crops / 2 - 1, :]
+            output = softmax(output)
+            output = torch.squeeze(output.view(
+                batch_size, n_crops, -1).mean(1))
+        else:
+            output_central = output
 
-            losses.append(loss.item())
-            accuracies_1.append(acc1.item())
-            accuracies_5.append(acc5.item())
+        acc1, acc5 = accuracy(output.data, target, topk=(1, 5))
 
-            if verbose and i % 100 == 0:
-                print('Validation: [{0}/{1}]\t'
-                      'Loss {loss:.4f} \t'
-                      'ACC1 {acc1:.3f}\t'
-                      'ACC5 {acc5:.3f}'
-                      .format(i, len(validloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
-        
-        return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
+        loss = loss_fn(output_central, target)
+
+        losses.append(loss.item())
+        accuracies_1.append(acc1[0])
+        accuracies_5.append(acc5[0])
+
+        if verbose and i % 100 == 0:
+            print('Validation: [{0}/{1}]\t'
+                    'Loss {loss:.4f} \t'
+                    'ACC1 {acc1:.3f}\t'
+                    'ACC5 {acc5:.3f}'
+                    .format(i, len(validloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
+    
+    return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
 
 def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
                 target_layer, n_labels, features_size, avg_pool=None,
@@ -182,31 +172,31 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     
     if validdataset:
         validdataloader = DataLoader(
-        dataset=validdataset, batch_size=kwargs.get("batch_size", 256), shuffle= kwargs.get("shuffle_valid", True))
+        dataset=validdataset, batch_size=int(kwargs.get("batch_size", 256)/2), shuffle= kwargs.get("shuffle_valid", False))
 
     # define loss_fn
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss().to(model.device)
 
     # define logistic regression on top of target layer
-    linear_probe = LinearProbe(model, features_size, n_labels, avg_pool, target_layer)
+    reglog = LogisticRegression(features_size, n_labels, avg_pool)
     
     # define optimizer
     optimizer = torch.optim.SGD(
-        filter(lambda x: x.requires_grad, linear_probe.parameters()),
+        filter(lambda x: x.requires_grad, reglog.parameters()),
         lr = kwargs.get("learning_rate", 0.01),
         momentum= kwargs.get("momentum", 0.9),
         weight_decay= kwargs.get("wight_decay", 10**(-4))
     )
 
     for epoch in range(0, n_epochs):
-        t_loss, t_acc1, t_acc2 = linear_probe.train_(epoch, traindataloader, optimizer, loss_fn, verbose=verbose)
+        t_loss, t_acc1, t_acc2 = train(reglog, model, target_layer, epoch, traindataloader, optimizer, loss_fn, model.device, verbose=verbose)
         if writer:
             writer.add_scalar("linear_probe_train/%s/loss"%target_layer, t_loss, global_step=epoch)
             writer.add_scalar("linear_probe_train/%s/acc1"%target_layer, t_acc1, global_step=epoch)
             writer.add_scalar("linear_probe_train/%s/acc2"%target_layer, t_acc2, global_step=epoch)
 
         if validdataset:
-            v_loss, v_acc1, v_acc2 = linear_probe.validate(validdataloader , loss_fn, verbose=verbose)
+            v_loss, v_acc1, v_acc2 = validate(reglog, model, target_layer, validdataloader , loss_fn, model.device, verbose=verbose)
             if writer:
                 writer.add_scalar("linear_probe_valid/%s/loss"%target_layer, v_loss, global_step=epoch)
                 writer.add_scalar("linear_probe_valid/%s/acc1"%target_layer, v_acc1, global_step=epoch)
