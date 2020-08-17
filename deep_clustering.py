@@ -98,10 +98,17 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             if verbose:
                 print(" - Remove Top_layer Params from Optimizer")
 
-        if checkpoints and cycle % kwargs.get("checkpoints_interval", 10) == 0:
-            # save model
+        intermediate_checkpoint = kwargs.get("checkpoints_interval", 0)
+        if checkpoints :
+            # save last model
             model.save_model_parameters(
-                os.path.join(checkpoints, "model_%d.pth" % cycle), optimizer=optimizer, epoch=cycle)
+                os.path.join(checkpoints, "last_model.pth"), optimizer=optimizer, epoch=cycle)
+
+            if intermediate_checkpoint:
+                if cycle % intermediate_checkpoint == 0:
+                    # save intermediate model
+                    model.save_model_parameters(
+                        os.path.join(checkpoints, "model_%d.pth" % cycle), optimizer=optimizer, epoch=cycle)
 
         # Set Loading Transform else consider the dataset transform
         if loading_transform:
