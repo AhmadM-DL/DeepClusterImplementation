@@ -103,7 +103,7 @@ def train(reglog, model:DeepClusteringNet, target_layer, epoch, trainloader, opt
                     'Loss {loss:.4f} \t'
                     'ACC1 {acc1:.3f}\t'
                     'ACC5 {acc5:.3f}'
-                    .format(epoch, i, len(trainloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
+                    .format(epoch, i, len(trainloader), loss=np.average(losses), acc1=np.average(accuracies_1), acc5=np.average(accuracies_5)))
 
     return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
 
@@ -151,7 +151,7 @@ def validate(reglog, model:DeepClusteringNet, target_layer,validloader, loss_fn,
                     'Loss {loss:.4f} \t'
                     'ACC1 {acc1:.3f}\t'
                     'ACC5 {acc5:.3f}'
-                    .format(i, len(validloader), loss=loss.item(), acc1=acc1.item(), acc5=acc5.item()))
+                    .format(i, len(validloader), loss=np.average(losses), acc1=np.average(accuracies_1), acc5=np.average(accuracies_5)))
     
     return np.average(losses), np.average(accuracies_1), np.average(accuracies_5)
 
