@@ -37,14 +37,15 @@ def sklearn_kmeans(npdata, n_clusters, random_state=None, verbose=False, fit_par
                     random_state=None)
     
     if fit_partial:
-        random_indices = np.random.choice(range(0,len(npdata)), replace=False)
+        sample_size = int(fit_partial*len(npdata)/100)
+        random_indices = np.random.choice(range(0,len(npdata)), size=sample_size,  replace=False)
         random_sample = npdata[random_indices]
         Kmeans.fit(random_sample)
         return Kmeans.predict(npdata)
     else:
         Kmeans.fit_predict(npdata)
         return Kmeans.labels_
-        
+
 # def pil_loader(path):
 #     """Loads an image.
 #     Args:
