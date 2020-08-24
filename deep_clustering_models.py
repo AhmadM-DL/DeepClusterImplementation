@@ -38,14 +38,14 @@ def AlexNet_Micro(sobel, batch_normalization, device):
                 {
                 "type":"max_pool",
                 "kernel_size":2,
-                #"stride":2,
+                "stride":1,
                 },
 
                 {
                 "type": "convolution",
                 "out_channels":192,
                 "kernel_size":3,
-                #"stride":2,
+                "stride":1,
                 "padding":2,
                 "activation":"ReLU",
                 },
@@ -53,14 +53,14 @@ def AlexNet_Micro(sobel, batch_normalization, device):
                 {
                 "type":"max_pool",
                 "kernel_size":2,
-                #"stride":2,
+                "stride":1,
                 },
 
                 {
                 "type": "convolution",
                 "out_channels":384,
                 "kernel_size":3,
-                #"stride":1,
+                "stride":1,
                 "padding":1,
                 "activation":"ReLU",
                 },
@@ -69,7 +69,7 @@ def AlexNet_Micro(sobel, batch_normalization, device):
                 "type": "convolution",
                 "out_channels":256,
                 "kernel_size":3,
-                #"stride":1,
+                "stride":1,
                 "padding":1,
                 "activation":"ReLU",
                 },
@@ -78,7 +78,7 @@ def AlexNet_Micro(sobel, batch_normalization, device):
                 "type": "convolution",
                 "out_channels":256,
                 "kernel_size":3,
-                #"stride":1,
+                "stride":1,
                 "padding":1,
                 "activation":"ReLU",
                 },
