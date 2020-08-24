@@ -177,7 +177,7 @@ def parse_max_pool(in_channels, cfg):
     """
     if cfg.get("kernel_size", None) == None:
         raise Exception("Layers_Generator_CFG_Error", "Max Pool should include kernel_size attribute")
-    if cfg.get("stride", None) == None:
+    if cfg.get("stride", "not_defined") == "not_defined":
         raise Exception("Layers_Generator_CFG_Error", "Max Pool should include stride attribute")
 
     return torch.nn.MaxPool2d(kernel_size=cfg["kernel_size"], stride=cfg["stride"])
