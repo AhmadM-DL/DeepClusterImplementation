@@ -21,6 +21,97 @@ from sklearn.metrics import normalized_mutual_info_score
 
 from  layers_stacker import stack_convolutional_layers, stack_linear_layers
 
+def AlexNet_Micro(sobel, batch_normalization, device):
+    
+    n_input_channels = 2 + int(not sobel)
+
+    alexnet_features_cfg = [
+                {
+                "type": "convolution",
+                "out_channels":64,
+                "kernel_size":3,
+                "stride":1,
+                "padding":2,
+                "activation":"ReLU",
+                },
+
+                {
+                "type":"max_pool",
+                "kernel_size":2,
+                #"stride":2,
+                },
+
+                {
+                "type": "convolution",
+                "out_channels":192,
+                "kernel_size":3,
+                #"stride":2,
+                "padding":2,
+                "activation":"ReLU",
+                },
+
+                {
+                "type":"max_pool",
+                "kernel_size":2,
+                #"stride":2,
+                },
+
+                {
+                "type": "convolution",
+                "out_channels":384,
+                "kernel_size":3,
+                #"stride":1,
+                "padding":1,
+                "activation":"ReLU",
+                },
+
+                {
+                "type": "convolution",
+                "out_channels":256,
+                "kernel_size":3,
+                #"stride":1,
+                "padding":1,
+                "activation":"ReLU",
+                },
+
+                {
+                "type": "convolution",
+                "out_channels":256,
+                "kernel_size":3,
+                #"stride":1,
+                "padding":1,
+                "activation":"ReLU",
+                },
+                {
+                "type":"max_pool",
+                "kernel_size":3,
+                "stride":2,
+                }         
+                ]
+
+    classifier_cfg = [
+                      {"type":"drop_out",
+                       "drop_ratio": 0.6},
+
+                      {"type":"linear",
+                       "out_features":2048,
+                       "activation":"ReLU"},
+
+                      {"type":"drop_out",
+                       "drop_ratio": 0.6},
+
+                      {"type":"linear",
+                      "out_features":2048}
+        ]
+
+    model = DeepClusteringNet(input_size=(3,224,224),
+                              features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
+                              classifier= stack_linear_layers(input_features= 256 * 4 * 4, cfg= classifier_cfg),
+                              top_layer = None,
+                              with_sobel=sobel,
+                              device=device)
+    return model
+
 def AlexNet_Small(sobel, batch_normalization, device):
     """Implementation of AlexNet for CIFAR dataset
 
