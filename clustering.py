@@ -29,17 +29,22 @@ def sklearn_GMM(npdata, n_components, random_state=0, verbose=False, **kwargs):
 
     return labels
 
-def sklearn_kmeans(npdata, n_clusters, random_state=0, verbose=False, **kwargs):
+def sklearn_kmeans(npdata, n_clusters, random_state=None, verbose=False, fit_partial=None , **kwargs):
     Kmeans = KMeans(n_clusters = n_clusters,
                     max_iter=kwargs.get("max_iter", 20),
                     n_init=kwargs.get("n_init", 1),
                     verbose=verbose,
-                    random_state=random_state)
-
-    Kmeans.fit_predict(npdata)
-
-    return Kmeans.labels_
-
+                    random_state=None)
+    
+    if fit_partial:
+        random_indices = np.random.choice(range(0,len(npdata)), replace=False)
+        random_sample = npdata[random_indices]
+        Kmeans.fit(random_sample)
+        return Kmeans.predict(npdata)
+    else:
+        Kmeans.fit_predict(npdata)
+        return Kmeans.labels_
+        
 # def pil_loader(path):
 #     """Loads an image.
 #     Args:
