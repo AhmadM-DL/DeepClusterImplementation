@@ -158,9 +158,12 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # Change random state at each k-means so that the randomly picked
         # initialization centroids do not correspond to the same feature ids
         # from an epoch to another.
-        
+        partial_fit = kwargs.get("partial_fit", None)
         assignments = sklearn_kmeans(
-            features, n_clusters=n_clusters, random_state=np.random.randint(1234), verbose=verbose-1)
+            features, n_clusters=n_clusters,
+            random_state=np.random.randint(1234),
+            verbose=verbose-1,
+            fit_partial=partial_fit)
 
         if writer:
             # write NMI between consecutive pseudolabels
