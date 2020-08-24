@@ -38,7 +38,7 @@ def AlexNet_Micro(sobel, batch_normalization, device):
                 {
                 "type":"max_pool",
                 "kernel_size":2,
-                "stride":1,
+                "stride":None,
                 },
 
                 {
@@ -53,7 +53,7 @@ def AlexNet_Micro(sobel, batch_normalization, device):
                 {
                 "type":"max_pool",
                 "kernel_size":2,
-                "stride":1,
+                "stride":None,
                 },
 
                 {
