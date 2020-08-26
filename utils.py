@@ -10,6 +10,9 @@ from torch.utils.data import DataLoader
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 
+from sklearn.metrics import normalized_mutual_info_score as NMI
+
+
 from torch.utils.tensorboard import SummaryWriter
 from scipy.stats import entropy
 import matplotlib.pyplot as plt
@@ -92,8 +95,19 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
     plt.ylabel(" Cluster Entropy")
     plt.legend()
 
-    writer.add_figure(clustering_algorithm+"/Space Quality Stat.", avg_entropies_vs_k, global_step=0)
+    writer.add_figure(clustering_algorithm+"/Space Quality Entropy", avg_entropies_vs_k, global_step=0)
 
+    k_nmis = [ NMI(assignments, dataset.get_targets()) for assignments in k_assignments ]
+
+    nmis_vs_k = plt.figure()
+
+    plt.plot(k_list, k_nmis)
+    plt.title("Space Quality")
+    plt.xlabel("Number of clusters")
+    plt.ylabel("Predicted/GroundTruth NMI")
+    plt.legend()
+
+    writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
 
 def group_by_index(labels):
     n_labels = len(np.unique(labels))
