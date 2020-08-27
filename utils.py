@@ -33,7 +33,7 @@ def set_seed(seed):
 
 def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
                  k_list: list, writer:SummaryWriter,
-                 verbose=True, random_state=0,**kwargs):
+                 verbose=True, random_state=None,**kwargs):
 
     # clustering algorithm:
     clustering_algorithm = kwargs.get("clustering_algorithm", "kmeans")
