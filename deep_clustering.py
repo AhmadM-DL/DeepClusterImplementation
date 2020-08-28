@@ -64,8 +64,9 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
     loss_fn.to(model.device)
 
-    if not os.path.isdir(checkpoints):
-        os.makedirs(checkpoints)
+    if checkpoints:
+        if not os.path.isdir(checkpoints):
+            os.makedirs(checkpoints)
 
     if resume:
         # if resume exist load model from
@@ -158,12 +159,11 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # Change random state at each k-means so that the randomly picked
         # initialization centroids do not correspond to the same feature ids
         # from an epoch to another.
-        partial_fit = kwargs.get("partial_fit", None)
         assignments = sklearn_kmeans(
             features, n_clusters=n_clusters,
             random_state=np.random.randint(1234),
             verbose=verbose-1,
-            fit_partial=partial_fit)
+            fit_partial=kwargs.get("partial_fit", None))
 
         if writer:
             # write NMI between consecutive pseudolabels
