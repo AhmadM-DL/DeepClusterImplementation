@@ -1,13 +1,5 @@
 
 import logging
-import argparse
-
-import sys
-import importlib
-
-sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
-sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation\\evaluation")
-
 import torch
 
 from deep_clustering_dataset import DeepClusteringDataset
@@ -34,7 +26,7 @@ hparams= {
     "checkpoints_interval":10,
 }
 
-def main(args):
+def main():
 
     seeds = [100, 31, 45, 60, 18, 56, 120, 152, 321, 132]
     fixed_seed = 41

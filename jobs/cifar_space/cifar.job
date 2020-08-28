@@ -18,6 +18,8 @@ conda activate myenv
 
 ## add my modules
 export PYTHONPATH=$HOME/scratch/DeepClusterImplementation 
+export PYTHONPATH=$PYTHONPATH:$HOME/scratch/DeepClusterImplementation/evaluation
+
 ## execute the python job
 ## nvidia-smi
 
