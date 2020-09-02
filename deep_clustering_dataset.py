@@ -9,6 +9,7 @@ from torchvision.datasets import VisionDataset
 import torch
 import copy
 import numpy as np
+import os
 
 class DeepClusteringDataset(Dataset):
     """ A Datset **Decorator** that adds changing labels to pseudolabels
@@ -104,6 +105,21 @@ class DeepClusteringDataset(Dataset):
     def unset_instance_wise_weights(self):
         self.instance_wise_weights = None
         return
+
+    def save_pseudolabels(self, path , tag):
+
+        if isinstance(self.dataset, ImageFolder):
+            data_to_save = [ (index,pseudolabel.item()) for (index, (path, pseudolabel)) in enumerate(self.imgs)]
+            np.save(os.path.join(path, tag), data_to_save )
+
+        elif isinstance(self.dataset, VisionDataset):
+            
+            data_to_save = [ (index,pseudolabel) for (index, pseudolabel) in enumerate(self.targets)]
+            np.save(os.path.join(path, tag), data_to_save )
+
+        else:
+            raise Exception("The passed original dataset is of unsupported dataset instance")
+
 
     def get_pseudolabels(self):
         if isinstance(self.dataset, ImageFolder):
