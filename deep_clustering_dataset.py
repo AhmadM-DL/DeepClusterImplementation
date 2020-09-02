@@ -108,18 +108,11 @@ class DeepClusteringDataset(Dataset):
 
     def save_pseudolabels(self, path , tag):
 
-        if isinstance(self.dataset, ImageFolder):
-            data_to_save = [ (index,pseudolabel.item()) for (index, (path, pseudolabel)) in enumerate(self.imgs)]
-            np.save(os.path.join(path, str(tag)), data_to_save )
+        if not os.path.isdir(path):
+            os.mkdir(path)
 
-        elif isinstance(self.dataset, VisionDataset):
-            
-            data_to_save = [ (index,pseudolabel) for (index, pseudolabel) in enumerate(self.targets)]
-            np.save(os.path.join(path, str(tag)), data_to_save )
-
-        else:
-            raise Exception("The passed original dataset is of unsupported dataset instance")
-
+        grouped_indices = self.group_indices_by_labels()
+        np.save(os.path.join(path, str(tag)), grouped_indices )
 
     def get_pseudolabels(self):
         if isinstance(self.dataset, ImageFolder):
