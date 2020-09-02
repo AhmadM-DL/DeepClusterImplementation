@@ -110,12 +110,12 @@ class DeepClusteringDataset(Dataset):
 
         if isinstance(self.dataset, ImageFolder):
             data_to_save = [ (index,pseudolabel.item()) for (index, (path, pseudolabel)) in enumerate(self.imgs)]
-            np.save(os.path.join(path, tag), data_to_save )
+            np.save(os.path.join(path, str(tag)), data_to_save )
 
         elif isinstance(self.dataset, VisionDataset):
             
             data_to_save = [ (index,pseudolabel) for (index, pseudolabel) in enumerate(self.targets)]
-            np.save(os.path.join(path, tag), data_to_save )
+            np.save(os.path.join(path, str(tag)), data_to_save )
 
         else:
             raise Exception("The passed original dataset is of unsupported dataset instance")
