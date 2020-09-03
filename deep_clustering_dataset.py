@@ -9,6 +9,7 @@ from torchvision.datasets import VisionDataset
 import torch
 import copy
 import numpy as np
+import os
 
 class DeepClusteringDataset(Dataset):
     """ A Datset **Decorator** that adds changing labels to pseudolabels
@@ -104,6 +105,14 @@ class DeepClusteringDataset(Dataset):
     def unset_instance_wise_weights(self):
         self.instance_wise_weights = None
         return
+
+    def save_pseudolabels(self, path , tag):
+
+        if not os.path.isdir(path):
+            os.mkdir(path)
+
+        grouped_indices = self.group_indices_by_labels()
+        np.save(os.path.join(path, str(tag)), grouped_indices )
 
     def get_pseudolabels(self):
         if isinstance(self.dataset, ImageFolder):
