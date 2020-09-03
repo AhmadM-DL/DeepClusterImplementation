@@ -1,16 +1,10 @@
 */__pycache__/
 new/tests/__pycache__/
 # Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.idea/
-runs/*
-checkpoints/*
-datasets/*
-notebooks/runs/*
-dataset/*
-notebooks/checkpoints/*
-notebooks/runs_space/*
-.vscode/*
-runs_space/*
+__pycache__/ *.py[cod] .pytest_cache/ .idea/ runs/* checkpoints/* datasets/* notebooks/runs/* dataset/* 
+notebooks/checkpoints/* notebooks/runs_space/* .vscode/* runs_space/* 
+jobs/*/runs
+*.out
+jobs/*/datasets
+jobs/*/checkpoints
+__pycache__

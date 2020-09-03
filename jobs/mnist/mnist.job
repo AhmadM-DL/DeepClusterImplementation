@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=mnist
-#SBATCH --partition=gpu
+#SBATCH --partition=msfea-ai
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -21,4 +21,4 @@ export PYTHONPATH=$HOME/scratch/DeepClusterImplementation
 ## execute the python job
 ## nvidia-smi
 
-python3 mnist.py --device "cuda:0"
+python3 mnist.py --device "cuda:0" --hyperparam "/home/amm90/scratch/DeepClusterImplementation/jobs/mnist/hyper.json"
