@@ -105,7 +105,7 @@ def main():
                     verbose=1,
                     writer=writer,
                     partial_fit=partial_fit)
-        times.append((partial_fit, time.time()-end))
+        np.append(times, (partial_fit, time.time()-end))
         np.save(file=writer.log_dir+"/times", arr=times)
 
         cifar_test.transform = loading_transform
