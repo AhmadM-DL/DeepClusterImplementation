@@ -1,6 +1,8 @@
 
 import logging
 import torch
+import time
+import numpy as np
 
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import AlexNet_Small
@@ -30,6 +32,7 @@ def main():
 
     partial_fits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     fixed_seed = 41
+    times= np.array()
 
     for partial_fit in partial_fits:
 
@@ -89,6 +92,7 @@ def main():
 
         dataset.set_transform(loading_transform)
 
+        end = time.time()
         deep_cluster(model=model,
                     dataset=dataset,
                     n_clusters=hparams["n_clusters"],
@@ -101,6 +105,8 @@ def main():
                     verbose=1,
                     writer=writer,
                     partial_fit=partial_fit)
+        times.append((partial_fit, time.time()-end))
+        np.save(file=writer.log_dir+"/times", arr=times)
 
         cifar_test.transform = loading_transform
         cifar.transform = transforms.Compose([transforms.Resize(256),
