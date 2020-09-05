@@ -62,7 +62,7 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
         print(" - Clustering")
 
     if clustering_algorithm=="kmeans":
-        CMs = [ KMeans(n_clusters = k, random_state=random_state, n_init= kwargs.get("n_init", 10) verbose=verbose) for k in k_list ]
+        CMs = [ KMeans(n_clusters = k, random_state=random_state, n_init= kwargs.get("n_init", 10), verbose=verbose) for k in k_list ]
     elif clustering_algorithm== "gmm":
         CMs = [ GaussianMixture(n_components = k, random_state=random_state, verbose=verbose) for k in k_list ]
     else:
