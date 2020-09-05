@@ -32,7 +32,7 @@ def set_seed(seed):
     os.environ['PYTHONHASHSEED'] = str(seed)
 
 def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
-                 k_list: list, writer:SummaryWriter,
+                 k_list: list, writer:SummaryWriter=None,
                  verbose=True, random_state=None,**kwargs):
 
     # clustering algorithm:
@@ -83,9 +83,10 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
     k_max_entropies = [np.max(entropies) for entropies in k_entropies ]
 
 
-    for i,k in enumerate(k_list):
-        writer.add_histogram(clustering_algorithm+"/Space Quality k=%d"%k, np.array(k_entropies[i]), global_step=0)
-    
+    if writer:
+        for i,k in enumerate(k_list):
+            writer.add_histogram(clustering_algorithm+"/Space Quality k=%d"%k, np.array(k_entropies[i]), global_step=0)
+        
     avg_entropies_vs_k = plt.figure()
     plt.plot(k_list, k_avg_entropies,"-*", label="Avg")
     plt.plot(k_list, k_min_entropies,"-+", label="Min")
@@ -95,7 +96,8 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
     plt.ylabel(" Cluster Entropy")
     plt.legend()
 
-    writer.add_figure(clustering_algorithm+"/Space Quality Entropy", avg_entropies_vs_k, global_step=0)
+    if writer:
+        writer.add_figure(clustering_algorithm+"/Space Quality Entropy", avg_entropies_vs_k, global_step=0)
 
     k_nmis = [ NMI(assignments, dataset.get_targets()) for assignments in k_assignments ]
 
@@ -107,7 +109,8 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
     plt.ylabel("Predicted/GroundTruth NMI")
     plt.legend()
 
-    writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
+    if writer:
+        writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
 
     output= np.array([])
     for k in k_list:
