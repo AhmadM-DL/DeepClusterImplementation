@@ -109,7 +109,7 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
         plt.legend()
         writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
 
-    return [ (k, k_entropies[k], k_nmis[k]) for k in k_list]
+    return [ (k, k_entropies[k], k_nmis[k], CMs[k].inertia_) for k in k_list]
 
 def group_by_index(labels):
     n_labels = len(np.unique(labels))
