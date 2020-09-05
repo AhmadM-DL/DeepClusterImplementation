@@ -86,37 +86,30 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
     if writer:
         for i,k in enumerate(k_list):
             writer.add_histogram(clustering_algorithm+"/Space Quality k=%d"%k, np.array(k_entropies[i]), global_step=0)
-        
-    avg_entropies_vs_k = plt.figure()
-    plt.plot(k_list, k_avg_entropies,"-*", label="Avg")
-    plt.plot(k_list, k_min_entropies,"-+", label="Min")
-    plt.plot(k_list, k_max_entropies,"-o", label="Max")
-    plt.title("Space Quality")
-    plt.xlabel("Number of clusters")
-    plt.ylabel(" Cluster Entropy")
-    plt.legend()
 
-    if writer:
+    if writer: 
+        avg_entropies_vs_k = plt.figure()
+        plt.plot(k_list, k_avg_entropies,"-*", label="Avg")
+        plt.plot(k_list, k_min_entropies,"-+", label="Min")
+        plt.plot(k_list, k_max_entropies,"-o", label="Max")
+        plt.title("Space Quality")
+        plt.xlabel("Number of clusters")
+        plt.ylabel(" Cluster Entropy")
+        plt.legend()
         writer.add_figure(clustering_algorithm+"/Space Quality Entropy", avg_entropies_vs_k, global_step=0)
 
     k_nmis = [ NMI(assignments, dataset.get_targets()) for assignments in k_assignments ]
 
-    nmis_vs_k = plt.figure()
-
-    plt.plot(k_list, k_nmis)
-    plt.title("Space Quality")
-    plt.xlabel("Number of clusters")
-    plt.ylabel("Predicted/GroundTruth NMI")
-    plt.legend()
-
     if writer:
+        nmis_vs_k = plt.figure()
+        plt.plot(k_list, k_nmis)
+        plt.title("Space Quality")
+        plt.xlabel("Number of clusters")
+        plt.ylabel("Predicted/GroundTruth NMI")
+        plt.legend()
         writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
 
-    output= np.array([])
-    for k in k_list:
-        np.append(output, (k, k_entropies[k], k_nmis[k]) )
-
-    return output
+    return [ (k, k_entropies[k], k_nmis[k]) for k in k_list]
 
 def group_by_index(labels):
     n_labels = len(np.unique(labels))
