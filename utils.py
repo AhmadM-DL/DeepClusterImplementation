@@ -111,7 +111,7 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
 
     output= np.array([])
     for k in k_list:
-        np.append(output, (k, K_entropies[k], k_nmis[k]) )
+        np.append(output, (k, k_entropies[k], k_nmis[k]) )
 
     return output
 
