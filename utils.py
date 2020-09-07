@@ -32,7 +32,7 @@ def set_seed(seed):
     os.environ['PYTHONHASHSEED'] = str(seed)
 
 def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
-                 k_list: list, writer:SummaryWriter,
+                 k_list: list, writer:SummaryWriter=None,
                  verbose=True, random_state=None,**kwargs):
 
     # clustering algorithm:
@@ -62,9 +62,9 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
         print(" - Clustering")
 
     if clustering_algorithm=="kmeans":
-        CMs = [ KMeans(n_clusters = k, random_state=random_state) for k in k_list ]
+        CMs = [ KMeans(n_clusters = k, random_state=random_state, n_init= kwargs.get("n_init", 10), verbose=verbose) for k in k_list ]
     elif clustering_algorithm== "gmm":
-        CMs = [ GaussianMixture(n_components = k, random_state=random_state) for k in k_list ]
+        CMs = [ GaussianMixture(n_components = k, random_state=random_state, verbose=verbose) for k in k_list ]
     else:
         raise Exception("Error an unsupported clustering algorithm was provided")
 
@@ -83,31 +83,33 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
     k_max_entropies = [np.max(entropies) for entropies in k_entropies ]
 
 
-    for i,k in enumerate(k_list):
-        writer.add_histogram(clustering_algorithm+"/Space Quality k=%d"%k, np.array(k_entropies[i]), global_step=0)
-    
-    avg_entropies_vs_k = plt.figure()
-    plt.plot(k_list, k_avg_entropies,"-*", label="Avg")
-    plt.plot(k_list, k_min_entropies,"-+", label="Min")
-    plt.plot(k_list, k_max_entropies,"-o", label="Max")
-    plt.title("Space Quality")
-    plt.xlabel("Number of clusters")
-    plt.ylabel(" Cluster Entropy")
-    plt.legend()
+    if writer:
+        for i,k in enumerate(k_list):
+            writer.add_histogram(clustering_algorithm+"/Space Quality k=%d"%k, np.array(k_entropies[i]), global_step=0)
 
-    writer.add_figure(clustering_algorithm+"/Space Quality Entropy", avg_entropies_vs_k, global_step=0)
+    if writer: 
+        avg_entropies_vs_k = plt.figure()
+        plt.plot(k_list, k_avg_entropies,"-*", label="Avg")
+        plt.plot(k_list, k_min_entropies,"-+", label="Min")
+        plt.plot(k_list, k_max_entropies,"-o", label="Max")
+        plt.title("Space Quality")
+        plt.xlabel("Number of clusters")
+        plt.ylabel(" Cluster Entropy")
+        plt.legend()
+        writer.add_figure(clustering_algorithm+"/Space Quality Entropy", avg_entropies_vs_k, global_step=0)
 
     k_nmis = [ NMI(assignments, dataset.get_targets()) for assignments in k_assignments ]
 
-    nmis_vs_k = plt.figure()
+    if writer:
+        nmis_vs_k = plt.figure()
+        plt.plot(k_list, k_nmis)
+        plt.title("Space Quality")
+        plt.xlabel("Number of clusters")
+        plt.ylabel("Predicted/GroundTruth NMI")
+        plt.legend()
+        writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
 
-    plt.plot(k_list, k_nmis)
-    plt.title("Space Quality")
-    plt.xlabel("Number of clusters")
-    plt.ylabel("Predicted/GroundTruth NMI")
-    plt.legend()
-
-    writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
+    return [ (k, k_entropies[i], k_nmis[i], CMs[i].inertia_) for i,k in enumerate(k_list)]
 
 def group_by_index(labels):
     n_labels = len(np.unique(labels))

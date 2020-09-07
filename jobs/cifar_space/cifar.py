@@ -1,6 +1,7 @@
 
 import logging
 import torch
+import numpy as np
 
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import AlexNet_Small
@@ -17,7 +18,7 @@ hparams= {
     'momentum': 0.9,
     "weight_decay": 0.00001,
     "n_clusters": 2000,
-    "n_cycles": 20,
+    "n_cycles": 100,
     "random_state":0,
     "pca":256,
     "batch_norm":True,
@@ -28,18 +29,33 @@ hparams= {
 
 def main():
 
-    seeds = [100, 31, 45, 60, 18, 56, 120, 152, 321, 132]
+    seeds = [39, 6, 3, 59, 11, 29, 0, 99, 28, 60]
     fixed_seed = 41
 
-    for i in range(0,10):
+    #logging.info("Loading Dataset")
+    cifar = CIFAR10("./datasets/")
+    cifar_test = CIFAR10("./datasets/", train=False)
 
-        set_seed(seeds[i])
+    device = torch.device("cuda:0")
 
-        #logging.info("Loading Dataset")
-        cifar = CIFAR10("./datasets/")
-        cifar_test = CIFAR10("./datasets/", train=False)
+    #logging.info("Defining Transformations")
+    normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
+                                    std=[0.247, 0.243, 0.261])
+    training_transform = transforms.Compose([
+        transforms.RandomResizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        normalize])
 
-        device = torch.device("cuda:0")
+    loading_transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        normalize])
+
+    for seed in seeds:
+
+        set_seed(seed)
 
         #logging.info("Build Model")
         model = AlexNet_Small(
@@ -59,21 +75,6 @@ def main():
         #logging.info("Decorating Dataset")
         dataset = DeepClusteringDataset(cifar)
 
-        #logging.info("Defining Transformations")
-        normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
-                                        std=[0.247, 0.243, 0.261])
-        training_transform = transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            normalize])
-
-        loading_transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            normalize])
-
         #logging.info("Defining Writer")
         
         writer_file = "cifar10_alexnet_small"+"batchnorm(%d)_" % hparams["batch_norm"] + \
@@ -82,7 +83,7 @@ def main():
         "pca(%d)_" % hparams["pca"] + "sobel(%d)"%hparams["sobel"] +\
         "n_cycles(%d)_" % hparams["n_cycles"]+"rnd(%d)_" % hparams["random_state"] +\
         "t_batch_size(%d)_"% hparams["batch_size"] +\
-        "seed(%d)_"%seeds[i]
+        "seed(%d)_"%seed
         
         writer = SummaryWriter(
             'runs/'+writer_file)
@@ -90,8 +91,8 @@ def main():
         set_seed(fixed_seed)
 
         dataset.set_transform(loading_transform)
-        qualify_space(model, dataset, [500, 1000, 2000, 8000], writer, clustering_algorithm="kmeans")
-
+        space_quality = qualify_space(model, dataset, [ 2000 ], writer, clustering_algorithm="kmeans")
+        np.save(file=writer.log_dir+"/space_quality",arr=space_quality)
 
         deep_cluster(model=model,
                     dataset=dataset,
@@ -129,5 +130,5 @@ def main():
 
 if __name__ == '__main__':
 
-    logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+    #logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
     main()
