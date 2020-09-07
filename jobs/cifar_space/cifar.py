@@ -1,6 +1,7 @@
 
 import logging
 import torch
+import numpy as np
 
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import AlexNet_Small
