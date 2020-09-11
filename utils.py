@@ -11,7 +11,7 @@ from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 
 from sklearn.metrics import normalized_mutual_info_score as NMI
-
+from sklearn.metrics import silhouette_samples
 
 from torch.utils.tensorboard import SummaryWriter
 from scipy.stats import entropy
@@ -109,7 +109,10 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
         plt.legend()
         writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
 
-    return [ (k, k_entropies[i], k_nmis[i], CMs[i].inertia_) for i,k in enumerate(k_list)]
+    k_silhouette_samples = [ silhouette_samples(features, labels) for labels in k_assignments]
+
+
+    return [ (k, k_entropies[i], k_nmis[i], CMs[i].inertia_, k_silhouette_samples[i]) for i,k in enumerate(k_list)]
 
 def group_by_index(labels):
     n_labels = len(np.unique(labels))
