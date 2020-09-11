@@ -199,9 +199,9 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
         if validdataset:
             v_loss, v_acc1, v_acc2 = validate(reglog, model, target_layer, validdataloader , loss_fn, model.device, verbose=verbose)
             if writer:
-            writer.add_scalar("linear_probe_valid/%s/%s/loss"%(tag, target_layer), v_loss, global_step=epoch)
-            writer.add_scalar("linear_probe_valid/%s/%s/acc1"%(tag, target_layer), v_acc1, global_step=epoch)
-            writer.add_scalar("linear_probe_valid/%s/%s/acc2"%(tag, target_layer), v_acc2, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/%s/loss"%(tag, target_layer), v_loss, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/%s/acc1"%(tag, target_layer), v_acc1, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/%s/acc2"%(tag, target_layer), v_acc2, global_step=epoch)
 
     # unfreeze model wights
     model.unfreeze_classifier()
