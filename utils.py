@@ -110,8 +110,7 @@ def qualify_space(model: DeepClusteringNet, dataset: DeepClusteringDataset,
         writer.add_figure(clustering_algorithm+"/Space Quality NMI", nmis_vs_k, global_step=0)
 
     k_silhouette_samples = [ silhouette_samples(features, labels) for labels in k_assignments]
-
-
+    
     return [ (k, k_entropies[i], k_nmis[i], CMs[i].inertia_, k_silhouette_samples[i]) for i,k in enumerate(k_list)]
 
 def group_by_index(labels):

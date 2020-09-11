@@ -179,9 +179,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             print(" - Reassign pseudo_labels")
         dataset.set_pseudolabels(assignments)
 
-
         dataset.save_pseudolabels(writer.get_logdir()+"/clusters", cycle)
-
 
         # set training transform else consider dataset transform
         if training_transform:
