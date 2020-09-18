@@ -159,9 +159,12 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         # Change random state at each k-means so that the randomly picked
         # initialization centroids do not correspond to the same feature ids
         # from an epoch to another.
+        rnd_state = kwargs.get("kmeans_rnd_state", None)
+        if not rnd_state:
+            rnd_state = np.random.randint(1234)
         assignments = sklearn_kmeans(
             features, n_clusters=n_clusters,
-            random_state=np.random.randint(1234),
+            random_state=rnd_state,
             verbose=verbose-1,
             fit_partial=kwargs.get("partial_fit", None))
 
