@@ -56,7 +56,7 @@ def sklearn_kmeans(npdata, n_clusters, random_state=None, verbose=False, fit_par
                     max_iter=kwargs.get("max_iter", 20),
                     n_init=kwargs.get("n_init", 1),
                     verbose=verbose,
-                    random_state=None)
+                    random_state=random_state)
     
     if fit_partial:
         sample_size = int(fit_partial*len(npdata)/100)
