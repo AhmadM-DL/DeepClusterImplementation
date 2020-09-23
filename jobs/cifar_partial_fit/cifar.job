@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #SBATCH --job-name=cifarpartial
-#SBATCH --partition=msfea_ai
+#SBATCH --partition=msfea-ai
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu
 #SBATCH --mem=12000
-#SBATCH --time=3-00:00:00
+#SBATCH --time=2-00:00:00
 
 ## set the environment modules
 module load python/base/miniconda3

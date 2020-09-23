@@ -30,9 +30,10 @@ hparams= {
 
 def main():
 
-    partial_fits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    #partial_fits = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] 
+    partial_fits = [5, 7.5 ]
     fixed_seed = 41
-    times= np.array()
+    times= np.array([])
 
     for partial_fit in partial_fits:
 

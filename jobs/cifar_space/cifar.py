@@ -1,4 +1,3 @@
-
 import logging
 import torch
 import numpy as np
@@ -29,7 +28,8 @@ hparams= {
 
 def main():
 
-    seeds = [39, 6, 3, 59, 11, 29, 0, 99, 28, 60]
+    #seeds = [39, 6, 3, 59, 11, 29, 0, 99, 28, 60]
+    seeds = [3, 59, 11, 29, 0, 99, 28, 60]
     fixed_seed = 41
 
     #logging.info("Loading Dataset")
@@ -80,7 +80,7 @@ def main():
         writer_file = "cifar10_alexnet_small"+"batchnorm(%d)_" % hparams["batch_norm"] + \
         "lr(%f)_"% hparams["lr"]+"momentum(%f)_" % hparams["momentum"]+"wdecay(%f)_" % hparams["weight_decay"]  + \
         "n_clusters(%d)_" % hparams["n_clusters"] + \
-        "pca(%d)_" % hparams["pca"] + "sobel(%d)"%hparams["sobel"] +\
+        "pca(%d)_" % hparams["pca"] + "sobel(%d)_"%hparams["sobel"] +\
         "n_cycles(%d)_" % hparams["n_cycles"]+"rnd(%d)_" % hparams["random_state"] +\
         "t_batch_size(%d)_"% hparams["batch_size"] +\
         "seed(%d)_"%seed
@@ -125,7 +125,8 @@ def main():
         avg_pool= {"kernel_size":2, "stride":2, "padding":0},
         writer= writer
         )
-    
+	
+        cifar.transform=None    
 
 
 if __name__ == '__main__':
