@@ -130,8 +130,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             embeddings_sample_size = kwargs.get("embeddings_sample_size", 500)
             to_embed = features[0:embeddings_sample_size]
 
-            images_labels = [dataset.original_dataset.__getitem__(
-                i) for i in range(0, embeddings_sample_size)]
+            images_labels = [dataset.original_dataset.__getitem__(i) for i in range(0, embeddings_sample_size)]
             images = torch.stack([ transforms.ToTensor()(tuple[0]) for tuple in images_labels])
             labels = torch.tensor([tuple[1] for tuple in images_labels])
 
