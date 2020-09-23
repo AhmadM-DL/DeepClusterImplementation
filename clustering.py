@@ -16,8 +16,9 @@ import torchvision.transforms as transforms
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
+import random
 
-def sklearn_GMM(npdata, n_components, random_state=0, verbose=False, **kwargs):
+def sklearn_GMM(npdata, n_components, random_state=None, verbose=False, **kwargs):
     gmm = GaussianMixture(n_components=n_components,
                          max_iter=kwargs.get("max_iter", 100),
                          n_init=kwargs.get("n_init",1),
@@ -29,12 +30,33 @@ def sklearn_GMM(npdata, n_components, random_state=0, verbose=False, **kwargs):
 
     return labels
 
+def random_clustering(npdata, n_clusters, random_state=None):
+    n_samples_per_cluster = int(len(npdata)/n_clusters)
+    clusters = [[] for i in range(0,n_clusters)]
+    available_samples = set(range(0,len(npdata)))
+   
+    for i in range(0, n_clusters ):
+        clusters[i] = random.sample(population= available_samples, k= n_samples_per_cluster)
+        available_samples = set(available_samples) - set(clusters[i])
+
+    labels = []
+    sample_indices = []
+    for label, cluster in enumerate(clusters):
+        sample_indices.extend(cluster)
+        labels.extend([label]*len(cluster))
+
+    sorting_indices = np.argsort(sample_indices)
+    labels = np.asarray(labels)[sorting_indices]
+
+    return labels
+
+
 def sklearn_kmeans(npdata, n_clusters, random_state=None, verbose=False, fit_partial=None , **kwargs):
     Kmeans = KMeans(n_clusters = n_clusters,
                     max_iter=kwargs.get("max_iter", 20),
                     n_init=kwargs.get("n_init", 1),
                     verbose=verbose,
-                    random_state=None)
+                    random_state=random_state)
     
     if fit_partial:
         sample_size = int(fit_partial*len(npdata)/100)

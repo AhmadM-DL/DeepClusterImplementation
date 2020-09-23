@@ -157,7 +157,7 @@ def validate(reglog, model:DeepClusteringNet, target_layer,validloader, loss_fn,
 
 def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
                 target_layer, n_labels, features_size, avg_pool=None,
-                random_state=0, writer: SummaryWriter=None, verbose=True, **kwargs):
+                random_state=0, writer: SummaryWriter=None, verbose=True, tag="Untitled", **kwargs):
 
     # set random seed
     set_seed(random_state)
@@ -192,16 +192,16 @@ def eval_linear(model: DeepClusteringNet, n_epochs, traindataset, validdataset,
     for epoch in range(0, n_epochs):
         t_loss, t_acc1, t_acc2 = train(reglog, model, target_layer, epoch, traindataloader, optimizer, loss_fn, model.device, verbose=verbose, lr_decay=kwargs.get("lr_decay", True))
         if writer:
-            writer.add_scalar("linear_probe_train/%s/loss"%target_layer, t_loss, global_step=epoch)
-            writer.add_scalar("linear_probe_train/%s/acc1"%target_layer, t_acc1, global_step=epoch)
-            writer.add_scalar("linear_probe_train/%s/acc2"%target_layer, t_acc2, global_step=epoch)
+            writer.add_scalar("linear_probe_train/%s/%s/loss"%(tag, target_layer), t_loss, global_step=epoch)
+            writer.add_scalar("linear_probe_train/%s/%s/acc1"%(tag, target_layer), t_acc1, global_step=epoch)
+            writer.add_scalar("linear_probe_train/%s/%s/acc2"%(tag, target_layer), t_acc2, global_step=epoch)
 
         if validdataset:
             v_loss, v_acc1, v_acc2 = validate(reglog, model, target_layer, validdataloader , loss_fn, model.device, verbose=verbose)
             if writer:
-                writer.add_scalar("linear_probe_valid/%s/loss"%target_layer, v_loss, global_step=epoch)
-                writer.add_scalar("linear_probe_valid/%s/acc1"%target_layer, v_acc1, global_step=epoch)
-                writer.add_scalar("linear_probe_valid/%s/acc2"%target_layer, v_acc2, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/%s/loss"%(tag, target_layer), v_loss, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/%s/acc1"%(tag, target_layer), v_acc1, global_step=epoch)
+                writer.add_scalar("linear_probe_valid/%s/%s/acc2"%(tag, target_layer), v_acc2, global_step=epoch)
 
     # unfreeze model wights
     model.unfreeze_classifier()
