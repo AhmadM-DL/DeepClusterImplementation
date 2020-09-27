@@ -28,7 +28,7 @@ hparams= {
     "checkpoints_interval":10,
 }
 
-def main():
+def main(args):
 
     halts = [15, 30, 50, 100]
 
@@ -37,8 +37,8 @@ def main():
         set_seed(42)
 
         #logging.info("Loading Dataset")
-        cifar = CIFAR10("./datasets/")
-        cifar_test = CIFAR10("./datasets/", train=False)
+        cifar = CIFAR10(args.dataset)
+        cifar_test = CIFAR10(args.dataset, train=False)
 
         device = torch.device("cuda:0")
 
@@ -125,9 +125,9 @@ def main():
         writer= writer
         )
     
-
-
 if __name__ == '__main__':
 
-    #logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-    main()
+    parser = argparse.ArgumentParser(description='PyTorch Implementation of DeepCluster')
+    parser.add_argument('--dataset', default="./datasets", type=str, help="Path to datasets")
+    args = parser.parse_args()
+    main(args)
