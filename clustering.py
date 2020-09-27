@@ -15,7 +15,6 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-from sklearn.classifiers 
 from sklearn.mixture import GaussianMixture
 import random
 from sklearn.neighbors import KDTree
