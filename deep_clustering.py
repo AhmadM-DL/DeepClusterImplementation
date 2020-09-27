@@ -51,7 +51,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                 - "n_epochs" default=1
                 - "embeddings_sample_size" used for writer to write embeddings default 500
                 - "embeddings_checkpoint" the percent of cycles to be performed between written embeddings default 20
-                - ...
+                - "halt_clustering"
+                - ..
     """
     if writer:
         # TODO dummy input should be based on dataset
@@ -111,18 +112,24 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                     model.save_model_parameters(
                         os.path.join(checkpoints, "model_%d.pth" % cycle), optimizer=optimizer, epoch=cycle)
 
-        # Set Loading Transform else consider the dataset transform
-        if loading_transform:
-            dataset.set_transform(loading_transform)
+        halt_clustering = kwargs.get("halt_clustering", None)
 
-        # full feedforward
-        features = model.full_feed_forward(
-            dataloader=torch.utils.data.DataLoader(dataset,
-                                                   batch_size=kwargs.get(
-                                                       "loading_batch_size", 256),
-                                                   shuffle=kwargs.get(
-                                                       "loading_shuffle", False),
-                                                   pin_memory=True), verbose=verbose)
+        if  halt_clustering and cycle >= halt_clustering:
+            pass
+        else:
+            
+            # Set Loading Transform else consider the dataset transform
+            if loading_transform:
+                dataset.set_transform(loading_transform)
+
+            # full feedforward
+            features = model.full_feed_forward(
+                dataloader=torch.utils.data.DataLoader(dataset,
+                                                    batch_size=kwargs.get(
+                                                        "loading_batch_size", 256),
+                                                    shuffle=kwargs.get(
+                                                        "loading_shuffle", False),
+                                                    pin_memory=True), verbose=verbose)
 
         # if writer and we completed a 20% of all cycles: add embeddings
         if writer and cycle % (int(n_cycles*(kwargs.get("embeddings_checkpoint", 20)/100))) == 0:
@@ -137,35 +144,38 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             writer.add_embedding(mat=to_embed, metadata=labels,
                                  label_img=images, global_step=cycle)
 
-        # pre-processing pca-whitening
-        if kwargs.get("pca_components", None) == None:
+        if halt_clustering and cycle>=halt_clustering:
             pass
         else:
+            # pre-processing pca-whitening
+            if kwargs.get("pca_components", None) == None:
+                pass
+            else:
+                if verbose:
+                    print(" - Features PCA + Whitening")
+                features = sklearn_pca_whitening(features, n_components=kwargs.get(
+                    "pca_components"), random_state=random_state)
+
+            # pre-processing l2-normalization
             if verbose:
-                print(" - Features PCA + Whitening")
-            features = sklearn_pca_whitening(features, n_components=kwargs.get(
-                "pca_components"), random_state=random_state)
+                print(" - Features L2 Normalization")
+            features = l2_normalization(features)
 
-        # pre-processing l2-normalization
-        if verbose:
-            print(" - Features L2 Normalization")
-        features = l2_normalization(features)
-
-        # cluster
-        if verbose:
-            print(" - Clustering")
-        
-        # Change random state at each k-means so that the randomly picked
-        # initialization centroids do not correspond to the same feature ids
-        # from an epoch to another.
-        rnd_state = kwargs.get("kmeans_rnd_state", None)
-        if not rnd_state:
-            rnd_state = np.random.randint(1234)
-        assignments = sklearn_kmeans(
-            features, n_clusters=n_clusters,
-            random_state=rnd_state,
-            verbose=verbose-1,
-            fit_partial=kwargs.get("partial_fit", None))
+            # cluster
+            if verbose:
+                print(" - Clustering")
+            
+            # Change random state at each k-means so that the randomly picked
+            # initialization centroids do not correspond to the same feature ids
+            # from an epoch to another.
+            rnd_state = kwargs.get("kmeans_rnd_state", None)
+            if not rnd_state:
+                rnd_state = np.random.randint(1234)
+            assignments = sklearn_kmeans(
+                features, n_clusters=n_clusters,
+                random_state=rnd_state,
+                verbose=verbose-1,
+                fit_partial=kwargs.get("partial_fit", None))
 
         if writer:
             # write NMI between consecutive pseudolabels
@@ -177,11 +187,15 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                               NMI(assignments, dataset.get_targets()), cycle)
 
         # re assign labels
-        if verbose:
-            print(" - Reassign pseudo_labels")
-        dataset.set_pseudolabels(assignments)
+        if halt_clustering and cycle>=halt_clustering:
+            pass
+        else:
+            if verbose:
+                print(" - Reassign pseudo_labels")
 
-        dataset.save_pseudolabels(writer.get_logdir()+"/clusters", cycle)
+            dataset.set_pseudolabels(assignments)
+
+            dataset.save_pseudolabels(writer.get_logdir()+"/clusters", cycle)
 
         # set training transform else consider dataset transform
         if training_transform:
