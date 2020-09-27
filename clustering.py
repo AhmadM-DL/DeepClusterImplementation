@@ -61,7 +61,7 @@ def random_knn_clustering(npdata, n_clusters, random_state=None):
 
     seeds = random.sample(population= available_samples, k=n_clusters)
 
-    _, clusters_indices = features_tree.query(seeds, k=n_samples_per_cluster)
+    _, clusters_indices = data_tree.query(seeds, k=n_samples_per_cluster)
 
     pseudo_labels = []
     sample_indices= []
