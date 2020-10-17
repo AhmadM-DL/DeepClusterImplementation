@@ -15,13 +15,14 @@ from torch.utils.tensorboard import SummaryWriter
 
 class DeepClusteringNet(torch.nn.Module):
 
-    def __init__(self, input_size, features, classifier, top_layer, device, with_sobel=False):
+    def __init__(self, input_size, features, classifier, top_layer, device, with_sobel=False, concat_sobel=False):
         super().__init__()
         self.sobel = SobelFilter() if with_sobel else None
         self.features = features
         self.classifier = classifier
         self.top_layer = top_layer
         self.input_size = input_size
+        self.concat_sobel = concat_sobel
 
 
         self._initialize_weights()
@@ -32,7 +33,11 @@ class DeepClusteringNet(torch.nn.Module):
 
     def forward(self, x):
         if self.sobel:
-            x = self.sobel(x)
+            if self.concat_sobel:
+                aug = self.sobel(x)
+                x = torch.cat( (x, aug), 1)
+            else:
+                x = self.sobel(x)
         x = self.features(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
