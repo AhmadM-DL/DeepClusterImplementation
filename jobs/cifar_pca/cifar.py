@@ -30,8 +30,9 @@ hparams= {
 
 def main():
 
-    pcas = [32, 64, 128, 256]
-    times= np.array()
+    #pcas = [32, 64, 128, 256]
+    pcas = [8,16]
+    times= np.array([])
 
     for pca in pcas:
 

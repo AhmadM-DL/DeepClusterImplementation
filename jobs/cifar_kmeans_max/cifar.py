@@ -1,8 +1,8 @@
-
 import logging
 import torch
 import time
 import numpy as np
+import argparse
 
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import AlexNet_Small
@@ -82,7 +82,7 @@ def main(args):
         "n_clusters(%d)_" % hparams["n_clusters"] + \
         "pca(%d)_" % hparams["pca"] + "sobel(%d)"%hparams["sobel"] +\
         "n_cycles(%d)_" % hparams["n_cycles"]+"rnd(%d)_" % hparams["random_state"] +\
-        "t_batch_size(%d)_"% hparams["batch_size"]
+        "t_batch_size(%d)_"% hparams["batch_size"] + "max_iter(%d)_"%max_iter
         
         writer = SummaryWriter(
             'runs/'+writer_file)

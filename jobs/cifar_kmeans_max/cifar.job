@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=cifarmaxk
-#SBATCH --partition=msfea_ai
+#SBATCH --partition=msfea-ai
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -23,4 +23,4 @@ export PYTHONPATH=$PYTHONPATH:$HOME/scratch/DeepClusterImplementation/evaluation
 ## execute the python job
 ## nvidia-smi
 
-python3 cifar.py
+python3 cifar.py --dataset  "../cifar_pca/datasets"

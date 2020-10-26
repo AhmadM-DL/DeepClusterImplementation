@@ -29,7 +29,7 @@ hparams= {
 def main():
 
     #seeds = [39, 6, 3, 59, 11, 29, 0, 99, 28, 60]
-    seeds = [3, 59, 11, 29, 0, 99, 28, 60]
+    seeds = [28, 60]
     fixed_seed = 41
 
     #logging.info("Loading Dataset")
