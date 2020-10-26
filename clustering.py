@@ -17,6 +17,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 import random
+from sklearn.neighbors import KDTree
 
 def sklearn_GMM(npdata, n_components, random_state=None, verbose=False, **kwargs):
     gmm = GaussianMixture(n_components=n_components,
@@ -49,6 +50,29 @@ def random_clustering(npdata, n_clusters, random_state=None):
     labels = np.asarray(labels)[sorting_indices]
 
     return labels
+
+def random_knn_clustering(npdata, n_clusters, random_state=None):
+
+    n_samples_per_cluster = int(len(npdata)/n_clusters)
+    data_tree = KDTree(npdata, leaf_size=n_samples_per_cluster)
+
+    clusters = [[] for i in range(0,n_clusters)]
+    available_samples = set(range(0,len(npdata)))
+
+    seeds_indices = random.sample(population= available_samples, k=n_clusters)
+    seeds = npdata[seeds_indices]
+    _, clusters_indices = data_tree.query(seeds, k=n_samples_per_cluster)
+
+    pseudo_labels = []
+    sample_indices= []
+    for label, cluster in enumerate(clusters_indices):
+        sample_indices.extend(cluster)
+        pseudo_labels.extend([label]*len(cluster))
+
+    sorting_indices = np.argsort(sample_indices)
+    pseudo_labels = np.asarray(pseudo_labels)[sorting_indices]
+
+    return pseudo_labels
 
 
 def sklearn_kmeans(npdata, n_clusters, random_state=None, verbose=False, fit_partial=None , **kwargs):

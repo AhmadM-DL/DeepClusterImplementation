@@ -21,9 +21,9 @@ from sklearn.metrics import normalized_mutual_info_score
 
 from  layers_stacker import stack_convolutional_layers, stack_linear_layers
 
-def AlexNet_Micro(sobel, batch_normalization, device):
+def AlexNet_Micro(sobel, batch_normalization, device, concat_sobel=False):
     
-    n_input_channels = 2 + int(not sobel)
+    n_input_channels = 2 + int(not sobel) if not concat_sobel else 5
 
     alexnet_features_cfg = [
                 {
@@ -112,7 +112,7 @@ def AlexNet_Micro(sobel, batch_normalization, device):
                               device=device)
     return model
 
-def AlexNet_Small(sobel, batch_normalization, device):
+def AlexNet_Small(sobel, batch_normalization, device, concat_sobel=False):
     """Implementation of AlexNet for CIFAR dataset
 
     Arguments:
@@ -120,7 +120,7 @@ def AlexNet_Small(sobel, batch_normalization, device):
         batch_normalization {Boolean} -- Add normalization after convolution or not
         device {torch.device} -- Pytorch device to send the model to (cpu/gpu)
     """
-    n_input_channels = 2 + int(not sobel)
+    n_input_channels = 2 + int(not sobel) if not concat_sobel else 5
     
     alexnet_features_cfg = [
                 {
@@ -209,7 +209,7 @@ def AlexNet_Small(sobel, batch_normalization, device):
                               device=device)
     return model
 
-def AlexNet_ImageNet(sobel, batch_normalization, device):
+def AlexNet_ImageNet(sobel, batch_normalization, device, concat_sobel=False):
     """Implementation of AlexNet for Imagenet dataset
 
     Arguments:
@@ -217,7 +217,7 @@ def AlexNet_ImageNet(sobel, batch_normalization, device):
         batch_normalization {Boolean} -- Add normalization after convolution or not
         device {torch.device} -- Pytorch device to send the model to (cpu/gpu)
     """
-    n_input_channels = 2 + int(not sobel)
+    n_input_channels = 2 + int(not sobel) if not concat_sobel else 5
     
     alexnet_features_cfg = [
                 {
