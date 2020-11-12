@@ -8,10 +8,11 @@ from deep_clustering_models import AlexNet_Small
 from deep_clustering import deep_cluster
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from torch.utils.tensorboard import SummaryWriter
-from torchvision.datasets import CIFAR10
+from torchvision import datasets
 from torchvision import transforms
 from linear_probe import eval_linear
 from utils import set_seed, qualify_space
+import os
 
 hparams= {
     'lr': 0.05,
@@ -33,14 +34,14 @@ def main():
     fixed_seed = 41
 
     #logging.info("Loading Dataset")
-    cifar = CIFAR10("./datasets/")
-    cifar_test = CIFAR10("./datasets/", train=False)
+    tiny_imagenet = datasets.ImageFolder(os.path.join("./datasets/", "train"))
+    tiny_imagenet_test = datasets.ImageFolder(os.path.join("./datasets/", "test"))
 
     device = torch.device("cuda:0")
 
     #logging.info("Defining Transformations")
-    normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
-                                    std=[0.247, 0.243, 0.261])
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
     training_transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
@@ -73,11 +74,11 @@ def main():
         loss_function = torch.nn.CrossEntropyLoss()
 
         #logging.info("Decorating Dataset")
-        dataset = DeepClusteringDataset(cifar)
+        dataset = DeepClusteringDataset(tiny_imagenet)
 
         #logging.info("Defining Writer")
         
-        writer_file = "cifar10_alexnet_small"+"batchnorm(%d)_" % hparams["batch_norm"] + \
+        writer_file = "tiny_imagenet_alexnet_small"+"batchnorm(%d)_" % hparams["batch_norm"] + \
         "lr(%f)_"% hparams["lr"]+"momentum(%f)_" % hparams["momentum"]+"wdecay(%f)_" % hparams["weight_decay"]  + \
         "n_clusters(%d)_" % hparams["n_clusters"] + \
         "pca(%d)_" % hparams["pca"] + "sobel(%d)"%hparams["sobel"] +\
@@ -106,8 +107,8 @@ def main():
                     verbose=1,
                     writer=writer)
 
-        cifar_test.transform = loading_transform
-        cifar.transform = transforms.Compose([transforms.Resize(256),
+        tiny_imagenet_test.transform = loading_transform
+        tiny_imagenet.transform = transforms.Compose([transforms.Resize(256),
                                 transforms.CenterCrop(256),
                                 transforms.RandomCrop(224),
                                 transforms.RandomHorizontalFlip(),
@@ -117,8 +118,8 @@ def main():
         eval_linear(
         model= model,
         n_epochs= 30,
-        traindataset= cifar,
-        validdataset= cifar_test,
+        traindataset= tiny_imagenet,
+        validdataset= tiny_imagenet_test,
         target_layer= "relu_5",
         n_labels= 10,
         features_size= 9216,
