@@ -121,7 +121,7 @@ def main():
         traindataset= tiny_imagenet,
         validdataset= tiny_imagenet_test,
         target_layer= "relu_5",
-        n_labels= 10,
+        n_labels= 200,
         features_size= 9216,
         avg_pool= {"kernel_size":2, "stride":2, "padding":0},
         writer= writer
