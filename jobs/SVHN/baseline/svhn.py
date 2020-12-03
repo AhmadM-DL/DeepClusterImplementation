@@ -134,14 +134,19 @@ if __name__ == '__main__':
     parser.add_argument('--hyperparam', default="./hyper.json", type=str, help='Path to hyperparam json file')
     parser.add_argument('--dataset', default="../datasets", type=str, help="Path to datasets")
     parser.add_argument('--device', default="cpu", type=str, help="Device to use")
-    parser.add_argument("--seed", default=666, type=int, help="Random Seed")
+    parser.add_argument('--seed', default=666, type=int, help="Random Seed")
+    parser.add_argument('--chkp', default=None, type=str, help="Checkpoint")
     args = parser.parse_args()
 
     logging.basicConfig(filename='app.log', filemode='w',
                         format='%(name)s - %(levelname)s - %(message)s')
     hparams = json.load(open(args.hyperparam, "r"))
     device = torch.device(args.device)
-
+    if args.chkp:
+        executed_runs = int(open(args.chpk, "r").read())
+    else:
+        executed_runs = 0 
+    counter=1
     for lr in hparams['lr']:
         for wd in hparams['wd']:
             for momentum in hparams['momentum']:
@@ -151,5 +156,9 @@ if __name__ == '__main__':
                             for pca in hparams["pca"]:
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
+                                        if counter <= executed_runs:
+                                            continue
                                         run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                         pca, training_batch_size, training_shuffle, random_state=args.seed, dataset_path=args.dataset)
+                                        counter+=1
+                                        open(args.chpk, "w").write(str(counter))

@@ -8,7 +8,8 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu
 #SBATCH --mem=12000
-#SBATCH --time=3-00:00:00
+#SBATCH --time=0-00:01:00
+#SBATCH --array=1-3
 
 ## set the environment modules
 module load python/base/miniconda3
@@ -22,5 +23,13 @@ export PYTHONPATH=$PYTHONPATH:$HOME/scratch/DeepClusterImplementation/evaluation
 
 ## execute the python job
 ## nvidia-smi
+# start executing the program,
+MY_CHECKPOINT_FILE=job.chkp
+if [ -z "${MY_CHECKPOINT_FILE}" ]; then
+    # checkpoint file is not found, execute this command
+    python3 svhn.py --device "cuda:0"
+else
+    # checkpoint file is found, read it and continue training
+    python3 svhn.py --device "cuda:0" --chkp=${MY_CHECKPOINT_FILE}
+fi
 
-python3 svhn.py --device "cuda:0"
