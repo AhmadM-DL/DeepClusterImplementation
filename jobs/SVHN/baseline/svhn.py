@@ -13,7 +13,7 @@ from torchvision import transforms
 from torchvision.datasets import SVHN
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
-from deep_clustering_models import LeNet
+from deep_clustering_models import AlexNet_Small
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering import deep_cluster
 
@@ -23,7 +23,7 @@ from utils import set_seed
 
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, training_shuffle,
-        random_state, dataset_path):
+        random_state, dataset_path, sobel=False):
 
     logging.info("Set Seed")
     set_seed(random_state)
@@ -34,7 +34,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     device = torch.device(device)
 
     logging.info("Build Model")
-    model = LeNet(batch_normalization=batch_norm, device=device)
+    model = AlexNet_Small(sobel=sobel, batch_normalization=batch_norm, device=device)
 
     logging.info("Build Optimizer")
     optimizer = torch.optim.SGD(
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     hparams = json.load(open(args.hyperparam, "r"))
     device = torch.device(args.device)
     if args.chkp:
-        executed_runs = int(open(args.chpk, "r").read())
+        executed_runs = int(open(args.chkp, "r").read())
     else:
         executed_runs = 0 
     counter=1
@@ -159,6 +159,6 @@ if __name__ == '__main__':
                                         if counter <= executed_runs:
                                             continue
                                         run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
-                                        pca, training_batch_size, training_shuffle, random_state=args.seed, dataset_path=args.dataset)
+                                        pca, training_batch_size, training_shuffle, random_state=args.seed, dataset_path=args.dataset, sobel=True)
                                         counter+=1
                                         open(args.chpk, "w").write(str(counter))
