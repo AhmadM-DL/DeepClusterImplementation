@@ -8,7 +8,6 @@ import importlib
 
 sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
-
 from torchvision import transforms
 from torchvision.datasets import SVHN
 from torch.utils.tensorboard import SummaryWriter
@@ -19,7 +18,6 @@ from deep_clustering import deep_cluster
 
 from evaluation.linear_probe import eval_linear
 from utils import set_seed
-
 
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, sobel, training_shuffle,
@@ -34,7 +32,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     device = torch.device(device)
 
     logging.info("Build Model")
-    model = AlexNet_Small(sobel=sobel, batch_normalization=batch_norm, device=device)
+    model = AlexNet_Micro(sobel=sobel, batch_normalization=batch_norm, device=device)
 
     logging.info("Build Optimizer")
     optimizer = torch.optim.SGD(
@@ -81,8 +79,8 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         'runs/'+writer_file)
 
     if os.path.isfile(writer_file+"/checkpoints/last_model.pth"):
-        resume = checkpoints+"/"+writer_file+"/last_model.pth"
-    else 
+        resume = "checkpoints/"+writer_file+"/last_model.pth"
+    else: 
         resume = None
 
     deep_cluster(model=model,
