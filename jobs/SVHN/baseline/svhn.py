@@ -8,22 +8,29 @@ import importlib
 
 sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
-
 from torchvision import transforms
 from torchvision.datasets import SVHN
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
+<<<<<<< HEAD
 from deep_clustering_models import AlexNet_Small
+=======
+from deep_clustering_models import AlexNet_Micro
+>>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering import deep_cluster
 
 from evaluation.linear_probe import eval_linear
 from utils import set_seed
 
-
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
+<<<<<<< HEAD
         n_clusters, pca, training_batch_size, training_shuffle,
         random_state, dataset_path, sobel=False):
+=======
+        n_clusters, pca, training_batch_size, sobel, training_shuffle,
+        random_state, dataset_path):
+>>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a
 
     logging.info("Set Seed")
     set_seed(random_state)
@@ -34,7 +41,11 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     device = torch.device(device)
 
     logging.info("Build Model")
+<<<<<<< HEAD
     model = AlexNet_Small(sobel=sobel, batch_normalization=batch_norm, device=device)
+=======
+    model = AlexNet_Micro(sobel=sobel, batch_normalization=batch_norm, device=device)
+>>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a
 
     logging.info("Build Optimizer")
     optimizer = torch.optim.SGD(
@@ -55,13 +66,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                                      std = (0.198, 0.201, 0.197))
 
     training_transform = transforms.Compose([
-        transforms.RandomResizedCrop(32),
+        transforms.RandomResizedCrop(224),
         transforms.ToTensor(),
         normalize])
 
     loading_transform = transforms.Compose([
-        transforms.Resize(44),
-        transforms.CenterCrop(32),
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         normalize])
 
@@ -77,8 +88,12 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     else:
         writer_file=writer_file+"pca(None)_"
 
-    writer = SummaryWriter(
-        'runs/'+writer_file)
+    writer = SummaryWriter('runs/'+writer_file)
+
+    if os.path.isfile(writer_file+"/checkpoints/last_model.pth"):
+        resume = "checkpoints/"+writer_file+"/last_model.pth"
+    else: 
+        resume = None
 
     deep_cluster(model=model,
                  dataset=dataset,
@@ -94,6 +109,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  training_shuffle=training_shuffle,
                  pca_components=pca,
                  checkpoints= "checkpoints/"+writer_file,
+                 resume=resume,
                  writer=writer)
     
     svhn_test = SVHN(dataset_path, train=False, download=True)
@@ -101,12 +117,12 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     traindataset = svhn
     validdataset = svhn_test
 
-    transformations_val = [transforms.Resize(44),
+    transformations_val = [transforms.Resize(42),
                                 transforms.CenterCrop(32),
                                 transforms.ToTensor(),
                                 normalize]
 
-    transformations_train = [transforms.Resize(44),
+    transformations_train = [transforms.Resize(42),
                                 transforms.CenterCrop(32),
                                 #transforms.RandomCrop(32),
                                 #transforms.RandomHorizontalFlip(),
@@ -120,9 +136,9 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                 n_epochs=20,
                 traindataset=traindataset,
                 validdataset=validdataset,
-                target_layer="conv_2",
+                target_layer="relu_5",
                 n_labels=10,
-                features_size=1600,
+                features_size= 512,
                 avg_pool= None,
                 random_state=random_state,
                 writer= writer,
@@ -156,9 +172,19 @@ if __name__ == '__main__':
                             for pca in hparams["pca"]:
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
+<<<<<<< HEAD
                                         if counter <= executed_runs:
                                             continue
                                         run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                         pca, training_batch_size, training_shuffle, random_state=args.seed, dataset_path=args.dataset, sobel=True)
                                         counter+=1
                                         open(args.chpk, "w").write(str(counter))
+=======
+                                        for sobel in hparams["sobel"]:
+                                            if counter <= executed_runs:
+                                                continue
+                                            run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
+                                            pca, training_batch_size, training_shuffle, sobel=sobel, random_state=args.seed, dataset_path=args.dataset)
+                                            counter+=1
+                                            open(args.chpk, "w").write(str(counter))
+>>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a

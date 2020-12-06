@@ -28,17 +28,32 @@ def AlexNet_Micro(sobel, batch_normalization, device, concat_sobel=False):
     alexnet_features_cfg = [
                 {
                 "type": "convolution",
-                "out_channels":64,
-                "kernel_size":3,
-                "stride":1,
-                "padding":2,
+                "out_channels":48,
+                "kernel_size":8,
+                "stride":3,
+                "padding":0,
                 "activation":"ReLU",
                 },
 
                 {
                 "type":"max_pool",
                 "kernel_size":2,
-                "stride":None,
+                "stride":1,
+                },
+
+                {
+                "type": "convolution",
+                "out_channels":126,
+                "kernel_size":2,
+                "stride":1,
+                "padding":0,
+                "activation":"ReLU",
+                },
+
+                {
+                "type":"max_pool",
+                "kernel_size":2,
+                "stride":1,
                 },
 
                 {
@@ -46,67 +61,52 @@ def AlexNet_Micro(sobel, batch_normalization, device, concat_sobel=False):
                 "out_channels":192,
                 "kernel_size":3,
                 "stride":1,
-                "padding":2,
+                "padding":0,
                 "activation":"ReLU",
                 },
 
+                {
+                "type": "convolution",
+                "out_channels":192,
+                "kernel_size":2,
+                "stride":1,
+                "padding":0,
+                "activation":"ReLU",
+                },
+
+                {
+                "type": "convolution",
+                "out_channels":128,
+                "kernel_size":2,
+                "stride":1,
+                "padding":0,
+                "activation":"ReLU",
+                },
                 {
                 "type":"max_pool",
                 "kernel_size":2,
-                "stride":None,
-                },
-
-                {
-                "type": "convolution",
-                "out_channels":384,
-                "kernel_size":3,
                 "stride":1,
-                "padding":1,
-                "activation":"ReLU",
-                },
-
-                {
-                "type": "convolution",
-                "out_channels":256,
-                "kernel_size":3,
-                "stride":1,
-                "padding":1,
-                "activation":"ReLU",
-                },
-
-                {
-                "type": "convolution",
-                "out_channels":256,
-                "kernel_size":3,
-                "stride":1,
-                "padding":1,
-                "activation":"ReLU",
-                },
-                {
-                "type":"max_pool",
-                "kernel_size":3,
-                "stride":2,
                 }         
                 ]
 
     classifier_cfg = [
                       {"type":"drop_out",
-                       "drop_ratio": 0.6},
+                       "drop_ratio": 0.5},
 
                       {"type":"linear",
-                       "out_features":2048,
+                       "out_features":1024,
                        "activation":"ReLU"},
 
                       {"type":"drop_out",
-                       "drop_ratio": 0.6},
+                       "drop_ratio": 0.5},
 
                       {"type":"linear",
-                      "out_features":2048}
+                      "out_features":1024}
         ]
 
     model = DeepClusteringNet(input_size=(3,32,32),
                               features= stack_convolutional_layers(input_channels= n_input_channels, cfg=alexnet_features_cfg, batch_normalization=batch_normalization),
-                              classifier= stack_linear_layers(input_features= 256 * 4 * 4, cfg= classifier_cfg),
+                              classifier= stack_linear_layers(input_features= 128, cfg= classifier_cfg),
                               top_layer = None,
                               with_sobel=sobel,
                               device=device)
