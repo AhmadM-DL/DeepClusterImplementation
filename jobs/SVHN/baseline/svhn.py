@@ -79,7 +79,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     writer = SummaryWriter('runs/'+writer_file)
 
-    if os.path.isfile(writer_file+"/checkpoints/last_model.pth"):
+    if os.path.isfile("checkpoints/"+writer_file+"/last_model.pth"):
         resume = "checkpoints/"+writer_file+"/last_model.pth"
         logging.info("\n##########\nResuming from: %s\n##########"%resume)
     else: 
