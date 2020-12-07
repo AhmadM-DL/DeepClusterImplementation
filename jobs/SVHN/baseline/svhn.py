@@ -5,6 +5,7 @@ import argparse
 
 import sys
 import importlib
+import os
 
 sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
@@ -12,11 +13,7 @@ from torchvision import transforms
 from torchvision.datasets import SVHN
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
-<<<<<<< HEAD
-from deep_clustering_models import AlexNet_Small
-=======
 from deep_clustering_models import AlexNet_Micro
->>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering import deep_cluster
 
@@ -24,13 +21,8 @@ from evaluation.linear_probe import eval_linear
 from utils import set_seed
 
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
-<<<<<<< HEAD
-        n_clusters, pca, training_batch_size, training_shuffle,
-        random_state, dataset_path, sobel=False):
-=======
         n_clusters, pca, training_batch_size, sobel, training_shuffle,
         random_state, dataset_path):
->>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a
 
     logging.info("Set Seed")
     set_seed(random_state)
@@ -41,11 +33,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     device = torch.device(device)
 
     logging.info("Build Model")
-<<<<<<< HEAD
-    model = AlexNet_Small(sobel=sobel, batch_normalization=batch_norm, device=device)
-=======
     model = AlexNet_Micro(sobel=sobel, batch_normalization=batch_norm, device=device)
->>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a
 
     logging.info("Build Optimizer")
     optimizer = torch.optim.SGD(
@@ -66,13 +54,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                                      std = (0.198, 0.201, 0.197))
 
     training_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
+        transforms.RandomResizedCrop(32),
         transforms.ToTensor(),
         normalize])
 
     loading_transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
+        transforms.Resize(42),
+        transforms.CenterCrop(32),
         transforms.ToTensor(),
         normalize])
 
@@ -92,9 +80,11 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     if os.path.isfile(writer_file+"/checkpoints/last_model.pth"):
         resume = "checkpoints/"+writer_file+"/last_model.pth"
+        logging.INFO("##########\nResuming from: %s\n##########"%resume)
     else: 
         resume = None
-
+        logging.INFO("##########\nRun: %s\n##########"%writer_file)
+    
     deep_cluster(model=model,
                  dataset=dataset,
                  n_clusters=n_clusters,
@@ -132,6 +122,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     svhn.transform = transforms.Compose(transformations_train)
     svhn.transform = transforms.Compose(transformations_val)
 
+    logging.INFO("Evaluation")
     eval_linear(model=model,
                 n_epochs=20,
                 traindataset=traindataset,
@@ -154,12 +145,16 @@ if __name__ == '__main__':
     parser.add_argument('--chkp', default=None, type=str, help="Checkpoint")
     args = parser.parse_args()
 
-    logging.basicConfig(filename='app.log', filemode='w',
-                        format='%(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='app.log', filemode='a',
+                        format='%(name)s - %(levelname)s - %(message)s',
+                        level=logging.INFO)
+
+    logging.INFO("##########\n%s##########"%(datetime.now()))
     hparams = json.load(open(args.hyperparam, "r"))
     device = torch.device(args.device)
     if args.chkp:
         executed_runs = int(open(args.chkp, "r").read())
+        logging.INFO("Running from checkpoint: run(%d)"%executed_runs)
     else:
         executed_runs = 0 
     counter=1
@@ -172,19 +167,10 @@ if __name__ == '__main__':
                             for pca in hparams["pca"]:
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
-<<<<<<< HEAD
-                                        if counter <= executed_runs:
-                                            continue
-                                        run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
-                                        pca, training_batch_size, training_shuffle, random_state=args.seed, dataset_path=args.dataset, sobel=True)
-                                        counter+=1
-                                        open(args.chpk, "w").write(str(counter))
-=======
                                         for sobel in hparams["sobel"]:
                                             if counter <= executed_runs:
                                                 continue
                                             run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
-                                            pca, training_batch_size, training_shuffle, sobel=sobel, random_state=args.seed, dataset_path=args.dataset)
+                                            pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
                                             counter+=1
                                             open(args.chpk, "w").write(str(counter))
->>>>>>> f52065359bd06d526e8b8c5284da004139c3cf1a
