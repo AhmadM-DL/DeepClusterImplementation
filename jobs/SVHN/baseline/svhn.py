@@ -2,7 +2,7 @@ import torch
 import json
 import logging
 import argparse
-import datetime
+from datetime import datetime
 
 import sys
 import importlib
@@ -81,10 +81,10 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     if os.path.isfile(writer_file+"/checkpoints/last_model.pth"):
         resume = "checkpoints/"+writer_file+"/last_model.pth"
-        logging.INFO("##########\nResuming from: %s\n##########"%resume)
+        logging.info("\n##########\nResuming from: %s\n##########"%resume)
     else: 
         resume = None
-        logging.INFO("##########\nRun: %s\n##########"%writer_file)
+        logging.info("\n##########\nRun: %s\n##########"%writer_file)
     
     deep_cluster(model=model,
                  dataset=dataset,
@@ -123,7 +123,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     svhn.transform = transforms.Compose(transformations_train)
     svhn.transform = transforms.Compose(transformations_val)
 
-    logging.INFO("Evaluation")
+    logging.info("Evaluation")
     eval_linear(model=model,
                 n_epochs=20,
                 traindataset=traindataset,
@@ -150,12 +150,13 @@ if __name__ == '__main__':
                         format='%(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
 
-    logging.INFO("##########\n%s##########"%(datetime.now()))
+    logging.info("\n##########\n%s\n##########\n"%datetime.now())
+
     hparams = json.load(open(args.hyperparam, "r"))
     device = torch.device(args.device)
     if args.chkp:
         executed_runs = int(open(args.chkp, "r").read())
-        logging.INFO("Running from checkpoint: run(%d)"%executed_runs)
+        logging.info("Running from checkpoint: run(%d)"%executed_runs)
     else:
         executed_runs = 0 
     counter=1
