@@ -13,6 +13,7 @@ notebooks/runs_space/*
 runs_space/* 
 jobs/**/runs
 jobs/**/runs_shuffled
+jobs/**/*.log
 *.out
 jobs/**/datasets
 jobs/**/checkpoints
