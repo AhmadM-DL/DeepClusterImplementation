@@ -11,7 +11,7 @@ import os
 sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
 from torchvision import transforms
-from torchvision.datasets import SVHN
+from torchvision.datasets import CIFAR10
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from deep_clustering_models import AlexNet_Micro
@@ -29,7 +29,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     set_seed(random_state)
     
     logging.info("Loading Dataset")
-    svhn = SVHN(dataset_path, download=True)
+    cifar10 = CIFAR10(dataset_path, download=True)
 
     device = torch.device(device)
 
@@ -48,7 +48,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     loss_function = torch.nn.CrossEntropyLoss()
 
     logging.info("Decorating Dataset")
-    dataset = DeepClusteringDataset(svhn)
+    dataset = DeepClusteringDataset(cifar10)
 
     logging.info("Defining Transformations")
     normalize = transforms.Normalize(mean = (0.437, 0.443, 0.472),
@@ -66,7 +66,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         normalize])
 
     logging.info("Defining Writer")
-    writer_file = "svhn_"+"batchnorm(%d)_" % batch_norm + \
+    writer_file = "cifar10_microAlexNet_"+"batchnorm(%d)_" % batch_norm + \
         "lr(%f)_" % lr+"momentum(%f)_" % momentum+"wdecay(%f)_" % wd + \
         "n_clusters(%d)_" % n_clusters + \
         "n_cycles(%d)_" % n_cycles+"rnd(%d)_" % random_state + \
@@ -103,10 +103,10 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  resume=resume,
                  writer=writer)
     
-    svhn_test = SVHN(dataset_path, train=False, download=True)
+    cifar10_test = CIFAR10(dataset_path, train=False, download=True)
 
-    traindataset = svhn
-    validdataset = svhn_test
+    traindataset = cifar10
+    validdataset = cifar10_test
 
     transformations_val = [transforms.Resize(42),
                                 transforms.CenterCrop(32),
@@ -120,8 +120,8 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                                 transforms.ToTensor(),
                                 normalize]
 
-    svhn.transform = transforms.Compose(transformations_train)
-    svhn_test.transform = transforms.Compose(transformations_val)
+    cifar10.transform = transforms.Compose(transformations_train)
+    cifar10_test.transform = transforms.Compose(transformations_val)
 
     logging.info("Evaluation")
     eval_linear(model=model,
