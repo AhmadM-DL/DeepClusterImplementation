@@ -53,13 +53,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                                      std = (0.198, 0.201, 0.197))
 
     training_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
+        transforms.RandomResizedCrop(32),
         transforms.ToTensor(),
         normalize])
 
     loading_transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
+        transforms.Resize(42),
+        transforms.CenterCrop(32),
         transforms.ToTensor(),
         normalize])
 
