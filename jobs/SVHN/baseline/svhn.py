@@ -29,7 +29,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     set_seed(random_state)
     
     logging.info("Loading Dataset")
-    svhn = SVHN(dataset_path, download=True)
+    svhn = SVHN(dataset_path, download=True, split="train")
 
     device = torch.device(device)
 
@@ -103,7 +103,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  resume=resume,
                  writer=writer)
     
-    svhn_test = SVHN(dataset_path, train=False, download=True)
+    svhn_test = SVHN(dataset_path, split="test", download=True)
 
     traindataset = svhn
     validdataset = svhn_test
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logging.basicConfig(filename='app.log', filemode='a',
-                        format='%(name)s - %(levelname)s - %(message)s',
+                        format='%(message)s',
                         level=logging.INFO)
 
     logging.info("\n##########\n%s\n##########\n"%datetime.now())
@@ -175,4 +175,4 @@ if __name__ == '__main__':
                                             run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                             pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
                                             counter+=1
-                                            open(args.chpk, "w").write(str(counter))
+                                            open("job.chpk", "w").write(str(counter))
