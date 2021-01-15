@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #SBATCH --job-name=cifar_base
-#SBATCH --partition=gpu
+#SBATCH --partition=msfea-ai
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu
 #SBATCH --mem=12000
-#SBATCH --time=0-06:00:00
-#SBATCH --array=1-4%1
+#SBATCH --time=1-00:00:00
+#SBATCH --array=1-3%1
 
 ## set the environment modules
 module load python/base/miniconda3
@@ -27,9 +27,9 @@ export PYTHONPATH=$PYTHONPATH:$HOME/scratch/DeepClusterImplementation/evaluation
 MY_CHECKPOINT_FILE=job.chkp
 if [ ! -f "${MY_CHECKPOINT_FILE}" ]; then
     # checkpoint file is not found, execute this command
-    python3 svhn.py --device "cuda:0"
+    python3 cifar.py --device "cuda:0"
 else
     # checkpoint file is found, read it and continue training
-    python3 svhn.py --device "cuda:0" --chkp=${MY_CHECKPOINT_FILE}
+    python3 cifar.py --device "cuda:0" --chkp=${MY_CHECKPOINT_FILE}
 fi
 

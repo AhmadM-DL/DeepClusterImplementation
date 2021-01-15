@@ -8,5 +8,5 @@
     "n_clusters": [5, 10, 20, 200, 1000],
     "pca": [null, 64, 128, 256],
     "training_batch_size":[64, 128, 256],
-    "training_shuffle":[true],
+    "training_shuffle":[true]
 }

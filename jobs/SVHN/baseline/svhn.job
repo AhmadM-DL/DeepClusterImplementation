@@ -9,7 +9,7 @@
 #SBATCH --gres=gpu
 #SBATCH --mem=12000
 #SBATCH --time=3-00:00:00
-## SBATCH --array=1-4%1
+#SBATCH --array=1-2%1
 
 ## set the environment modules
 module load python/base/miniconda3

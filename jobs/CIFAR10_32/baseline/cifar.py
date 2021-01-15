@@ -24,12 +24,13 @@ from utils import set_seed
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, sobel, training_shuffle,
         random_state, dataset_path):
-
+    logging.info("New Experiment ##########################################")
+    logging.info("%s"%datetime.now())
     logging.info("Set Seed")
     set_seed(random_state)
     
     logging.info("Loading Dataset")
-    cifar10 = CIFAR10(dataset_path, download=True)
+    cifar10 = CIFAR10(dataset_path, download=True, train=True)
 
     device = torch.device(device)
 
@@ -71,7 +72,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         "n_clusters(%d)_" % n_clusters + \
         "n_cycles(%d)_" % n_cycles+"rnd(%d)_" % random_state + \
         "t_batch_size(%d)_" % training_batch_size + \
-        "shuffle(%d)_" % training_shuffle
+        "shuffle(%d)_" % training_shuffle + "_sobel(%d)"%sobel
     if pca:
         writer_file=writer_file+"pca(%d)_"%pca
     else:
@@ -81,10 +82,10 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     if os.path.isfile("checkpoints/"+writer_file+"/last_model.pth"):
         resume = "checkpoints/"+writer_file+"/last_model.pth"
-        logging.info("\n##########\nResuming from: %s\n##########"%resume)
+        logging.info("Resuming from: %s"%resume)
     else: 
         resume = None
-        logging.info("\n##########\nRun: %s\n##########"%writer_file)
+        logging.info("Run: %s"%writer_file)
     
     deep_cluster(model=model,
                  dataset=dataset,
@@ -150,6 +151,7 @@ if __name__ == '__main__':
                         format='%(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
 
+    logging.info("New Batch ####################################")
     logging.info("\n##########\n%s\n##########\n"%datetime.now())
 
     hparams = json.load(open(args.hyperparam, "r"))
@@ -175,4 +177,4 @@ if __name__ == '__main__':
                                             run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                             pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
                                             counter+=1
-                                            open(args.chpk, "w").write(str(counter))
+                                            open("job.chpk", "w").write(str(counter))
