@@ -1,12 +1,13 @@
 {
-    "lr":[0.1,0.01,0.001,0.0001],
-    "wd":[0.001, 0.0001, 0.00001],
-    "momentum": [0.1, 0.5, 0.9],
+    "lr":[0.1],
+    "wd":[0.001],
+    "momentum": [0.1],
     "sobel": [false],
-    "batch_norm": [true, false],
+    "batch_norm": [true],
     "n_cycles": [30],
-    "n_clusters": [5, 9, 10, 12, 20 ],
-    "pca": [null, 40, 60],
-    "training_batch_size":[64, 128, 256],
-    "training_shuffle":[true, false]
+    "n_clusters": [3, 5, 9, 10, 12, 20, 50],
+    "pca": [null],
+    "training_batch_size":[64],
+    "training_shuffle":[true],
+    "seed":[2, 5, 22, 66, 11, 78, 23, 9, 23, 56, 12, 52, 78, 34, 37, 56, 880, 123, 456, 144, 675, 444, 313, 32, 231, 434, 712, 33, 51, 90]
 }
