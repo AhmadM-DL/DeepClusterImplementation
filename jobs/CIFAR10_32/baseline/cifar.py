@@ -172,9 +172,11 @@ if __name__ == '__main__':
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
                                         for sobel in hparams["sobel"]:
+                                            #logging.info("Experiment %d"%counter)
                                             if counter <= executed_runs:
+                                                counter+=1
                                                 continue
                                             run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                             pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
                                             counter+=1
-                                            open("job.chpk", "w").write(str(counter))
+                                            open("job.chkp", "w").write(str(counter))
