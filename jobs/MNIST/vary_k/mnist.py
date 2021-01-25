@@ -5,6 +5,7 @@ import argparse
 
 import sys
 import importlib
+import os
 
 sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
@@ -137,11 +138,18 @@ if __name__ == '__main__':
     parser.add_argument("--seed", default=666, type=int, help="Random Seed")
     args = parser.parse_args()
 
-    logging.basicConfig(filename='app.log', filemode='w',
-                        format='%(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename='app.log', filemode='a',
+                        format='%(name)s - %(levelname)s - %(message)s',
+                        level=logging.INFO)
     hparams = json.load(open(args.hyperparam, "r"))
     device = torch.device(args.device)
 
+    if os.path.exists("./job.chkp"):
+        executed_runs = int(open("./job.chkp", r).read())
+        logging.info("Running from checkpoint: run(%d)"%executed_runs)
+    else:
+        executed_runs=0
+    counter=1
     for lr in hparams['lr']:
         for wd in hparams['wd']:
             for momentum in hparams['momentum']:
@@ -152,5 +160,10 @@ if __name__ == '__main__':
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
                                         for seed in hparams["seed"]:
+                                            if counter <= executed_runs:
+                                                counter+=1
+                                                continue
                                             run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                             pca, training_batch_size, training_shuffle, random_state=seed, dataset_path=args.dataset)
+                                            counter+=1
+                                            open("./job.chkp", "w").write(str(counter))
