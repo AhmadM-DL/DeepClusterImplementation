@@ -72,7 +72,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         "n_clusters(%d)_" % n_clusters + \
         "n_cycles(%d)_" % n_cycles+"rnd(%d)_" % random_state + \
         "t_batch_size(%d)_" % training_batch_size + \
-        "shuffle(%d)_" % training_shuffle + "_sobel(%d)"%sobel
+        "shuffle(%d)_" % training_shuffle + "sobel(%d)_"%sobel
     if pca:
         writer_file=writer_file+"pca(%d)_"%pca
     else:

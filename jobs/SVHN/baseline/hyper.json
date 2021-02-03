@@ -1,12 +1,15 @@
 {
-    "lr":[0.1],
-    "wd":[0.001],
-    "momentum": [0.1],
+    "lr":[0.1, 0.2, 0.01, 0.001],
+    "wd":[0.001, 0.01, 0.1],
+    "momentum": [0.1, 0.5, 0.9],
     "sobel": [true],
     "batch_norm": [true],
     "n_cycles": [100],
-    "n_clusters": [5, 10, 20, 200, 1000],
-    "pca": [null, 64, 128, 256],
-    "training_batch_size":[64, 128, 256],
+    "n_clusters_old": [5, 10, 20, 200, 1000],
+    "n_clusters": [200],
+    "pca": [256],
+    "pca_old": [null, 64, 128, 256],
+    "training_batch_size": [64],
+    "training_batch_size_old":[64, 128, 256],
     "training_shuffle":[true]
 }

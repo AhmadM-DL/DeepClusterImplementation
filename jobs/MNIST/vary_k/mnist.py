@@ -145,7 +145,7 @@ if __name__ == '__main__':
     device = torch.device(args.device)
 
     if os.path.exists("./job.chkp"):
-        executed_runs = int(open("./job.chkp", r).read())
+        executed_runs = int(open("./job.chkp", "r").read())
         logging.info("Running from checkpoint: run(%d)"%executed_runs)
     else:
         executed_runs=0
