@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=cifar_base
+#SBATCH --job-name=cifar100_base
 #SBATCH --partition=gpu
 
 #SBATCH --nodes=1
@@ -8,8 +8,8 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu
 #SBATCH --mem=12000
-#SBATCH --time=0-06:00:00
-#SBATCH --array=1-4%1
+#SBATCH --time=1-00:00:00
+##SBATCH --array=1-4%1
 
 ## set the environment modules
 module load python/base/miniconda3
