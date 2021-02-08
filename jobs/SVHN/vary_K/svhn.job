@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#SBATCH --job-name=svhn
+#SBATCH --partition=msfea-ai
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+##SBATCH --gres=gpu
+#SBATCH --mem=12000
+#SBATCH --time=3-00:00:00
+
+## set the environment modules
+module load python/base/miniconda3
+module load cuda
+source /apps/sw/miniconda/etc/profile.d/conda.sh
+conda activate myenv
+
+## add my modules
+export PYTHONPATH=$HOME/scratch/DeepClusterImplementation 
+## execute the python job
+## nvidia-smi
+
+python3 svhn.py --device "cuda:0" --hyperparam "/home/amm90/scratch/DeepClusterImplementation/jobs/SVHN/vary_K/hyper.json"
