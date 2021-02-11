@@ -178,9 +178,9 @@ if __name__ == '__main__':
                                                 counter+=1
                                                 continue
                                             try:
-                                            run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters, pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
-                                            counter+=1
-                                            open("job.chkp", "w").write(str(counter))
+                                                run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters, pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
+                                                counter+=1
+                                                open("job.chkp", "w").write(str(counter))
                                             except Exception as e:
                                                 logging.error(traceback.format_exception(*sys.exc_info()))
                                                 logging.error(e)
