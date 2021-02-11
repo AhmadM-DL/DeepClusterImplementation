@@ -5,8 +5,10 @@ import argparse
 from datetime import datetime
 
 import sys
+import traceback
 import importlib
 import os
+
 
 sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
@@ -175,7 +177,13 @@ if __name__ == '__main__':
                                             if counter <= executed_runs:
                                                 counter+=1
                                                 continue
-                                            run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
-                                            pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
+                                            try:
+                                            run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters, pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
                                             counter+=1
                                             open("job.chkp", "w").write(str(counter))
+                                            except Exception as e:
+                                                logging.error(traceback.format_exception(*sys.exc_info()))
+                                                logging.error(e)
+                                                counter+=1
+                                                open("job.chkp", "w").write(str(counter))
+                                                continue
