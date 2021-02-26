@@ -6,6 +6,12 @@ Contains methods to cluster Deep cluster features.
 """
 import time
 
+try:
+    import faiss
+    print("Faiss is available")
+except ImportError:
+    print("Faiss is not available")
+
 import numpy as np
 from PIL import Image
 from PIL import ImageFile
@@ -74,6 +80,46 @@ def random_knn_clustering(npdata, n_clusters, random_state=None):
 
     return pseudo_labels
 
+def faiss_kmeans(npdata, n_clusters, verbose=False, random_state=1234, fit_partial=None):
+    """Runs kmeans on 1 GPU.
+    Args:
+        x: data
+        nmb_clusters (int): number of clusters
+    Returns:
+        list: ids of data in each cluster
+    """
+    n_data, d = npdata.shape
+
+    # faiss implementation of k-means
+    clus = faiss.Clustering(d, n_clusters)
+
+    # Change faiss seed at each k-means so that the randomly picked
+    # initialization centroids do not correspond to the same feature ids
+    # from an epoch to another.
+    clus.seed = np.random.randint(random_state)
+
+    clus.niter = 20
+    clus.max_points_per_centroid = 10000000
+    res = faiss.StandardGpuResources()
+    flat_config = faiss.GpuIndexFlatConfig()
+    flat_config.useFloat16 = False
+    flat_config.device = 0
+    index = faiss.GpuIndexFlatL2(res, d, flat_config)
+
+    if fit_partial:
+        sample_size = int(fit_partial*len(npdata)/100)
+        random_indices = np.random.choice(range(0,len(npdata)), size=sample_size,  replace=False)
+        npdata = npdata[random_indices]
+
+    # perform the training
+    clus.train(npdata, index)
+    _, I = index.search(npdata, 1)
+
+    losses = faiss.vector_to_array(clus.obj)
+    if verbose:
+        print('Faiss k-means loss evolution: {0}'.format(losses))
+
+    return [int(n[0]) for n in I]
 
 def sklearn_kmeans(npdata, n_clusters, random_state=None, verbose=False, fit_partial=None , **kwargs):
     Kmeans = KMeans(n_clusters = n_clusters,

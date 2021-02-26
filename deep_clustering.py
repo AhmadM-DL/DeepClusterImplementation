@@ -12,7 +12,7 @@ from deep_clustering_dataset import DeepClusteringDataset
 from preprocessing import l2_normalization, sklearn_pca_whitening
 from samplers import UnifAverageLabelSampler
 
-from clustering import sklearn_kmeans
+from clustering import sklearn_kmeans, faiss_kmeans
 from sklearn.metrics import normalized_mutual_info_score as NMI
 from scipy.stats import entropy
 from sklearn.manifold import TSNE
@@ -53,6 +53,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                 - "embeddings_checkpoint" the percent of cycles to be performed between written embeddings default 20
                 - "halt_clustering"
                 - "kmeans_max_iter"
+                - "use_faiss" used to use facebook faiss clustering rather than kmeans
                 - ..
     """
     if writer:
@@ -173,12 +174,20 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             max_iter  = kwargs.get("kmeans_max_iter", 20)
             if not rnd_state:
                 rnd_state = np.random.randint(1234)
-            assignments = sklearn_kmeans(
-                features, n_clusters=n_clusters,
-                random_state=rnd_state,
-                verbose=verbose-1,
-                max_iter = max_iter,
-                fit_partial=kwargs.get("partial_fit", None))
+            use_faiss = kwargs.get("use_faiss", None)
+            if use_faiss:
+                assignments = faiss_kmeans(
+                    features, n_clusters=n_clusters,
+                    random_state=rnd_state,
+                    verbose=verbose-1,
+                    fit_partial=kwargs.get("partial_fit", None))
+            else:
+                assignments = sklearn_kmeans(
+                    features, n_clusters=n_clusters,
+                    random_state=rnd_state,
+                    verbose=verbose-1,
+                    max_iter = max_iter,
+                    fit_partial=kwargs.get("partial_fit", None))
 
         if writer:
             # write NMI between consecutive pseudolabels
