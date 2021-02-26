@@ -24,7 +24,7 @@ from utils import set_seed
 
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, sobel, training_shuffle,
-        random_state, dataset_path):
+        random_state, dataset_path, use_faiss):
     logging.info("New Experiment ##########################################")
     logging.info("%s"%datetime.now())
     logging.info("Set Seed")
@@ -102,6 +102,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  training_shuffle=training_shuffle,
                  pca_components=pca,
                  checkpoints= "checkpoints/"+writer_file,
+                 use_faiss= use_faiss,
                  resume=resume,
                  writer=writer)
     
@@ -146,6 +147,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', default="cpu", type=str, help="Device to use")
     parser.add_argument('--seed', default=666, type=int, help="Random Seed")
     parser.add_argument('--chkp', default=None, type=str, help="Checkpoint")
+    parser.add_argument("--use_faiss", action="store_true", help="Use facebook FAISS for clustering")
     args = parser.parse_args()
 
     logging.basicConfig(filename='app.log', filemode='a',
@@ -178,7 +180,11 @@ if __name__ == '__main__':
                                                 counter+=1
                                                 continue
                                             try:
-                                                run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters, pca, training_batch_size, training_shuffle, sobel, random_state=args.seed, dataset_path=args.dataset)
+                                                run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
+                                                pca, training_batch_size, training_shuffle, sobel,
+                                                random_state=args.seed, dataset_path=args.dataset,
+                                                use_faiss=args.use_faiss)
+
                                                 counter+=1
                                                 open("job.chkp", "w").write(str(counter))
                                             except Exception as e:
