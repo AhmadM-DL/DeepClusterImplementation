@@ -22,17 +22,25 @@ from deep_clustering import deep_cluster
 from evaluation.linear_probe import eval_linear
 from utils import set_seed
 
+DATASET = "CIFAR10"
+MODEL = "AlexNetSmall"
+CHECKPOINTS = "checkpoints"
+TENSORBOARD = "runs"
+EXPERIMENT_CHECK = "exp.chkp"
+LOGS= "exp.log"
+
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, sobel, training_shuffle,
         random_state, dataset_path, use_faiss, log_dir=None):
     logging.info("New Experiment ##########################################")
     logging.info("%s"%datetime.now())
+
     logging.info("Set Seed")
     set_seed(random_state)
 
     logging.info("Set Log Dir")
     if not log_dir:
-        log_dir = "checkpoints/"
+        log_dir = "./"
     
     logging.info("Loading Dataset")
     cifar10 = CIFAR10(dataset_path, download=True, train=True)
@@ -72,21 +80,21 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         normalize])
 
     logging.info("Defining Writer")
-    writer_file = "cifar10_microAlexNet_"+"batchnorm(%d)_" % batch_norm + \
-        "lr(%f)_" % lr+"momentum(%f)_" % momentum+"wdecay(%f)_" % wd + \
-        "n_clusters(%d)_" % n_clusters + \
-        "n_cycles(%d)_" % n_cycles+"rnd(%d)_" % random_state + \
-        "t_batch_size(%d)_" % training_batch_size + \
-        "shuffle(%d)_" % training_shuffle + "sobel(%d)_"%sobel
+    writer_file = "{dataset}_{model}_batchnorm({bt})_lr({lr})_momentum({mom})_wdecay({wd})_n_clusters({nclusters})_\
+                   n_cycles(ncycles)_rnd(seed)_t_batch_size(tbsize)_shuffle(shfl)_sobel(sobel)_"
+    writer_file = writer_file.format(dataset=DATASET, model=MODEL, bt=batch_norm, lr=lr, mom=momentum,
+                                     wd=wd, nclusters= n_clusters, ncycles=n_cycles, seed=random_state,
+                                     tbsize=training_batch_size, sobel=sobel
+                                     )
     if pca:
-        writer_file=writer_file+"pca(%d)_"%pca
+        writer_file=writer_file+"pca(%d)"%pca
     else:
-        writer_file=writer_file+"pca(None)_"
+        writer_file=writer_file+"pca(None)"
 
-    writer = SummaryWriter('runs/'+writer_file)
+    writer = SummaryWriter( os.path.join(log_dir, TENSORBOARD, writer_file) )
 
-    if os.path.isfile(log_dir+writer_file+"/last_model.pth"):
-        resume = log_dir+writer_file+"/last_model.pth"
+    if os.path.isfile( os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth") ):
+        resume = os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth")
         logging.info("Resuming from: %s"%resume)
     else: 
         resume = None
@@ -105,7 +113,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  training_batch_size=training_batch_size,
                  training_shuffle=training_shuffle,
                  pca_components=pca,
-                 checkpoints= log_dir+writer_file,
+                 checkpoints= os.path.join(log_dir, CHECKPOINTS, writer_file),
                  use_faiss= use_faiss,
                  resume=resume,
                  writer=writer)
@@ -150,13 +158,12 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default="../datasets", type=str, help="Path to datasets")
     parser.add_argument('--device', default="cpu", type=str, help="Device to use")
     parser.add_argument('--seed', default=666, type=int, help="Random Seed")
-    parser.add_argument('--chkp', default=None, type=str, help="Checkpoint")
     parser.add_argument('--log_dir', default=None, type=str, help="Logs directory")
     parser.add_argument("--use_faiss", action="store_true", help="Use facebook FAISS for clustering")
     args = parser.parse_args()
 
-    logging.basicConfig(filename='app.log', filemode='a',
-                        format='%(name)s - %(levelname)s - %(message)s',
+    logging.basicConfig(filename=  os.path.join(args.log_dir, LOGS), filemode='a',
+                        format='%(message)s',
                         level=logging.INFO)
 
     logging.info("New Batch ####################################")
@@ -164,11 +171,13 @@ if __name__ == '__main__':
 
     hparams = json.load(open(args.hyperparam, "r"))
     device = torch.device(args.device)
-    if args.chkp:
-        executed_runs = int(open(args.chkp, "r").read())
+
+    if os.path.isfile( os.path.join(args.log_dir, EXPERIMENT_CHECK) ):
+        executed_runs = int(open( os.path.join(args.log_dir, EXPERIMENT_CHECK) , "r").read())
         logging.info("Running from checkpoint: run(%d)"%executed_runs)
     else:
         executed_runs = 0 
+
     counter=1
     for lr in hparams['lr']:
         for wd in hparams['wd']:
@@ -191,10 +200,10 @@ if __name__ == '__main__':
                                                 use_faiss=args.use_faiss, log_dir= args.log_dir)
 
                                                 counter+=1
-                                                open("job.chkp", "w").write(str(counter))
+                                                open( os.path.join(args.log_dir, EXPERIMENT_CHECK), "w").write(str(counter))
                                             except Exception as e:
                                                 logging.error(traceback.format_exception(*sys.exc_info()))
                                                 logging.error(e)
                                                 counter+=1
-                                                open("job.chkp", "w").write(str(counter))
+                                                open( os.path.join(args.log_dir, EXPERIMENT_CHECK), "w").write(str(counter))
                                                 continue
