@@ -112,12 +112,13 @@ def faiss_kmeans(npdata, n_clusters, verbose=False, random_state=1234, fit_parti
         npdata = npdata[random_indices]
 
     # perform the training
+    npdata= npdata.astype(np.float32)
     clus.train(npdata, index)
     _, I = index.search(npdata, 1)
 
-    losses = faiss.vector_to_array(clus.obj)
-    if verbose:
-        print('Faiss k-means loss evolution: {0}'.format(losses))
+    # losses = faiss.vector_to_array(clus.obj)
+    # if verbose:
+    #     print('Faiss k-means loss evolution: {0}'.format(losses))
 
     return [int(n[0]) for n in I]
 
