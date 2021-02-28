@@ -1,24 +1,21 @@
-from utils import set_seed
 from evaluation.linear_probe import eval_linear
 from deep_clustering import deep_cluster
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import AlexNet_Small
+
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
+
+from utils import set_seed
+
 import torch
-import json
-import logging
-import argparse
+import json,  logging, argparse
 from datetime import datetime
+import sys, traceback, importlib, os
 
-import sys
-import traceback
-import importlib
-import os
-
-sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
+#sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
 
 DATASET = "CIFAR10"
@@ -82,7 +79,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     logging.info("Defining Writer")
     writer_file = "{dataset}_{model}_batchnorm({bt})_lr({lr})_momentum({mom})_wdecay({wd})_n_clusters({nclusters})_\
-                   n_cycles(ncycles)_rnd(seed)_t_batch_size(tbsize)_shuffle(shfl)_sobel(sobel)_"
+                   n_cycles({ncycles})_rnd({seed})_t_batch_size({tbsize})_shuffle({shfl})_sobel({sobel})_"
     writer_file = writer_file.format(dataset=DATASET, model=MODEL, bt=batch_norm, lr=lr, mom=momentum,
                                      wd=wd, nclusters=n_clusters, ncycles=n_cycles, seed=random_state,
                                      tbsize=training_batch_size, sobel=sobel
