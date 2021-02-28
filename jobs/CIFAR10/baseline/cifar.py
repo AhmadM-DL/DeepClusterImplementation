@@ -82,7 +82,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                    n_cycles({ncycles})_rnd({seed})_t_batch_size({tbsize})_shuffle({shfl})_sobel({sobel})_"
     writer_file = writer_file.format(dataset=DATASET, model=MODEL, bt=batch_norm, lr=lr, mom=momentum,
                                      wd=wd, nclusters=n_clusters, ncycles=n_cycles, seed=random_state,
-                                     tbsize=training_batch_size, sobel=sobel
+                                     tbsize=training_batch_size, shfl=training_shuffle, sobel=sobel
                                      )
     if pca:
         writer_file = writer_file+"pca(%d)" % pca
