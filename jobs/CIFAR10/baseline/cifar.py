@@ -4,9 +4,13 @@ from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import AlexNet_Small
 
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
-from torch.utils.tensorboard import SummaryWriter
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
+
+import tensorflow as tf
+import tensorboard as tb
+tf.io.gfile = tb.compat.tensorflow_stub.io.gfile
+from torch.utils.tensorboard import SummaryWriter
 
 from utils import set_seed
 
@@ -82,8 +86,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                    n_cycles({ncycles})_rnd({seed})_t_batch_size({tbsize})_shuffle({shfl})_sobel({sobel})_"
     writer_file = writer_file.format(dataset=DATASET, model=MODEL, bt=batch_norm, lr=lr, mom=momentum,
                                      wd=wd, nclusters=n_clusters, ncycles=n_cycles, seed=random_state,
-                                     tbsize=training_batch_size, shfl=training_shuffle, sobel=sobel
-                                     )
+                                     tbsize=training_batch_size, shfl=training_shuffle, sobel=sobel)
     if pca:
         writer_file = writer_file+"pca(%d)" % pca
     else:
@@ -92,8 +95,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     writer = SummaryWriter(os.path.join(log_dir, TENSORBOARD, writer_file))
 
     if os.path.isfile(os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth")):
-        resume = os.path.join(log_dir, CHECKPOINTS,
-                              writer_file, "last_model.pth")
+        resume = os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth")
         logging.info("Resuming from: %s" % resume)
     else:
         resume = None
