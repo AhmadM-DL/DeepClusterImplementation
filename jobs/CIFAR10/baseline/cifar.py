@@ -171,6 +171,11 @@ if __name__ == '__main__':
                         help="Use facebook FAISS for clustering")
     args = parser.parse_args()
 
+    # create logs file if not available
+    if not os.path.isfile(os.path.join(args.log_dir, LOGS)):
+        f = open( os.path.join(args.log_dir, LOGS), 'w')
+        f.close()
+
     logging.basicConfig(format='%(message)s',
                         level=logging.INFO,
                         handlers=[
