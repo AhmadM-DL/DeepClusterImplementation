@@ -57,13 +57,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                                      std = (0.198, 0.201, 0.197))
 
     training_transform = transforms.Compose([
-        transforms.RandomResizedCrop(32),
+        transforms.RandomResizedCrop(224),
         transforms.ToTensor(),
         normalize])
 
     loading_transform = transforms.Compose([
-        transforms.Resize(42),
-        transforms.CenterCrop(32),
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         normalize])
 
@@ -111,13 +111,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     traindataset = cifar10
     validdataset = cifar10_test
 
-    transformations_val = [transforms.Resize(42),
-                                transforms.CenterCrop(32),
+    transformations_val = [transforms.Resize(256),
+                                transforms.CenterCrop(224),
                                 transforms.ToTensor(),
                                 normalize]
 
-    transformations_train = [transforms.Resize(42),
-                                transforms.CenterCrop(32),
+    transformations_train = [transforms.Resize(256),
+                                transforms.CenterCrop(224),
                                 #transforms.RandomCrop(32),
                                 #transforms.RandomHorizontalFlip(),
                                 transforms.ToTensor(),
@@ -133,8 +133,8 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                 validdataset=validdataset,
                 target_layer="relu_5",
                 n_labels=10,
-                features_size= 512,
-                avg_pool= None,
+                features_size= 9216,
+                avg_pool= {"kernel_size":2, "stride":2, "padding":0},,
                 random_state=random_state,
                 writer= writer,
                 verbose=1)
