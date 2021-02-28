@@ -24,11 +24,15 @@ from utils import set_seed
 
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, sobel, training_shuffle,
-        random_state, dataset_path, use_faiss):
+        random_state, dataset_path, use_faiss, log_dir=None):
     logging.info("New Experiment ##########################################")
     logging.info("%s"%datetime.now())
     logging.info("Set Seed")
     set_seed(random_state)
+
+    logging.info("Set Log Dir")
+    if not log_dir:
+        log_dir = "checkpoints/"
     
     logging.info("Loading Dataset")
     cifar10 = CIFAR10(dataset_path, download=True, train=True)
@@ -81,8 +85,8 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     writer = SummaryWriter('runs/'+writer_file)
 
-    if os.path.isfile("checkpoints/"+writer_file+"/last_model.pth"):
-        resume = "checkpoints/"+writer_file+"/last_model.pth"
+    if os.path.isfile(log_dir+writer_file+"/last_model.pth"):
+        resume = log_dir+writer_file+"/last_model.pth"
         logging.info("Resuming from: %s"%resume)
     else: 
         resume = None
@@ -101,7 +105,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  training_batch_size=training_batch_size,
                  training_shuffle=training_shuffle,
                  pca_components=pca,
-                 checkpoints= "checkpoints/"+writer_file,
+                 checkpoints= log_dir+writer_file,
                  use_faiss= use_faiss,
                  resume=resume,
                  writer=writer)
@@ -134,7 +138,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                 target_layer="relu_5",
                 n_labels=10,
                 features_size= 9216,
-                avg_pool= {"kernel_size":2, "stride":2, "padding":0},,
+                avg_pool= {"kernel_size":2, "stride":2, "padding":0},
                 random_state=random_state,
                 writer= writer,
                 verbose=1)
@@ -147,6 +151,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', default="cpu", type=str, help="Device to use")
     parser.add_argument('--seed', default=666, type=int, help="Random Seed")
     parser.add_argument('--chkp', default=None, type=str, help="Checkpoint")
+    parser.add_argument('--log_dir', default=None, type=str, help="Logs directory")
     parser.add_argument("--use_faiss", action="store_true", help="Use facebook FAISS for clustering")
     args = parser.parse_args()
 
@@ -183,7 +188,7 @@ if __name__ == '__main__':
                                                 run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                                 pca, training_batch_size, training_shuffle, sobel,
                                                 random_state=args.seed, dataset_path=args.dataset,
-                                                use_faiss=args.use_faiss)
+                                                use_faiss=args.use_faiss, log_dir= args.log_dir)
 
                                                 counter+=1
                                                 open("job.chkp", "w").write(str(counter))
