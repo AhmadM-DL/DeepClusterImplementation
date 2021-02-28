@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
     # create logs file if not available
     if not os.path.isfile(os.path.join(args.log_dir, LOGS)):
-        f = open( os.path.join(args.log_dir, LOGS), 'w')
+        f = open( os.path.join(args.log_dir, LOGS), 'a')
         f.close()
 
     logging.basicConfig(format='%(message)s',
