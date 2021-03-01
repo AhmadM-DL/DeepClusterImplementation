@@ -1,7 +1,7 @@
 from evaluation.linear_probe import eval_linear
 from deep_clustering import deep_cluster
 from deep_clustering_dataset import DeepClusteringDataset
-from deep_clustering_models import AlexNet_Micro
+from deep_clustering_models import AlexNet_Small
 
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from torchvision.datasets import CIFAR10
@@ -23,7 +23,7 @@ import sys, traceback, importlib, os
 
 
 DATASET = "CIFAR10"
-MODEL = "AlexNetMicro"
+MODEL = "AlexNetSmall"
 CHECKPOINTS = "checkpoints"
 TENSORBOARD = "runs"
 EXPERIMENT_CHECK = "exp.chkp"
@@ -49,7 +49,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     device = torch.device(device)
 
     logging.info("Build Model")
-    model = AlexNet_Micro(
+    model = AlexNet_Small(
         sobel=sobel, batch_normalization=batch_norm, device=device)
 
     logging.info("Build Optimizer")
@@ -71,13 +71,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                                      std=(0.198, 0.201, 0.197))
 
     training_transform = transforms.Compose([
-        transforms.RandomResizedCrop(32),
+        transforms.RandomResizedCrop(224),
         transforms.ToTensor(),
         normalize])
 
     loading_transform = transforms.Compose([
-        transforms.Resize(45),
-        transforms.CenterCrop(32),
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         normalize])
 
@@ -123,13 +123,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     traindataset = cifar10
     validdataset = cifar10_test
 
-    transformations_val = [transforms.Resize(45),
-                           transforms.CenterCrop(32),
-                          s transforms.ToTensor(),
+    transformations_val = [transforms.Resize(256),
+                           transforms.CenterCrop(224),
+                           transforms.ToTensor(),
                            normalize]
 
-    transformations_train = [transforms.Resize(45),
-                             transforms.CenterCrop(32),
+    transformations_train = [transforms.Resize(256),
+                             transforms.CenterCrop(224),
                              # transforms.RandomCrop(32),
                              # transforms.RandomHorizontalFlip(),
                              transforms.ToTensor(),
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', default="cpu",
                         type=str, help="Device to use")
     parser.add_argument('--seed', default=666, type=int, help="Random Seed")
-    parser.add_argument('--log_dir', default="./",
+    parser.add_argument('--log_dir', default=None,
                         type=str, help="Logs directory")
     parser.add_argument("--use_faiss", action="store_true",
                         help="Use facebook FAISS for clustering")

@@ -1,12 +1,12 @@
 {
-    "lr":[0.1],
+    "lr":[0.1, 0.01],
     "wd":[0.001],
-    "momentum": [0.9],
+    "momentum": [0.8,0.5],
     "sobel": [true],
     "batch_norm": [true],
     "n_cycles": [100],
-    "n_clusters": [5, 10, 200, 1000, 2000, 10000, 5000],
-    "pca": [null, 64, 128, 256],
-    "training_batch_size":[256],
+    "n_clusters": [1000],
+    "pca": [256],
+    "training_batch_size":[32, 64, 128],
     "training_shuffle":[true]
 }
