@@ -215,7 +215,6 @@ if __name__ == '__main__':
                                                     pca, training_batch_size, training_shuffle, sobel,
                                                     random_state=args.seed, dataset_path=args.dataset,
                                                     use_faiss=args.use_faiss, log_dir=args.log_dir)
-
                                                 counter += 1
                                                 open(os.path.join(args.log_dir, EXPERIMENT_CHECK), "w").write(
                                                     str(counter))
