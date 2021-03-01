@@ -125,7 +125,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     transformations_val = [transforms.Resize(45),
                            transforms.CenterCrop(32),
-                          s transforms.ToTensor(),
+                           transforms.ToTensor(),
                            normalize]
 
     transformations_train = [transforms.Resize(45),
