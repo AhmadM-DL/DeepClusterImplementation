@@ -7,9 +7,9 @@ from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
 
-import tensorflow as tf
-import tensorboard as tb
-tf.io.gfile = tb.compat.tensorflow_stub.io.gfile
+#import tensorflow as tf
+#import tensorboard as tb
+#tf.io.gfile = tb.compat.tensorflow_stub.io.gfile
 from torch.utils.tensorboard import SummaryWriter
 
 from utils import set_seed
