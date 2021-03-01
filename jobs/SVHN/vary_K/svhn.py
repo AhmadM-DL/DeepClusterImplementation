@@ -44,7 +44,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         log_dir = "./"
 
     logging.info("Loading Dataset")
-    dataset_train = SVHN(dataset_path, download=True, train=True)
+    dataset_train = SVHN(dataset_path, download=True, split='train')
 
     device = torch.device(device)
 
@@ -118,7 +118,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  resume=resume,
                  writer=writer)
 
-    dataset_test = SVHN(dataset_path, train=False, download=True)
+    dataset_test = SVHN(dataset_path, split='test', download=True)
 
     traindataset = dataset_train
     validdataset = dataset_test
