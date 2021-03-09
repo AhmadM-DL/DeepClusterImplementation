@@ -1,0 +1,7 @@
+{
+    "sobel": false,
+    "batch_norm": true,
+    "n_clusters": 12,
+    "pca": null,
+    "training_batch_size":64
+}
