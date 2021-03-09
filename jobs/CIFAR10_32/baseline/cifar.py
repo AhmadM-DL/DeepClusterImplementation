@@ -33,6 +33,7 @@ LOGS = "exp.log"
 def run(device, batch_norm, lr, wd, momentum, n_cycles,
         n_clusters, pca, training_batch_size, sobel, training_shuffle,
         random_state, dataset_path, use_faiss, log_dir=None):
+
     logging.info("New Experiment ##########################################")
     logging.info("%s" % datetime.now())
 
@@ -48,9 +49,11 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     device = torch.device(device)
 
+    logging.info("Free Cuda Memory Cache because of out of memory error")
+    torch.cuda.empty_cache()
+    
     logging.info("Build Model")
-    model = AlexNet_Micro(
-        sobel=sobel, batch_normalization=batch_norm, device=device)
+    model = AlexNet_Micro(sobel=sobel, batch_normalization=batch_norm, device=device)
 
     logging.info("Build Optimizer")
     optimizer = torch.optim.SGD(
