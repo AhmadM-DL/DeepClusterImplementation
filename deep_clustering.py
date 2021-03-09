@@ -61,7 +61,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         dummy_input = torch.rand((1,) + model.input_size)
         # I am not really sure why I have to add an input for add_graph
         # also move dummy input to models device
-        writer.add_graph(model, dummy_input.to(model.device))
+        #writer.add_graph(model, dummy_input.to(model.device))
 
     start_cycle = 0
 
@@ -134,17 +134,17 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                                     pin_memory=True), verbose=verbose)
 
         # if writer and we completed a 20% of all cycles: add embeddings
-        if writer and cycle % (int(n_cycles*(kwargs.get("embeddings_checkpoint", 20)/100))) == 0:
+        # if writer and cycle % (int(n_cycles*(kwargs.get("embeddings_checkpoint", 20)/100))) == 0:
 
-            embeddings_sample_size = kwargs.get("embeddings_sample_size", 500)
-            to_embed = features[0:embeddings_sample_size]
+        #     embeddings_sample_size = kwargs.get("embeddings_sample_size", 500)
+        #     to_embed = features[0:embeddings_sample_size]
 
-            images_labels = [dataset.original_dataset.__getitem__(i) for i in range(0, embeddings_sample_size)]
-            images = torch.stack([ transforms.ToTensor()(tuple[0]) for tuple in images_labels])
-            labels = torch.tensor([tuple[1] for tuple in images_labels])
+        #     images_labels = [dataset.original_dataset.__getitem__(i) for i in range(0, embeddings_sample_size)]
+        #     images = torch.stack([ transforms.ToTensor()(tuple[0]) for tuple in images_labels])
+        #     labels = torch.tensor([tuple[1] for tuple in images_labels])
 
-            writer.add_embedding(mat=to_embed, metadata=labels,
-                                 label_img=images, global_step=cycle)
+        #     writer.add_embedding(mat=to_embed, metadata=labels,
+        #                          label_img=images, global_step=cycle)
 
         if halt_clustering and cycle>=halt_clustering:
             pass
@@ -206,8 +206,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                 print(" - Reassign pseudo_labels")
 
             dataset.set_pseudolabels(assignments)
-
-            dataset.save_pseudolabels(writer.get_logdir()+"/clusters", cycle)
+            #dataset.save_pseudolabels(writer.get_logdir()+"/clusters", cycle)
 
         # set training transform else consider dataset transform
         if training_transform:
