@@ -9,5 +9,5 @@
     "pca": [64],
     "training_batch_size":[256],
     "training_shuffle":[true],
-
+    "seed":[12, 45, 56, 87, 23, 55, 88, 99, 123, 122]
 }
