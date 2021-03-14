@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #SBATCH --job-name=mnist_space
-#SBATCH --partition=msfea-ai
+#SBATCH --partition=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 ##SBATCH --gres=gpu
 #SBATCH --mem=12000
-#SBATCH --time=3-00:00:00
+#SBATCH --time=05:00:00
 
 ## set the environment modules
 module load python/base/miniconda3
@@ -20,4 +20,4 @@ export PYTHONPATH=$HOME/scratch/DeepClusterImplementation
 ## execute the python job
 ## nvidia-smi
 
-python3 space.py --device "cuda:0" --hyperparam "/home/amm90/scratch/DeepClusterImplementation/jobs/MNIST/vary_space/hyper.json"
+python3 space.py --device "cpu" --hyperparam "/home/amm90/scratch/DeepClusterImplementation/jobs/MNIST/vary_space/hyper.json"

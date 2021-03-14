@@ -24,5 +24,5 @@ export PYTHONPATH=$PYTHONPATH:$HOME/scratch/DeepClusterImplementation/evaluation
 ## execute the python job
 ## nvidia-smi
 # start executing the program,
-python3 cifar.py --device "cuda:0" --chkp=${MY_CHECKPOINT_FILE} --use_faiss
+python3 cifar.py --device "cuda:0" --use_faiss
 

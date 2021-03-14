@@ -111,25 +111,26 @@ if __name__ == '__main__':
     nmis= []
     all_entropies = []
     all_noises = []
-    for seed in np.range(0, 100):
+    seed_range = [0, 100]
+    for seed in np.arange(seed_range[0], seed_range[1]):
         writer = SummaryWriter('space_run/seed(%d)/'%seed)
         nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], hparams["n_clusters"], hparams["pca"], hparams["training_batch_size"],
                                     random_state=seed, dataset_path=args.dataset, use_faiss=args.use_faiss)
         writer.add_histogram("pseudoclasses_entropies", np.array(entropies), 0)
-        writer.add_histogram("pseudoclasses_entropies", np.array(noises), 0)
+        writer.add_histogram("pseudoclasses_noises", np.array(noises), 0)
         nmis.append(nmi)
-        all_entropies.append(np.array(entropies))
-        all_noises.append(np.array(noises))
+        all_entropies.append(list(entropies))
+        all_noises.append(list(noises))
 
     fig = plt.figure()
     plt.hist(nmis)
-    plt.xlable("NMI values")
-    plt.ylable("Frequency")
+    plt.xlabel("NMI values")
+    plt.ylabel("Frequency")
     plt.title("%s NMI Distribution"%DATASET)
-    plt.savefig("space_run_nmi.png")
+    writer.add_figure("NMI Dist", fig)    
     
     json.dump({"dataset": DATASET,
-               "seed_range": [0,100],
+               "seed_range": seed_range,
                "hparams": hparams,
                "nmis": nmis,
                "entropies": all_entropies,
