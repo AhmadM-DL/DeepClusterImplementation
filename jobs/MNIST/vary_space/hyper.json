@@ -1,7 +1,13 @@
 {
-    "sobel": false,
-    "batch_norm": true,
-    "n_clusters": 9,
-    "pca": null,
-    "training_batch_size":256
+    "lr":[0.1],
+    "wd":[0.001],
+    "momentum": [0.1],
+    "sobel": [false],
+    "batch_norm": [true],
+    "n_cycles": [30],
+    "n_clusters": [5],
+    "pca": [null],
+    "training_batch_size":[64],
+    "training_shuffle":[true],
+    "seed":[70, 13, 5, 11, 1, 4, 7, 12, 49, 36]
 }
