@@ -21,7 +21,7 @@ class DeepClusteringDataset(Dataset):
                                         transformed version
     """
 
-    def __init__(self, original_dataset, transform=None):
+    def __init__(self, original_dataset, transform=None, in_loop_transform=None):
         self.dataset = copy.deepcopy(original_dataset)
         self.original_dataset = original_dataset
 
@@ -43,6 +43,11 @@ class DeepClusteringDataset(Dataset):
             self.dataset.transform = transform
         else:
             self.dataset.transform = original_dataset.transform
+        
+        if in_loop_transform:
+            self.in_loop_transform = in_loop_transform
+        else:
+            self.in_loop_transform = lambda x: x
 
         self.transform = self.dataset.transform
         self.instance_wise_weights= None

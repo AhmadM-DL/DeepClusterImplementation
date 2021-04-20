@@ -116,7 +116,7 @@ class DeepClusteringNet(torch.nn.Module):
             param.requires_grad = True
 
     def deep_cluster_train(self, dataloader, epoch, optimizer: torch.optim.Optimizer, loss_fn, verbose=False,
-                           writer: SummaryWriter = None):
+                           writer: SummaryWriter = None, transform_inside_loop=True):
 
         if verbose:
             print('Training Model')
@@ -127,6 +127,11 @@ class DeepClusteringNet(torch.nn.Module):
         for i, (input_, target) in enumerate(dataloader):
 
             input_ = input_.to(self.device)
+            
+            ## Transform input before forward phase 
+            if transform_inside_loop:
+                input_= dataloader.dataset.in_loop_transform(input_);
+
             target = target.to(self.device)
             output = self(input_)
 

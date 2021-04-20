@@ -24,7 +24,7 @@ import os
 def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clusters, loss_fn, optimizer, n_cycles,
                  loading_transform=None, training_transform=None,
                  random_state=0, verbose=0, writer: SummaryWriter = None,
-                 checkpoints=None, resume=None,
+                 checkpoints=None, resume=None, in_loop_transform=False,
                  **kwargs):
     """ 
     The main method in this repo. it implements the DeepCluster pipeline
@@ -122,7 +122,10 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             
             # Set Loading Transform else consider the dataset transform
             if loading_transform:
-                dataset.set_transform(loading_transform)
+                if in_loop_transform:
+                    dataset.in_loop_transform = loading_transform
+                else:
+                    dataset.set_transform(loading_transform)
 
             # full feedforward
             features = model.full_feed_forward(
@@ -210,7 +213,10 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
         # set training transform else consider dataset transform
         if training_transform:
-            dataset.set_transform(training_transform)
+            if in_loop_transform:
+                dataset.in_loop_transform = training_transform
+            else:
+                dataset.set_transform(training_transform)
 
         if writer:
            # write original labels entropy distribution in pseudoclasses
@@ -258,4 +264,6 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         n_epochs = kwargs.get("n_epochs", 1)
         for epoch in range(n_epochs):
             loss = model.deep_cluster_train(dataloader=train_dataloader,
-                                            optimizer=optimizer, epoch=cycle*n_epochs+epoch, loss_fn=loss_fn, verbose=verbose, writer=writer)
+                                            optimizer=optimizer, epoch=cycle*n_epochs+epoch, 
+                                            loss_fn=loss_fn, verbose=verbose, writer=writer,
+                                            transform_inside_loop=in_loop_transform)
