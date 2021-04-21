@@ -225,6 +225,7 @@ class DeepClusteringNet(torch.nn.Module):
 
             batch_size = dataloader.batch_size
             input_ = input_.to(self.device)
+            
             ## Transform input before forward phase 
             if transform_inside_loop:
                 input_= dataloader.dataset.in_loop_transform(input_);
