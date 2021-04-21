@@ -170,12 +170,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--log', default="exp.log", type=str)
     parser.add_argument('--expcheck', default="exp.chkp", type=str)
-
-    parser.add_argument('--hyperparam', default="./hyper.json",
-                type=str, help='Path to hyperparam json file')
-    parser.add_argument('--hyperparam', default="./hyper.json",
-                type=str, help='Path to hyperparam json file')
-
+    
     parser.add_argument('--hyperparam', default="./hyper.json",
                         type=str, help='Path to hyperparam json file')
     parser.add_argument('--dataset', default="../datasets",
