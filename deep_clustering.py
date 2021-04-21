@@ -134,7 +134,8 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                                         "loading_batch_size", 256),
                                                     shuffle=kwargs.get(
                                                         "loading_shuffle", False),
-                                                    pin_memory=True), verbose=verbose)
+                                                    pin_memory=True), verbose=verbose,
+                                                    transform_inside_loop= in_loop_transform)
 
         # if writer and we completed a 20% of all cycles: add embeddings
         # if writer and cycle % (int(n_cycles*(kwargs.get("embeddings_checkpoint", 20)/100))) == 0:

@@ -213,7 +213,7 @@ class DeepClusteringNet(torch.nn.Module):
         dataloader.dataset.unset_instance_wise_weights()
 
 
-    def full_feed_forward(self, dataloader, verbose=False):
+    def full_feed_forward(self, dataloader, verbose=False, transform_inside_loop=False):
 
         if verbose:
             print('Computing Model Output')
@@ -225,6 +225,10 @@ class DeepClusteringNet(torch.nn.Module):
 
             batch_size = dataloader.batch_size
             input_ = input_.to(self.device)
+            ## Transform input before forward phase 
+            if transform_inside_loop:
+                input_= dataloader.dataset.in_loop_transform(input_);
+
             output = self(input_).data.cpu().numpy()
 
             if i == 0:
