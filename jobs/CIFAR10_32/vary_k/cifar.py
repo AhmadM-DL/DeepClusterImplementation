@@ -70,15 +70,16 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     normalize = transforms.Normalize(mean=(0.437, 0.443, 0.472),
                                      std=(0.198, 0.201, 0.197))
 
-    training_transform = transforms.Compose([
+    main_transform = transforms.ToTensor()
+    dataset.set_transform(main_transform)
+
+    in_loop_training_transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
-        transforms.ToTensor(),
         normalize])
 
-    loading_transform = transforms.Compose([
+    in_loop_loading_transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
-        transforms.ToTensor(),
         normalize])
 
     logging.info("Defining Writer")
@@ -106,8 +107,8 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  loss_fn=loss_function,
                  optimizer=optimizer,
                  n_cycles=n_cycles,
-                 loading_transform=loading_transform,
-                 training_transform=training_transform,
+                 loading_transform= in_loop_loading_transform,
+                 training_transform= in_loop_training_transform,
                  random_state=random_state,
                  verbose=1,
                  training_batch_size=training_batch_size,
@@ -116,7 +117,9 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  checkpoints=os.path.join(log_dir, CHECKPOINTS, writer_file),
                  use_faiss=use_faiss,
                  resume=resume,
-                 writer=writer)
+                 in_loop_transform=True,
+                 writer=writer,
+                 )
 
     cifar10_test = CIFAR10(dataset_path, train=False, download=True)
 
