@@ -170,18 +170,24 @@ if __name__ == '__main__':
 
     parser.add_argument('--log', default="exp.log", type=str)
     parser.add_argument('--expcheck', default="exp.chkp", type=str)
-    
+
     parser.add_argument('--hyperparam', default="./hyper.json",
                         type=str, help='Path to hyperparam json file')
+
     parser.add_argument('--dataset', default="../datasets",
                         type=str, help="Path to datasets")
+
     parser.add_argument('--device', default="cpu",
                         type=str, help="Device to use")
+
     parser.add_argument('--seed', default=666, type=int, help="Random Seed")
+
     parser.add_argument('--log_dir', default="./",
                         type=str, help="Logs directory")
+
     parser.add_argument("--use_faiss", action="store_true",
                         help="Use facebook FAISS for clustering")
+                        
     args = parser.parse_args()
 
     EXPERIMENT_CHECK = args.log
