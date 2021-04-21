@@ -21,9 +21,11 @@ import sys, traceback, importlib, os
 
 #sys.path.append("C:\\Users\\PC\\Desktop\\Projects\\DeepClusterImplementation")
 
-
+## CHANGE
 DATASET = "SVHN"
+## CHANGE
 MODEL = "AlexNetMicro"
+
 CHECKPOINTS = "checkpoints"
 TENSORBOARD = "runs"
 EXPERIMENT_CHECK = "exp.chkp"
@@ -44,11 +46,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         log_dir = "./"
 
     logging.info("Loading Dataset")
+    ## CHANGE
     dataset_train = SVHN(dataset_path, download=True, split='train')
 
     device = torch.device(device)
 
     logging.info("Build Model")
+    ## CHANGE
     model = AlexNet_Micro(
         sobel=sobel, batch_normalization=batch_norm, device=device)
 
@@ -67,16 +71,19 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     dataset = DeepClusteringDataset(dataset_train)
 
     logging.info("Defining Transformations")
+    ## CHANGE
     normalize = transforms.Normalize(mean = (0.437, 0.443, 0.472),
                                      std = (0.198, 0.201, 0.197))
 
+    ## CHANGE
     main_transform = transforms.ToTensor()
     dataset.set_transform(main_transform)
 
+    ## CHANGE
     in_loop_training_transform = transforms.Compose([
         transforms.RandomResizedCrop(32),
         normalize])
-
+    ## CHANGE
     in_loop_loading_transform = transforms.Compose([
         transforms.Resize(45),
         transforms.CenterCrop(32),
@@ -120,16 +127,18 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  in_loop_transform=True,
                  writer=writer)
 
+    ## CHANGE
     dataset_test = SVHN(dataset_path, split='test', download=True)
 
     traindataset = dataset_train
     validdataset = dataset_test
 
+    ## CHANGE
     transformations_val = [transforms.Resize(45),
                            transforms.CenterCrop(32),
                            transforms.ToTensor(),
                            normalize]
-
+    ## CHANGE
     transformations_train = [transforms.Resize(45),
                              transforms.CenterCrop(32),
                              # transforms.RandomCrop(32),
@@ -140,6 +149,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     dataset_train.transform = transforms.Compose(transformations_train)
     dataset_test.transform = transforms.Compose(transformations_val)
 
+    ## CHANGE
     logging.info("Evaluation")
     eval_linear(model=model,
                 n_epochs=20,
