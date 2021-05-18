@@ -1,7 +1,7 @@
 from evaluation.linear_probe import eval_linear
 from deep_clustering import deep_cluster
 from deep_clustering_dataset import DeepClusteringDataset
-from deep_clustering_models import AlexNet_Small
+from deep_clustering_models import AlexNet_Micro
 
 from torchvision.transforms import Normalize, ToTensor, Resize, CenterCrop
 from torchvision.datasets import CIFAR10
@@ -23,7 +23,7 @@ import sys, traceback, importlib, os
 
 
 DATASET = "CIFAR10"
-MODEL = "AlexNetSmall"
+MODEL = "AlexNetMicro"
 CHECKPOINTS = "checkpoints"
 TENSORBOARD = "runs"
 EXPERIMENT_CHECK = "exp.chkp"
@@ -49,7 +49,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     device = torch.device(device)
 
     logging.info("Build Model")
-    model = AlexNet_Small(
+    model = AlexNet_Micro(
         sobel=sobel, batch_normalization=batch_norm, device=device)
 
     logging.info("Build Optimizer")
@@ -126,13 +126,13 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     traindataset = cifar10
     validdataset = cifar10_test
 
-    transformations_val = [transforms.Resize(256),
-                           transforms.CenterCrop(224),
+    transformations_val = [transforms.Resize(45),
+                           transforms.CenterCrop(32),
                            transforms.ToTensor(),
                            normalize]
 
-    transformations_train = [transforms.Resize(256),
-                             transforms.CenterCrop(224),
+    transformations_train = [transforms.Resize(45),
+                             transforms.CenterCrop(32),
                              # transforms.RandomCrop(32),
                              # transforms.RandomHorizontalFlip(),
                              transforms.ToTensor(),
