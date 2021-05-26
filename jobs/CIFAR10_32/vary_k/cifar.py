@@ -232,7 +232,7 @@ if __name__ == '__main__':
                                                 try:
                                                     run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
                                                         pca, training_batch_size, training_shuffle, sobel,
-                                                        random_state=args.seed, dataset_path=args.dataset,
+                                                        random_state=seed, dataset_path=args.dataset,
                                                         use_faiss=args.use_faiss, log_dir=args.log_dir)
 
                                                     counter += 1
