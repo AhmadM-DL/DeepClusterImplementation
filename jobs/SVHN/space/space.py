@@ -176,7 +176,7 @@ if __name__ == '__main__':
     all_noises = []
     seed_range = [0, 100]
     for seed in np.arange(seed_range[0], seed_range[1]):
-        writer = SummaryWriter( os.path.join(args.log_dir, TENSORBOARD, '/seed(%d)/'%seed) )
+        writer = SummaryWriter( os.path.join(args.log_dir, TENSORBOARD, 'seed(%d)'%seed) )
         nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], hparams["n_clusters"], hparams["pca"],
                                      hparams["sobel"],  hparams["training_batch_size"], random_state=seed, dataset_path=args.dataset,
                                      use_faiss=args.use_faiss, log_dir=None)
@@ -199,4 +199,4 @@ if __name__ == '__main__':
                "nmis": nmis,
                "entropies": all_entropies,
                "noises": all_noises
-               }, open(os.path.join(args.log_dir, TENSORBOARD,"/space_run.json"), "w"))          
+               }, open(os.path.join(args.log_dir, TENSORBOARD,"space_run.json"), "w"))          
