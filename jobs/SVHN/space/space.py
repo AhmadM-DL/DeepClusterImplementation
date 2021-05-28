@@ -174,7 +174,7 @@ if __name__ == '__main__':
     nmis= []
     all_entropies = []
     all_noises = []
-    seed_range = [0, 100]
+    seed_range = [1, 101]
     for seed in np.arange(seed_range[0], seed_range[1]):
         writer = SummaryWriter( os.path.join(args.log_dir, TENSORBOARD, 'seed(%d)'%seed) )
         nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], hparams["n_clusters"], hparams["pca"],
