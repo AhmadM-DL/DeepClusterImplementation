@@ -70,6 +70,13 @@ def run(device, batch_norm, n_clusters, pca, sobel,
         transforms.ToTensor(),
         normalize])
 
+    logging.info("Remove Top Layer")
+    if model.top_layer:
+        model.top_layer = None
+
+    if loading_transform:
+        dataset.set_transform(loading_transform)
+
     logging.info(" Full Feedforward")
     features = model.full_feed_forward(
         dataloader=torch.utils.data.DataLoader(dataset,
