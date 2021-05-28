@@ -111,7 +111,7 @@ def run(device, batch_norm, n_clusters, pca, sobel,
 
 if __name__ == '__main__':
 
-     parser = argparse.ArgumentParser(
+    parser = argparse.ArgumentParser(
         description='PyTorch Implementation of DeepCluster')
 
     parser.add_argument('--log', default="exp.log", type=str)
