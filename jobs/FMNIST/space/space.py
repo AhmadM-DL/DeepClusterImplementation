@@ -35,7 +35,6 @@ import json,  logging, argparse
 from datetime import datetime
 import sys, traceback, importlib, os
 
-
 ## CHANGE
 DATASET = "FMNIST"
 ## CHANGE
