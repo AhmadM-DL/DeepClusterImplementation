@@ -171,15 +171,18 @@ if __name__ == '__main__':
     seed_range = [1, 101]
     for seed in np.arange(seed_range[0], seed_range[1]):
         writer = SummaryWriter( os.path.join(args.log_dir, TENSORBOARD, 'seed(%d)'%seed) )
-        nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], hparams["n_clusters"], hparams["pca"],
+        try:
+            nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], hparams["n_clusters"], hparams["pca"],
                                      hparams["sobel"],  hparams["training_batch_size"], random_state=seed, dataset_path=args.dataset,
                                      use_faiss=args.use_faiss, log_dir=None)
-        writer.add_histogram("pseudoclasses_entropies", np.array(entropies), 0)
-        writer.add_histogram("pseudoclasses_noises", np.array(noises), 0)
-        nmis.append(nmi)
-        all_entropies.append(list(entropies))
-        all_noises.append(list(noises))
-
+            writer.add_histogram("pseudoclasses_entropies", np.array(entropies), 0)
+            writer.add_histogram("pseudoclasses_noises", np.array(noises), 0)
+            nmis.append(nmi)
+            all_entropies.append(list(entropies))
+            all_noises.append(list(noises))
+        except:
+            pass
+        
     fig = plt.figure()
     plt.hist(nmis)
     plt.xlabel("NMI values")
