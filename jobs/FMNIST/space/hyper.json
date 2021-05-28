@@ -1,0 +1,9 @@
+{
+    "sobel": false,
+    "batch_norm": true,
+    "n_cycles": 50,
+    "n_clusters": 5,
+    "pca": null,
+    "training_batch_size":128,
+    "training_shuffle":true
+}
