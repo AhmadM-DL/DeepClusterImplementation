@@ -1,0 +1,15 @@
+{
+    "lr":[0.1],
+    "wd":[0.001],
+    "momentum": [0.5],
+    "sobel": [true],
+    "batch_norm": [true],
+    "n_cycles": [100],
+    "n_clusters": [500],
+    "pca": [256],
+    "training_batch_size":[64],
+    "training_shuffle":[true],
+    "seed":[15, 7, 35, 36, 63, 18, 10, 55, 79, 76]
+}
+
+
