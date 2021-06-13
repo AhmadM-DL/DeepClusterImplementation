@@ -73,11 +73,9 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
     ## CHANGE
     normalize = transforms.Normalize(mean = (0.437, 0.443, 0.472),
                                      std = (0.198, 0.201, 0.197))
-
     ## CHANGE
     main_transform = transforms.ToTensor()
     dataset.set_transform(main_transform)
-
     ## CHANGE
     in_loop_training_transform = transforms.Compose([
         transforms.RandomResizedCrop(32),
