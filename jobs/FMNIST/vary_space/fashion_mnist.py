@@ -3,7 +3,7 @@ import json
 import logging
 import argparse
 import os
-
+import datetime
 import sys
 import importlib
 
@@ -21,7 +21,9 @@ from deep_clustering import deep_cluster
 from evaluation.linear_probe import eval_linear
 from utils import set_seed
 
-import datetime
+from datetime import datetime
+import traceback
+
 
 ## CHANGE
 DATASET = "FMNIST"
@@ -97,6 +99,12 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
 
     writer = SummaryWriter(os.path.join(log_dir, TENSORBOARD, writer_file))
 
+    if os.path.isfile(os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth")):
+        resume = os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth")
+        logging.info("Resuming from: %s" % resume)
+    else:
+        resume = None
+        logging.info("Run: %s" % writer_file)
 
     deep_cluster(model=model,
                  dataset=dataset,
@@ -225,8 +233,10 @@ if __name__ == '__main__':
                                                 continue
                                             try:
                                                 run(device, batch_norm, lr, wd, momentum, n_cycles, n_clusters,
-                                                pca, training_batch_size, training_shuffle, random_state=seed, dataset_path=args.dataset)
-                                                counter+=1
+                                                    pca, training_batch_size, training_shuffle,
+                                                    random_state=seed, dataset_path=args.dataset,
+                                                    use_faiss=args.use_faiss, log_dir=args.log_dir)
+                                                counter += 1
                                                 open(os.path.join(args.log_dir, EXPERIMENT_CHECK), "w").write(
                                                     str(counter))
                                             except Exception as e:
