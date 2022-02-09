@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#SBATCH --job-name=cifar_vary
+#SBATCH --partition=msfea-ai
+
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --gres=gpu
+#SBATCH --mem=12000
+#SBATCH --time=05:00:00
+##SBATCH --array=1-3%1
+
+## set the environment modules
+module load python/base/miniconda3
+module load cuda
+source /apps/sw/miniconda/etc/profile.d/conda.sh
+conda activate myenv
+
+## add my modules
+export PYTHONPATH=$HOME/scratch/DeepClusterImplementation 
+export PYTHONPATH=$PYTHONPATH:$HOME/scratch/DeepClusterImplementation/evaluation
+
+## execute the python job
+## nvidia-smi
+# start executing the program,
+python3 cifar.py --device "cuda:0" --use_faiss
+
