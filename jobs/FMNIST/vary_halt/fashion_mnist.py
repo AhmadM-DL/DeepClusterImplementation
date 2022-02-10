@@ -228,7 +228,7 @@ if __name__ == '__main__':
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
                                         for seed in hparams["seed"]:
-                                            for halt in haprams["halt"]:
+                                            for halt in hparams["halt"]:
                                                 #logging.info("Experiment %d"%counter)
                                                 if counter <= executed_runs:
                                                     counter += 1
