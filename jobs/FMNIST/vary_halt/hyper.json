@@ -1,0 +1,14 @@
+{
+    "lr":[0.1],
+    "wd":[0.001],
+    "momentum": [0.1],
+    "sobel": [false],
+    "batch_norm": [true],
+    "n_cycles": [50],
+    "n_clusters": [5],
+    "pca": [null],
+    "training_batch_size":[128],
+    "training_shuffle":[true],
+    "seed": [61],
+    "halt": [1, 10, 30, 50, 100]
+}
