@@ -79,6 +79,9 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
     for cycle in range(start_cycle, n_cycles):
 
+        if cycle == n_cycles -1 :
+            break
+
         if verbose:
             print("Cycle %d:" % (cycle))
 
@@ -194,13 +197,14 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                     fit_partial=kwargs.get("partial_fit", None))
 
         if writer:
-            # write NMI between consecutive pseudolabels
-            if cycle > 0:
-                writer.add_scalar(
-                    "NMI/pt_vs_pt-1", NMI(assignments, dataset.get_pseudolabels()), cycle)
-            # write NMI between lables and pseudolabels
-            writer.add_scalar("NMI/pt_vs_labels",
-                              NMI(assignments, dataset.get_targets()), cycle)
+            if assignments:
+                # write NMI between consecutive pseudolabels
+                if cycle > 0:
+                    writer.add_scalar(
+                        "NMI/pt_vs_pt-1", NMI(assignments, dataset.get_pseudolabels()), cycle)
+                # write NMI between lables and pseudolabels
+                writer.add_scalar("NMI/pt_vs_labels",
+                                NMI(assignments, dataset.get_targets()), cycle)
 
         # re assign labels
         if halt_clustering and cycle>=halt_clustering:
