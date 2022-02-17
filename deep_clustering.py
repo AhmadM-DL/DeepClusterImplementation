@@ -154,7 +154,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         #                          label_img=images, global_step=cycle)
 
         if halt_clustering and cycle>=halt_clustering:
-            pass
+            assignments= None
         else:
             # pre-processing pca-whitening
             if kwargs.get("pca_components", None) == None:
@@ -197,7 +197,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                     fit_partial=kwargs.get("partial_fit", None))
 
         if writer:
-            if assignments:
+            if assignments!=None:
                 # write NMI between consecutive pseudolabels
                 if cycle > 0:
                     writer.add_scalar(
