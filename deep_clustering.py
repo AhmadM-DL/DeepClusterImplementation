@@ -197,7 +197,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                     fit_partial=kwargs.get("partial_fit", None))
 
         if writer:
-            if assignments!=None:
+            if assignments is not None:
                 # write NMI between consecutive pseudolabels
                 if cycle > 0:
                     writer.add_scalar(
