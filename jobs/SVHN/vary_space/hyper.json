@@ -10,7 +10,7 @@
     "training_batch_size":[64],
     "training_shuffle":[true],
     "seed_old":[15, 7, 35, 36, 63, 18, 10, 55, 79, 76],
-    "seed": [84, 13, 57, 38, 10]
+    "seed": [84, 13, 57, 38, 38]
 }
 
 
