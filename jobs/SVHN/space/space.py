@@ -68,26 +68,27 @@ def run(device, batch_norm, n_clusters, pca, sobel, training_batch_size, random_
     normalize = transforms.Normalize(mean = (0.437, 0.443, 0.472),
                                      std = (0.198, 0.201, 0.197))
 
+    ## CHANGE
     logging.info("Defining Transformations")
-    loading_transform = transforms.Compose([
-    transforms.Resize(44),
-    transforms.CenterCrop(32),
-    transforms.ToTensor(),
-    normalize])
+    main_transform = transforms.ToTensor()
+    dataset.set_transform(main_transform)
+    in_loop_loading_transform = transforms.Compose([
+        transforms.Resize(45),
+        transforms.CenterCrop(32),
+        normalize])
 
     logging.info("Remove Top Layer")
     if model.top_layer:
         model.top_layer = None
 
-    if loading_transform:
-        dataset.set_transform(loading_transform)
 
     logging.info(" Full Feedforward")
     features = model.full_feed_forward(
         dataloader=torch.utils.data.DataLoader(dataset,
                                             batch_size=training_batch_size,
                                             shuffle=None,
-                                            pin_memory=True))
+                                            pin_memory=True,
+                                            transform_inside_loop = in_loop_loading_transform))
 
     logging.info("  Pre-processing pca/whitening/l2_normalization")
     if pca == None:
@@ -97,15 +98,16 @@ def run(device, batch_norm, n_clusters, pca, sobel, training_batch_size, random_
     features = l2_normalization(features)
 
     logging.info(" Clustering")
+    clustering_rnd_state = np.random.randint(1234)
     if use_faiss:
         assignments = faiss_kmeans(
             features, n_clusters=n_clusters,
-            random_state=random_state,
+            random_state=clustering_rnd_state,
             fit_partial=None)
     else:
         assignments = sklearn_kmeans(
             features, n_clusters=n_clusters,
-            random_state=random_state,
+            random_state=clustering_rnd_state,
             max_iter = 20,
             fit_partial=None)
 
