@@ -87,8 +87,8 @@ def run(device, batch_norm, n_clusters, pca, sobel, training_batch_size, random_
         dataloader=torch.utils.data.DataLoader(dataset,
                                             batch_size=training_batch_size,
                                             shuffle=None,
-                                            pin_memory=True,
-                                            transform_inside_loop = in_loop_loading_transform))
+                                            pin_memory=True),
+                                            transform_inside_loop = in_loop_loading_transform)
 
     logging.info("  Pre-processing pca/whitening/l2_normalization")
     if pca == None:
