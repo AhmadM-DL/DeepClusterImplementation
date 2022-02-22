@@ -68,8 +68,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
 
     loss_fn.to(model.device)
 
-    only_clustering = kwargs.get("only_clustering", None)
-    if checkpoints and not only_clustering:
+    if checkpoints:
         if not os.path.isdir(checkpoints):
             os.makedirs(checkpoints)
 
