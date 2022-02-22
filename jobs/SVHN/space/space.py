@@ -39,7 +39,9 @@ TENSORBOARD = "runs"
 
 
 
-def run(device, batch_norm, n_clusters, pca, sobel, training_batch_size, random_state, dataset_path, use_faiss, log_dir=None):
+def run(device, batch_norm, lr, wd, momentum, n_cycles,
+        n_clusters, pca, training_batch_size, sobel, training_shuffle,
+        random_state, dataset_path, use_faiss, log_dir=None):
     logging.info("New Experiment ##########################################")
     logging.info("%s" % datetime.now())
 
@@ -61,65 +63,75 @@ def run(device, batch_norm, n_clusters, pca, sobel, training_batch_size, random_
     model = AlexNet_Micro(
         sobel=sobel, batch_normalization=batch_norm, device=device)
 
+    logging.info("Build Optimizer")
+    optimizer = torch.optim.SGD(
+        filter(lambda x: x.requires_grad, model.parameters()),
+        lr=lr,
+        momentum=momentum,
+        weight_decay=wd,
+    )
+
+    logging.info("Defining Loss Function")
+    loss_function = torch.nn.CrossEntropyLoss()
+
     logging.info("Decorating Dataset")
     dataset = DeepClusteringDataset(dataset_train)
 
+    logging.info("Defining Transformations")
     ## CHANGE
     normalize = transforms.Normalize(mean = (0.437, 0.443, 0.472),
                                      std = (0.198, 0.201, 0.197))
-
     ## CHANGE
-    logging.info("Defining Transformations")
     main_transform = transforms.ToTensor()
     dataset.set_transform(main_transform)
+    ## CHANGE
+    in_loop_training_transform = transforms.Compose([
+        transforms.RandomResizedCrop(32),
+        normalize])
+    ## CHANGE
     in_loop_loading_transform = transforms.Compose([
         transforms.Resize(45),
         transforms.CenterCrop(32),
         normalize])
 
-    logging.info("Remove Top Layer")
-    if model.top_layer:
-        model.top_layer = None
-
-
-    logging.info(" Full Feedforward")
-    features = model.full_feed_forward(
-        dataloader=torch.utils.data.DataLoader(dataset,
-                                            batch_size=training_batch_size,
-                                            shuffle=None,
-                                            pin_memory=True),
-                                            transform_inside_loop = in_loop_loading_transform)
-
-    logging.info("  Pre-processing pca/whitening/l2_normalization")
-    if pca == None:
-        pass
+    logging.info("Defining Writer")
+    writer_file = "{dataset}_{model}_batchnorm({bt})_lr({lr})_momentum({mom})_wdecay({wd})_n_clusters({nclusters})_n_cycles({ncycles})_rnd({seed})_t_batch_size({tbsize})_shuffle({shfl})_sobel({sobel})_"
+    writer_file = writer_file.format(dataset=DATASET, model=MODEL, bt=batch_norm, lr=lr, mom=momentum,
+                                     wd=wd, nclusters=n_clusters, ncycles=n_cycles, seed=random_state,
+                                     tbsize=training_batch_size, shfl=training_shuffle, sobel=sobel)
+    if pca:
+        writer_file = writer_file+"pca(%d)" % pca
     else:
-        features = sklearn_pca_whitening(features, n_components=pca, random_state=random_state)
-    features = l2_normalization(features)
+        writer_file = writer_file+"pca(None)"
 
-    logging.info(" Clustering")
-    clustering_rnd_state = np.random.randint(1234)
-    if use_faiss:
-        assignments = faiss_kmeans(
-            features, n_clusters=n_clusters,
-            random_state=clustering_rnd_state,
-            fit_partial=None)
+    writer = SummaryWriter(os.path.join(log_dir, TENSORBOARD, writer_file))
+
+    if os.path.isfile(os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth")):
+        resume = os.path.join(log_dir, CHECKPOINTS, writer_file, "last_model.pth")
+        logging.info("Resuming from: %s" % resume)
     else:
-        assignments = sklearn_kmeans(
-            features, n_clusters=n_clusters,
-            random_state=clustering_rnd_state,
-            max_iter = 20,
-            fit_partial=None)
+        resume = None
+        logging.info("Run: %s" % writer_file)
 
-    dataset.set_pseudolabels(assignments)
-
-    nmi =  NMI(assignments, dataset.get_targets())
-    
-    pseudoclasses = dataset.group_indices_by_labels()
-    pseudoclasses_labels = [[dataset.get_targets()[index] for index in pseudoclass] for pseudoclass in pseudoclasses]
-    pseudoclasses_labels_counts = [np.unique(pseudoclass_labels, return_counts=True)[1] for pseudoclass_labels in pseudoclasses_labels]
-    entropies = [entropy(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
-    noises = [ 1 - np.max(pseudoclass_labels_counts)/np.sum(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
+    nmi, entropies, noises = deep_cluster(model=model,
+                 dataset=dataset,
+                 n_clusters=n_clusters,
+                 loss_fn=loss_function,
+                 optimizer=optimizer,
+                 n_cycles=n_cycles,
+                 loading_transform= in_loop_loading_transform,
+                 training_transform= in_loop_training_transform,
+                 random_state=random_state,
+                 verbose=1,
+                 training_batch_size=training_batch_size,
+                 training_shuffle=training_shuffle,
+                 pca_components=pca,
+                 checkpoints=os.path.join(log_dir, CHECKPOINTS, writer_file),
+                 use_faiss=use_faiss,
+                 resume=resume,
+                 in_loop_transform=True,
+                 writer=writer,
+                 only_clustering=True)
 
     return nmi, entropies, noises
     
@@ -178,12 +190,15 @@ if __name__ == '__main__':
     all_noises = []
     seed_range = [1, 101]
     for seed in np.arange(seed_range[0], seed_range[1]):
-        writer = SummaryWriter( os.path.join(args.log_dir, TENSORBOARD, 'seed(%d)'%seed) )
-        nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], hparams["n_clusters"], hparams["pca"],
-                                     hparams["sobel"],  hparams["training_batch_size"], random_state=seed, dataset_path=args.dataset,
+
+        device, batch_norm, lr, wd, momentum, n_cycles,
+        n_clusters, pca, training_batch_size, sobel, training_shuffle,
+        random_state, dataset_path, use_faiss, log_dir=None
+
+        nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], 0.01, 0.0001, 0.9, 1,
+                                     hparams["n_clusters"], hparams["pca"],  hparams["training_batch_size"],
+                                     hparams["sobel"], True, random_state=seed, dataset_path=args.dataset,
                                      use_faiss=args.use_faiss, log_dir=None)
-        writer.add_histogram("pseudoclasses_entropies", np.array(entropies), 0)
-        writer.add_histogram("pseudoclasses_noises", np.array(noises), 0)
         nmis.append(nmi)
         all_entropies.append(list(entropies))
         all_noises.append(list(noises))

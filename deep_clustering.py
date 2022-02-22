@@ -53,6 +53,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                 - "embeddings_checkpoint" the percent of cycles to be performed between written embeddings default 20
                 - "halt_clustering"
                 - "kmeans_max_iter"
+                - "only_clustering"
                 - "use_faiss" used to use facebook faiss clustering rather than kmeans
                 - ..
     """
@@ -122,14 +123,12 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
         if  halt_clustering and cycle >= halt_clustering:
             pass
         else:
-            
             # Set Loading Transform else consider the dataset transform
             if loading_transform:
                 if in_loop_transform:
                     dataset.in_loop_transform = loading_transform
                 else:
                     dataset.set_transform(loading_transform)
-
             # full feedforward
             features = model.full_feed_forward(
                 dataloader=torch.utils.data.DataLoader(dataset,
@@ -206,6 +205,15 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                 writer.add_scalar("NMI/pt_vs_labels",
                                 NMI(assignments, dataset.get_targets()), cycle)
 
+        if kwargs.get("only_clustering", None):
+                nmi =  NMI(assignments, dataset.get_targets())
+                pseudoclasses = dataset.group_indices_by_labels()
+                pseudoclasses_labels = [[dataset.get_targets()[index] for index in pseudoclass] for pseudoclass in pseudoclasses]
+                pseudoclasses_labels_counts = [np.unique(pseudoclass_labels, return_counts=True)[1] for pseudoclass_labels in pseudoclasses_labels]
+                entropies = [entropy(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
+                noises = [ 1 - np.max(pseudoclass_labels_counts)/np.sum(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
+                return nmi, entropies, noises
+                
         # re assign labels
         if halt_clustering and cycle>=halt_clustering:
             pass
