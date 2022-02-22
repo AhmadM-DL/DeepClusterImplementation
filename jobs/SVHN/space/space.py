@@ -113,7 +113,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         resume = None
         logging.info("Run: %s" % writer_file)
 
-    return deep_cluster(model=model,
+    nmi, entropies, noises =  deep_cluster(model=model,
                  dataset=dataset,
                  n_clusters=n_clusters,
                  loss_fn=loss_function,
@@ -132,6 +132,8 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  in_loop_transform=True,
                  writer=writer,
                  only_clustering=True)
+                 
+    return nmi, entropies, noises
 
 if __name__ == '__main__':
 
