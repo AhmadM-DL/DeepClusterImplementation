@@ -113,7 +113,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
         resume = None
         logging.info("Run: %s" % writer_file)
 
-    nmi, entropies, noises = deep_cluster(model=model,
+    return deep_cluster(model=model,
                  dataset=dataset,
                  n_clusters=n_clusters,
                  loss_fn=loss_function,
@@ -132,9 +132,6 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  in_loop_transform=True,
                  writer=writer,
                  only_clustering=True)
-
-    return nmi, entropies, noises
-    
 
 if __name__ == '__main__':
 
@@ -183,17 +180,17 @@ if __name__ == '__main__':
     logging.info("\n##########\n%s\n##########\n" % datetime.now())
 
     hparams = json.load(open(args.hyperparam, "r"))
-    device = torch.device(args.device)
+    device = args.device
 
     nmis= []
     all_entropies = []
     all_noises = []
     seed_range = [1, 101]
     for seed in np.arange(seed_range[0], seed_range[1]):
-        nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], 0.01, 0.0001, 0.9, 1,
+        nmi, entropies, noises = run(device, hparams['batch_norm'], 0.01, 0.0001, 0.9, 1,
                                      hparams["n_clusters"], hparams["pca"],  hparams["training_batch_size"],
                                      hparams["sobel"], True, random_state=seed, dataset_path=args.dataset,
-                                     use_faiss=args.use_faiss, log_dir=None)
+                                     use_faiss=args.use_faiss, log_dir=args.log_dir)
         nmis.append(nmi)
         all_entropies.append(list(entropies))
         all_noises.append(list(noises))
