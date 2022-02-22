@@ -206,14 +206,14 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                 NMI(assignments, dataset.get_targets()), cycle)
 
         if kwargs.get("only_clustering", None):
-                nmi =  NMI(assignments, dataset.get_targets())
-                pseudoclasses = dataset.group_indices_by_labels()
-                pseudoclasses_labels = [[dataset.get_targets()[index] for index in pseudoclass] for pseudoclass in pseudoclasses]
-                pseudoclasses_labels_counts = [np.unique(pseudoclass_labels, return_counts=True)[1] for pseudoclass_labels in pseudoclasses_labels]
-                entropies = [entropy(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
-                noises = [ 1 - np.max(pseudoclass_labels_counts)/np.sum(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
-                return nmi, entropies, noises
-                
+            nmi =  NMI(assignments, dataset.get_targets())
+            pseudoclasses = dataset.group_indices_by_labels()
+            pseudoclasses_labels = [[dataset.get_targets()[index] for index in pseudoclass] for pseudoclass in pseudoclasses]
+            pseudoclasses_labels_counts = [np.unique(pseudoclass_labels, return_counts=True)[1] for pseudoclass_labels in pseudoclasses_labels]
+            entropies = [entropy(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
+            noises = [ 1 - np.max(pseudoclass_labels_counts)/np.sum(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
+            return nmi, entropies, noises
+
         # re assign labels
         if halt_clustering and cycle>=halt_clustering:
             pass
