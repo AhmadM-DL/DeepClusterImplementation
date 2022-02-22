@@ -190,11 +190,6 @@ if __name__ == '__main__':
     all_noises = []
     seed_range = [1, 101]
     for seed in np.arange(seed_range[0], seed_range[1]):
-
-        device, batch_norm, lr, wd, momentum, n_cycles,
-        n_clusters, pca, training_batch_size, sobel, training_shuffle,
-        random_state, dataset_path, use_faiss, log_dir=None
-
         nmi, entropies, noises = run(torch.device(args.device), hparams['batch_norm'], 0.01, 0.0001, 0.9, 1,
                                      hparams["n_clusters"], hparams["pca"],  hparams["training_batch_size"],
                                      hparams["sobel"], True, random_state=seed, dataset_path=args.dataset,
