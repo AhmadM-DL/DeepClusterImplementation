@@ -189,7 +189,7 @@ if __name__ == '__main__':
     all_noises = []
     seed_range = [1, 101]
     for seed in np.arange(seed_range[0], seed_range[1]):
-        nmi, entropies, noises = run(device, hparams['batch_norm'], 0.01, 0.0001, 0.9, 1,
+        nmi, entropies, noises = run(device, hparams['batch_norm'], 0.01, 0.0001, 0.9, 10,
                                      hparams["n_clusters"], hparams["pca"],  hparams["training_batch_size"],
                                      hparams["sobel"], True, random_state=seed, dataset_path=args.dataset,
                                      use_faiss=args.use_faiss, log_dir=args.log_dir)
