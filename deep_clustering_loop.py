@@ -215,7 +215,7 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
             noises = [ 1 - np.max(pseudoclass_labels_counts)/np.sum(pseudoclass_labels_counts) for pseudoclass_labels_counts in pseudoclasses_labels_counts]
             return nmi, entropies, noises
         
-        if cycle==0 and kwargs.get("conditional_nmi", None):
+        if cycle==0 and kwargs.get("max_nmi", None):
             nmi =  NMI(assignments, dataset.get_targets())
             if nmi > kwargs.get("max_nmi"):
                 return False
