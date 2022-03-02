@@ -287,4 +287,4 @@ def deep_cluster(model: DeepClusteringNet, dataset: DeepClusteringDataset, n_clu
                                             loss_fn=loss_fn, verbose=verbose, writer=writer,
                                             transform_inside_loop=in_loop_transform)
         
-        return True
+    return True
