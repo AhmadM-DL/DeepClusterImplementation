@@ -190,9 +190,9 @@ if __name__ == '__main__':
     parser.add_argument("--use_faiss", action="store_true",
                         help="Use facebook FAISS for clustering")
 
-    parser.add_argument("--fromSeed")
+    parser.add_argument("--fromSeed", type= int)
 
-    parser.add_argument("--toSeed")
+    parser.add_argument("--toSeed", type= int)
                         
     args = parser.parse_args()
 
