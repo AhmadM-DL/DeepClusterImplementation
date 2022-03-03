@@ -189,6 +189,10 @@ if __name__ == '__main__':
 
     parser.add_argument("--use_faiss", action="store_true",
                         help="Use facebook FAISS for clustering")
+
+    parser.add_argument("--fromSeed")
+
+    parser.add_argument("--toSeed")
                         
     args = parser.parse_args()
 
@@ -232,7 +236,7 @@ if __name__ == '__main__':
                                 for training_batch_size in hparams["training_batch_size"]:
                                     for training_shuffle in hparams["training_shuffle"]:
                                         for sobel in hparams["sobel"]:
-                                            for seed in range(0, 100):
+                                            for seed in range(args.fromSeed, args.toSeed):
                                                 #logging.info("Experiment %d"%counter)
                                                 if counter <= executed_runs:
                                                     counter += 1
