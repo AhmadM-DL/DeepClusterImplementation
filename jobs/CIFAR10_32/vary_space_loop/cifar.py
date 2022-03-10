@@ -119,7 +119,7 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  resume=resume,
                  in_loop_transform=True,
                  max_nmi= 0.1,
-                 min_nmi= 0.08,
+                 min_nmi= 0.09,
                  writer=writer,
                  )
         
