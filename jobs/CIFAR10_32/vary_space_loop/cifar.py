@@ -1,5 +1,5 @@
 from evaluation.linear_probe import eval_linear
-from deep_clustering import deep_cluster
+from deep_clustering_loop import deep_cluster
 from deep_clustering_dataset import DeepClusteringDataset
 from deep_clustering_models import AlexNet_Micro
 
