@@ -118,8 +118,8 @@ def run(device, batch_norm, lr, wd, momentum, n_cycles,
                  use_faiss=use_faiss,
                  resume=resume,
                  in_loop_transform=True,
-                 max_nmi= 0.07,
-                 min_nmi= 0.05,
+                 max_nmi= 0.1,
+                 min_nmi= 0.08,
                  writer=writer,
                  )
         
